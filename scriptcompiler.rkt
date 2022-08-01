@@ -78,32 +78,33 @@
   (map-syntax-recursive map-syntax-atom stx)
   )
 
+(struct function (name args ret body))
+
 ; oh no no no no
-(define module-functions '())
+(define module-functions (make-hash))
 
-(define (module-defun name body)
-  (set! module-functions (append module-functions `('(,name ,body)))))
+(define (module-defun name func)
+  (hash-set! module-functions name func))
 
-(define-syntax defun1
-  (lambda (stx)
-    (match (syntax-e stx)
-      ; split the different parts of the syntax
-      [(list _defun name args ret body)
-       (begin
-         ; first expand macros, then "map syntax"
-         ; done this way so that macro can still use our syntax like 'player.pos'
-         (define mapped-form (map-syntax-all (exprec body)))
-         (display mapped-form)
+; TODO comments explaining what the body looks like during each step
+(define-for-syntax (defun1 stx name args ret body)
+  ;(display body)
+  ; first expand macros, then "map syntax"
+  ; done this way so that macro can still use our syntax like 'player.pos'
+  (define mapped-form (map-syntax-all (exprec body)))
+  ;(display mapped-form)
 
-         (define quoted-form #`(quote #,mapped-form))
-         ; force lexical context of original expression
-         (define new-stx (datum->syntax stx (syntax->datum quoted-form) stx))
+  ;(define quoted-form #`(quote #,mapped-form))
+  ; force lexical context of original expression
+  ;(define new-stx (datum->syntax stx (syntax->datum quoted-form) stx))
+  ;(display new-stx)
 
-         ; add to preprocessed function to module function table
-         #`(module-defun '#,(syntax-e name) #,new-stx)
-         )
-       ])
-    )
+  ; add to preprocessed function to module function table
+  (define f #`(function '#,name '#,args '#,ret (quote-syntax #,mapped-form)))
+  ;#`(module-defun '#,(syntax-e name) (function '#,name '#,args '#,ret #,new-stx))
+  (define final-stx (datum->syntax stx (list #'module-defun `(quote ,(syntax-e name)) f)))
+  (print final-stx)
+  final-stx
   )
 
 ; will we have to implement our own scoping rules?
@@ -111,12 +112,15 @@
   (defstruct1 name (fields ...))
   )
 
-(define-simple-macro (defun name args ret body ...)
-  (defun1 name args ret (body ...))
-  )
+(define-syntax defun
+  (lambda (stx)
+    (match (syntax-e stx)
+      ; split the different parts of the syntax
+      [(list _defun name args ret body ...)
+       (defun1 stx name args ret (datum->syntax stx body))])))
 
 (define (process-module-functions module-functions)
-  (print module-functions))
+  (hash-for-each module-functions (lambda (name f) (print (resolve-names/function f)))))
 
 (define-syntax-rule (module-begin expr ...)
   (#%module-begin
@@ -124,4 +128,24 @@
    expr ...
    (process-module-functions module-functions)
    (provide module-functions))
+  )
+
+;; NAME RESOLUTION
+; for the moment, any symbol that we encounter can refer either to:
+; - function argument
+; - built-in function
+
+(struct arg-name (name))
+(struct builtin-function-name (name))
+(struct func-resolved (name args ret body) #:transparent)
+
+(define (resolve-names/function f)
+  (match f [(function name args ret body)
+            (func-resolved name
+                           args
+                           ret
+                           (resolve-names/function-body f body))]))
+
+(define (resolve-names/function-body f stx)
+  stx
   )
