@@ -20,11 +20,3 @@
 (define-simple-macro (defstruct name fields ...)
   (defstruct1 name (fields ...))
   )
-
-
-
-(define (process-module-functions module-functions)
-  (hash-for-each module-functions (lambda (name f) (print (resolve-names/function f)))))
-
-
-
