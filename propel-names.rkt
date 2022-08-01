@@ -16,6 +16,6 @@
                            ret
                            (resolve-names/function-body f body))]))
 
-(define (resolve-names/function-body f stx)
+(define (resolve-names f stx)
   stx
   )
