@@ -10,7 +10,7 @@
         (syntax-e stx)
       [(list _ a b) (datum->syntax stx (+ (eval a) (eval b)))])))
 
-(defstruct Vec3
+#;(defstruct Vec3
   (x real)
   (y real)
   (z real)

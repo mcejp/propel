@@ -15,7 +15,8 @@
                      )
          syntax/parse/define)
 
-(provide (all-from-out racket)
+(provide (except-out (all-from-out racket) #%module-begin)
+         (rename-out [module-begin #%module-begin])
          defun
          )
 
@@ -77,6 +78,12 @@
   (map-syntax-recursive map-syntax-atom stx)
   )
 
+; oh no no no no
+(define module-functions '())
+
+(define (module-defun name body)
+  (set! module-functions (append module-functions `('(,name ,body)))))
+
 (define-syntax defun1
   (lambda (stx)
     (match (syntax-e stx)
@@ -90,8 +97,10 @@
 
          (define quoted-form #`(quote #,mapped-form))
          ; force lexical context of original expression
-         (datum->syntax stx (syntax->datum quoted-form) stx)
-         ;quoted-form
+         (define new-stx (datum->syntax stx (syntax->datum quoted-form) stx))
+
+         ; add to preprocessed function to module function table
+         #`(module-defun '#,(syntax-e name) #,new-stx)
          )
        ])
     )
@@ -104,4 +113,15 @@
 
 (define-simple-macro (defun name args ret body ...)
   (defun1 name args ret (body ...))
+  )
+
+(define (process-module-functions module-functions)
+  (print module-functions))
+
+(define-syntax-rule (module-begin expr ...)
+  (#%module-begin
+   ;(display "module begin")
+   expr ...
+   (process-module-functions module-functions)
+   (provide module-functions))
   )
