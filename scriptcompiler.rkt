@@ -1,13 +1,5 @@
 #lang racket
 
-; Compilation steps:
-; - read source
-; - expand macros
-; - expand syntax (player.pos.x)
-; - ? resolve names (values + types)
-; - type check + inference
-; - generate output
-
 (require (for-syntax racket/function
                      racket/match
                      racket/string
@@ -23,129 +15,16 @@
 ;(define (move-camera x y z) "[move camera to x,y,z]")
 ;(define (game-quit) "[builtin GameQuit()]")
 
-; convert player.pos.x -> (. (. player pos) x)
-; tokens must be a non-empty list of strings
-; we return a syntax
-(define-for-syntax (map-dot-expression stx tokens)
-  (define rec (curry map-dot-expression stx))
-  ;(display tokens)
-  (datum->syntax stx
-                 (match tokens
-                   [(list a) (string->symbol a)]
-                   [(list a ...) `(op-. ,(rec (list (car a))) ,(rec (cdr a )))]
-                   )
-                 stx)
-  )
-
-; map a syntax element that is _not_ a list
-; for example, replace `camera.set-pos` with `(. camera set-pos)`
-; input: syntax, output: syntax
-(define-for-syntax (map-syntax-atom stx)
-  (define stxe (syntax-e stx))
-  (match stxe
-    ; match symbols including stuff like "x.y.z..."
-    [(? symbol? sym)
-     (map-dot-expression stx (string-split (symbol->string sym) "."))
-     ]
-    [a a]
-    )
-  )
-
-; map an AST sub-tree
-(define-for-syntax (map-syntax-recursive atom-proc stx)
-  ;(display (syntax-e stx))
-  (define rec (curry map-syntax-recursive atom-proc))
-  (match (syntax-e stx)
-    [(list a ...) (datum->syntax stx (map rec a) stx)]
-    [a (atom-proc stx)]
-    )
-  )
-
-; loal-expand-recusrive
-; expand recursively without complaining about unbound identifiers
-(define-for-syntax (exprec stx)
-  ;(display (syntax-e stx))
-  (define rec (curry exprec))
-  (define (exp stx) (local-expand stx 'expression #f))
-
-  (match (syntax-e stx)
-    [(list a ...) (exp (datum->syntax stx (map rec a) stx))]
-    [a stx]
-    )
-  )
-
-(define-for-syntax (map-syntax-all stx)
-  (map-syntax-recursive map-syntax-atom stx)
-  )
-
-(struct function (name args ret body))
-
-; oh no no no no
-(define module-functions (make-hash))
-
-(define (module-defun name func)
-  (hash-set! module-functions name func))
-
-; TODO comments explaining what the body looks like during each step
-(define-for-syntax (defun1 stx name args ret body)
-  ;(display body)
-  ; first expand macros, then "map syntax"
-  ; done this way so that macro can still use our syntax like 'player.pos'
-  (define mapped-form (map-syntax-all (exprec body)))
-  ;(display mapped-form)
-
-  ;(define quoted-form #`(quote #,mapped-form))
-  ; force lexical context of original expression
-  ;(define new-stx (datum->syntax stx (syntax->datum quoted-form) stx))
-  ;(display new-stx)
-
-  ; add to preprocessed function to module function table
-  (define f #`(function '#,name '#,args '#,ret (quote-syntax #,mapped-form)))
-  ;#`(module-defun '#,(syntax-e name) (function '#,name '#,args '#,ret #,new-stx))
-  (define final-stx (datum->syntax stx (list #'module-defun `(quote ,(syntax-e name)) f)))
-  (print final-stx)
-  final-stx
-  )
 
 ; will we have to implement our own scoping rules?
 (define-simple-macro (defstruct name fields ...)
   (defstruct1 name (fields ...))
   )
 
-(define-syntax defun
-  (lambda (stx)
-    (match (syntax-e stx)
-      ; split the different parts of the syntax
-      [(list _defun name args ret body ...)
-       (defun1 stx name args ret (datum->syntax stx body))])))
+
 
 (define (process-module-functions module-functions)
   (hash-for-each module-functions (lambda (name f) (print (resolve-names/function f)))))
 
-(define-syntax-rule (module-begin expr ...)
-  (#%module-begin
-   ;(display "module begin")
-   expr ...
-   (process-module-functions module-functions)
-   (provide module-functions))
-  )
 
-;; NAME RESOLUTION
-; for the moment, any symbol that we encounter can refer either to:
-; - function argument
-; - built-in function
 
-(struct arg-name (name))
-(struct builtin-function-name (name))
-(struct func-resolved (name args ret body) #:transparent)
-
-(define (resolve-names/function f)
-  (match f [(function name args ret body)
-            (func-resolved name
-                           args
-                           ret
-                           (resolve-names/function-body f body))]))
-
-(define (resolve-names/function-body f stx)
-  stx
-  )
