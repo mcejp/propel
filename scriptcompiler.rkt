@@ -1,4 +1,13 @@
 #lang racket
+
+; Compilation steps:
+; - read source
+; - expand macros
+; - expand syntax (player.pos.x)
+; - ? resolve names (values + types)
+; - type check + inference
+; - generate output
+
 (require (for-syntax racket/function
                      racket/match
                      racket/string
@@ -13,7 +22,7 @@
 ;(define (move-camera x y z) "[move camera to x,y,z]")
 ;(define (game-quit) "[builtin GameQuit()]")
 
-; convert x.y.z -> (. (. x y) z)
+; convert player.pos.x -> (. (. player pos) x)
 ; tokens must be a non-empty list of strings
 ; we return a syntax
 (define-for-syntax (map-dot-expression stx tokens)
@@ -86,6 +95,11 @@
          )
        ])
     )
+  )
+
+; will we have to implement our own scoping rules?
+(define-simple-macro (defstruct name fields ...)
+  (defstruct1 name (fields ...))
   )
 
 (define-simple-macro (defun name args ret body ...)
