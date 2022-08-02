@@ -1,7 +1,7 @@
 #lang racket
 
 (require syntax/parse
-         "propel-syntax.rkt")
+         "propel-models.rkt")
 
 (provide resolve-names/function)
 

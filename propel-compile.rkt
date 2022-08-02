@@ -2,8 +2,8 @@
 
 (require racket/serialize
          "flyover.rkt"
+         "propel-models.rkt"
          "propel-names.rkt"
-         "propel-syntax.rkt"
          )
 
 (require racket/fasl)

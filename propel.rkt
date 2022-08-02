@@ -7,7 +7,7 @@
                      )
          ;syntax/parse/define
 
-         "propel-syntax.rkt"
+         "propel-models.rkt"
          )
 
 (provide (except-out (all-from-out racket) #%module-begin)
