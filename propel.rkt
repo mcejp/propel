@@ -36,7 +36,7 @@
   ;(display new-stx)
 
   ; add to preprocessed function to module function table
-  (define f #`(function '#,name '#,args '#,ret (quote-syntax #,mapped-form)))
+  (define f #`(function '#,name '#,args '#,ret (quote-syntax #,mapped-form) #f))
   ;#`(module-defun '#,(syntax-e name) (function '#,name '#,args '#,ret #,new-stx))
   (define final-stx (datum->syntax stx (list #'module-defun `(quote ,(syntax-e name)) f)))
   (print final-stx)
@@ -99,15 +99,16 @@
   )
 
 ; oh no no no no
-(define module-functions (make-hash))
+(define propel-module (module (make-hash)))
 
 (define (module-defun name func)
-  (hash-set! module-functions name func))
+  (define func* (struct-copy function func (module propel-module)))
+  (hash-set! (module-functions propel-module) name func*))
 
 (define-syntax-rule (module-begin expr ...)
   (#%module-begin
    ;(display "module begin")
    expr ...
    ;(process-module-functions module-functions)
-   (provide module-functions))
+   (provide propel-module))
   )

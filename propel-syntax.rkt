@@ -2,17 +2,28 @@
 
 (require racket/serialize)
 
-(provide function)
+(provide function
+         function-name
+         function-args
+         function-ret
+         function-body
+         function-module
+         module
+         module-functions
+         )
+
+(struct module (functions) #:transparent)
 
 ; (symbol list symbol syntax)
-(struct function (name args ret body) #:mutable #:transparent
+(struct function (name args ret body module) #:mutable #:transparent
   #:property prop:serializable
   (make-serialize-info
    (λ (this)
      (vector (function-name this)
              (function-args this)
              (function-ret this)
-             (syntax-serialize (function-body this))))
+             (serialize (syntax->datum (function-body this)))
+             (function-module this)))
    'function-deserialize
    #t
    (or (current-load-relative-directory) (current-directory)))
@@ -31,4 +42,5 @@
                  (set-function-args! f args)
                  (set-function-ret! f ret)
                  (set-function-body! (syntax-deserialize stx))
+                 (set-function-module! module)
                  ))))))
