@@ -93,7 +93,7 @@
   (datum->syntax stx
                  (match tokens
                    [(list a) (string->symbol a)]
-                   [(list a ...) `(op-. ,(rec (list (car a))) ,(rec (cdr a )))]
+                   [(list a ...) (list '#%dot (rec (list (car a))) (rec (cdr a )))]
                    )
                  stx)
   )

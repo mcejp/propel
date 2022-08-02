@@ -24,6 +24,7 @@
                            module)]))
 
 (define (is-begin? stx) (and (identifier? stx) (equal? (syntax-e stx) 'begin)))
+(define (is-#%dot? stx) (equal? (syntax-e stx) '#%dot))
 
 (define (literal? lit) (or (number? lit)))
 
@@ -33,8 +34,8 @@
   ;stx
   (datum->syntax stx
                  (match (syntax-e stx)
-                   [(list begin* stmt ...) #:when (is-begin? begin*) (map rec stmt)]
-                   [(list op-.* obj field) #:when (equal? (syntax-e op-.*) 'op-.) `(op-. ,(rec obj) ,field)]
+                   [(list (? is-begin? _) stmt ...) (map rec stmt)]
+                   [(list (? is-#%dot? _) obj field) (list '#%dot (rec obj) field)]
                    [(list expr ...) (map rec expr)]
                    [sym #:when (symbol? sym) (resolve-names/symbol f sym)]
                    [lit #:when (literal? lit) stx]
