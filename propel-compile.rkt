@@ -1,9 +1,11 @@
 #lang racket
 
 (require racket/serialize
+         racket/struct
          "flyover.rkt"
          "propel-models.rkt"
          "propel-names.rkt"
+         "propel-syntax.rkt"
          )
 
 (require racket/fasl)
@@ -19,6 +21,11 @@
 
 ;(print module-functions)
 
-(hash-for-each (module-functions propel-module)
+(define fs (module-functions propel-module))
+
+(hash-for-each fs
+               (λ (name f) (hash-set! fs name (struct-copy function f [body (resolve-forms (function-body f))]))))
+
+(hash-for-each fs
                (λ (name f) (print (resolve-names/function f)))
                )

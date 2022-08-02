@@ -2,10 +2,7 @@
 
 (require (for-syntax racket/function
                      racket/match
-                     racket/string
-                     ;syntax/parse
                      )
-         ;syntax/parse/define
 
          "propel-models.rkt"
          )
@@ -25,9 +22,8 @@
 ; TODO comments explaining what the body looks like during each step
 (define-for-syntax (defun1 stx name args ret body)
   ;(display body)
-  ; first expand macros, then "map syntax"
-  ; done this way so that macro can still use our syntax like 'player.pos'
-  (define mapped-form (map-syntax-all (exprec body)))
+  ; expand macros
+  (define mapped-form (exprec body))
   ;(display mapped-form)
 
   ;(define quoted-form #`(quote #,mapped-form))
@@ -54,48 +50,6 @@
     [(list a ...) (exp (datum->syntax stx (map rec a) stx))]
     [a stx]
     )
-  )
-
-(define-for-syntax (map-syntax-all stx)
-  (map-syntax-recursive map-syntax-atom stx)
-  )
-
-; map an AST sub-tree
-(define-for-syntax (map-syntax-recursive atom-proc stx)
-  ;(display (syntax-e stx))
-  (define rec (curry map-syntax-recursive atom-proc))
-  (match (syntax-e stx)
-    [(list a ...) (datum->syntax stx (map rec a) stx)]
-    [a (atom-proc stx)]
-    )
-  )
-
-; map a syntax element that is _not_ a list
-; for example, replace `camera.set-pos` with `(. camera set-pos)`
-; input: syntax, output: syntax
-(define-for-syntax (map-syntax-atom stx)
-  (define stxe (syntax-e stx))
-  (match stxe
-    ; match symbols including stuff like "x.y.z..."
-    [(? symbol? sym)
-     (map-dot-expression stx (string-split (symbol->string sym) "."))
-     ]
-    [a a]
-    )
-  )
-
-; convert player.pos.x -> (. (. player pos) x)
-; tokens must be a non-empty list of strings
-; we return a syntax
-(define-for-syntax (map-dot-expression stx tokens)
-  (define rec (curry map-dot-expression stx))
-  ;(display tokens)
-  (datum->syntax stx
-                 (match tokens
-                   [(list a) (string->symbol a)]
-                   [(list a ...) (list '#%dot (rec (list (car a))) (rec (cdr a )))]
-                   )
-                 stx)
   )
 
 ; oh no no no no

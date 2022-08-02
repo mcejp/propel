@@ -1,7 +1,9 @@
 #lang racket
 
 (require syntax/parse
-         "propel-models.rkt")
+         "propel-models.rkt"
+         "propel-syntax.rkt"
+         )
 
 (provide resolve-names/function)
 
@@ -23,7 +25,8 @@
                            (resolve-names f body)
                            module)]))
 
-(define (is-begin? stx) (and (identifier? stx) (equal? (syntax-e stx) 'begin)))
+
+(define (is-#%app? stx) (equal? (syntax-e stx) '#%app))
 (define (is-#%dot? stx) (equal? (syntax-e stx) '#%dot))
 
 (define (literal? lit) (or (number? lit)))
@@ -32,27 +35,17 @@
   (define rec (curry resolve-names f))     ; recurse
   ;(print stx)
   ;stx
-  (datum->syntax stx
-                 (match (syntax-e stx)
-                   [(list (? is-begin? _) stmt ...) (map rec stmt)]
-                   [(list (? is-#%dot? _) obj field) (list '#%dot (rec obj) field)]
-                   [(list expr ...) (map rec expr)]
-                   [sym #:when (symbol? sym) (resolve-names/symbol f sym)]
-                   [lit #:when (literal? lit) stx]
-                   )
-                 stx)
-
-  #;(syntax-parse stx
-      #:literals [begin]
-      [(begin stmts ...+) #`(#,(map rec (stmts ...)))]
-      ;[(_ (cond a b) #'"cond!"])
-      )
-
-  #;(syntax-case stx (begin)
-      [(begin stmts ...+) (map rec stmts)]
-      ;[(begin stmts ...+) (lambda (stmts) (map rec stmts))]
-      ;[(_ (cond a b) #'"cond!"])
-      )
+  (datum->syntax
+   stx
+   (match (syntax-e stx)
+     [(list (? is-begin? t) stmts ..1) (cons t (map rec stmts))]
+     [(list (? is-#%app? t) exprs ..1) (cons t (map rec exprs))]
+     [(list (? is-#%dot? t) obj field) (list t (rec obj) field)]
+     [(list expr ...) (map rec expr)]
+     [(? symbol? sym) (resolve-names/symbol f sym)]
+     [(? literal? lit) stx]
+     )
+   stx)
   )
 
 (define builtins (set 'game-quit
