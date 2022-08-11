@@ -1,7 +1,6 @@
 #lang racket
 
-(require syntax/parse
-         "propel-models.rkt"
+(require "propel-models.rkt"
          "propel-syntax.rkt"
          )
 
@@ -13,18 +12,9 @@
 ; - built-in function
 ; - program-defined function
 
-;(struct arg-name (name) #:transparent)
-;(struct builtin-function-name (name) #:transparent)
-(struct func-resolved (name args ret body module) #:transparent)
-
 (define (resolve-names/function f)
   (match f [(function name args ret body module)
-            (func-resolved name
-                           args
-                           ret
-                           (resolve-names f body)
-                           module)]))
-
+            (struct-copy function f [body (resolve-names f body)])]))
 
 (define (is-#%app? stx) (equal? (syntax-e stx) '#%app))
 (define (is-#%dot? stx) (equal? (syntax-e stx) '#%dot))
