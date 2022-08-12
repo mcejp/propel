@@ -32,7 +32,7 @@
      [(list (? is-#%app? t) exprs ..1) (cons t (map rec exprs))]
      [(list (? is-#%dot? t) obj field) (list t (rec obj) field)]
      [(list expr ...) (map rec expr)]
-     [(? symbol? sym) (resolve-names/symbol f sym)]
+     [(? symbol? sym) (resolve-names/symbol f stx sym)]
      [(? literal? lit) stx]
      )
    stx)
@@ -45,14 +45,14 @@
 ; resolve symbol
 ; start by looking in the closest context and proceed outward
 ; return a _bound identifier_ structure
-(define (resolve-names/symbol f sym)
+(define (resolve-names/symbol f stx sym)
   (define arg (lookup-function-argument f sym))
   (define module-func (lookup-module-function (function-module f) sym))
   (cond
     [arg arg]
     [module-func module-func]
     [(set-member? builtins sym) (cons '#%builtin-function sym)]
-    [else (error "unresolved symbol" sym)]
+    [else (raise-syntax-error #f "unresolved symbol" stx)]
     )
   )
 
