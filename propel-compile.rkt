@@ -6,6 +6,7 @@
          "propel-models.rkt"
          "propel-names.rkt"
          "propel-syntax.rkt"
+         "propel-types.rkt"
          )
 
 (require racket/fasl)

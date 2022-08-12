@@ -10,4 +10,19 @@
 
 ### Primitive types
 
+- `void` / `nil`
 - `int`
+
+### Core forms (TBD)
+
+- `(#%app <func> <args>)`
+- `(#%begin <stmt> ...+)`
+- `(#%dot <expr> <name>)`
+- `(#%if <expr> <then> <else>)`
+- `(#%var <scope-num> <name>)`
+
+#### Already deprecated
+
+- `(#%argument <name>)`
+- `(#%builtin-function <name>)`
+- `(#%module-function <name>)`

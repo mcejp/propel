@@ -1,10 +1,19 @@
 #lang racket
 
-(provide is-begin?
+(provide is-#%app?
+         is-#%begin?
+         is-#%dot?
+         is-#%if?
+         is-begin?
          resolve-forms
          )
 
+(define (is-#%app? stx) (equal? (syntax-e stx) '#%app))
+(define (is-#%begin? stx) (equal? (syntax-e stx) '#%begin))
+(define (is-#%dot? stx) (equal? (syntax-e stx) '#%dot))
+(define (is-#%if? stx) (equal? (syntax-e stx) '#%if))
 (define (is-begin? stx) (equal? (syntax-e stx) 'begin))
+(define (is-if? stx) (equal? (syntax-e stx) 'if))
 
 (define (resolve-forms stx)
   (define rec resolve-forms)     ; recurse
@@ -13,8 +22,9 @@
   (datum->syntax
    stx
    (match (syntax-e stx)
-     [(list (? is-begin? _) stmts ..1) (append '(begin) (map rec stmts))]
-     [(? list? exprs) (append '(#%app) (map rec exprs))]
+     [(list (? is-begin? _) stmts ..1) (cons '#%begin (map rec stmts))]
+     [(list (? is-if? _) expr then else) (list '#%if (rec expr) (rec then) (rec else))]
+     [(? list? exprs) (cons '#%app (map rec exprs))]
      ; process symbols: replace `camera.set-pos` with `(#%. camera set-pos)`
      [(? symbol? sym) (map-dot-expression stx (string-split (symbol->string sym) "."))]
      [_ stx]

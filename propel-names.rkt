@@ -16,9 +16,6 @@
   (match f [(function name args ret body module)
             (struct-copy function f [body (resolve-names f body)])]))
 
-(define (is-#%app? stx) (equal? (syntax-e stx) '#%app))
-(define (is-#%dot? stx) (equal? (syntax-e stx) '#%dot))
-
 (define (literal? lit) (or (number? lit)))
 
 (define (resolve-names f stx)
@@ -28,9 +25,10 @@
   (datum->syntax
    stx
    (match (syntax-e stx)
-     [(list (? is-begin? t) stmts ..1) (cons t (map rec stmts))]
      [(list (? is-#%app? t) exprs ..1) (cons t (map rec exprs))]
+     [(list (? is-#%begin? t) stmts ..1) (cons t (map rec stmts))]
      [(list (? is-#%dot? t) obj field) (list t (rec obj) field)]
+     [(list (? is-#%if? t) expr then else) (list t (rec expr) (rec then) (rec else))]
      [(list expr ...) (map rec expr)]
      [(? symbol? sym) (resolve-names/symbol f stx sym)]
      [(? literal? lit) stx]
@@ -40,10 +38,13 @@
 
 (define builtins (set 'game-quit
                       'get-scene-camera
+                      '=
+                      '-
+                      '*
                       ))
 
 ; resolve symbol
-; start by looking in the closest context and proceed outward
+; start by looking in the closest scope and proceed outward
 ; return a _bound identifier_ structure
 (define (resolve-names/symbol f stx sym)
   (define arg (lookup-function-argument f sym))
