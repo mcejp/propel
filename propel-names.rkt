@@ -4,7 +4,8 @@
          "propel-syntax.rkt"
          )
 
-(provide resolve-names/function)
+(provide literal?
+         resolve-names/function)
 
 ;; NAME RESOLUTION
 ; for the moment, any symbol that we encounter can refer either to:
