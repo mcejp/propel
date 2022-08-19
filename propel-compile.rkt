@@ -2,7 +2,6 @@
 
 (require racket/serialize
          racket/struct
-         "flyover.rkt"
          "propel-models.rkt"
          "propel-names.rkt"
          "propel-serialize.rkt"
@@ -11,6 +10,8 @@
          )
 
 (require racket/fasl)
+
+(define propel-module (parse-module "flyover.rkt"))
 
 #;(call-with-output-file "parsed.rkt"
     (λ (out) (write (serialize (module-functions propel-module)) out))
@@ -31,14 +32,7 @@
 
 ;(print module-functions)
 
-(define fs (module-functions propel-module))
-
-; Resolve forms in all functions
-(hash-for-each fs (λ (name f) (hash-set!
-                               fs name (struct-copy
-                                        function f
-                                        [body (resolve-forms (function-body f))]))))
-
+(resolve-forms/module! propel-module)
 (dump "out/20-core-forms.rkt" propel-module)
 
 (define (update-functions updater)

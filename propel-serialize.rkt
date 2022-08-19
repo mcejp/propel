@@ -2,8 +2,7 @@
 
 (provide compress-srcloc-tree ; not clear if we want to export this, but useful for unit test
          serialize-expr
-         serialize-module
-         )
+         serialize-module)
 
 (require "propel-models.rkt"
          "propel-names.rkt"

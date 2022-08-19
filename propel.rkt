@@ -65,6 +65,9 @@
 (define-syntax-rule (module-begin expr ...)
   (#%module-begin
    ;(display "module begin")
+   ; oh no no no NO
+   (hash-clear! (module-functions propel-module))
+
    expr ...
    ;(process-module-functions module-functions)
    (provide propel-module))

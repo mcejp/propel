@@ -5,8 +5,12 @@
          is-#%dot?
          is-#%if?
          is-begin?
+         parse-module
          resolve-forms
+         resolve-forms/module!
          )
+
+(require "propel-models.rkt")
 
 (define (is-#%app? stx) (equal? (syntax-e stx) '#%app))
 (define (is-#%begin? stx) (equal? (syntax-e stx) '#%begin))
@@ -14,6 +18,20 @@
 (define (is-#%if? stx) (equal? (syntax-e stx) '#%if))
 (define (is-begin? stx) (equal? (syntax-e stx) 'begin))
 (define (is-if? stx) (equal? (syntax-e stx) 'if))
+
+(define (parse-module path)
+  (dynamic-require path 'propel-module)
+)
+
+(define (resolve-forms/module! mod)
+  (define fs (module-functions mod))
+
+  ; Resolve forms in all functions
+  (hash-for-each fs (λ (name f) (hash-set!
+                                 fs name (struct-copy
+                                          function f
+                                          [body (resolve-forms (function-body f))]))))
+)
 
 (define (resolve-forms stx)
   (define rec resolve-forms)     ; recurse
