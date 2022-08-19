@@ -21,8 +21,15 @@
 - `(#%if <expr> <then> <else>)`
 - `(#%var <scope-num> <name>)`
 
+Note: All of these must be represented as `#<syntax>` objects, this is quite annoying.
+      Might be better to preserve original syntax objects explicitly as another field in the representation.
+
 #### Already deprecated
 
-- `(#%argument <name>)`
-- `(#%builtin-function <name>)`
+- `(#%argument <name-stx>)`
+- `(#%builtin-function <name-stx>)`
 - `(#%module-function <name>)`
+
+### Open questions
+
+- how to represent types in compiler?

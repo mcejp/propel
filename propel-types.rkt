@@ -12,6 +12,7 @@
   (match f [(function name args ret body module)
             (struct-copy function f [body (resolve-types f body)])]))
 
+(define (is-#%argument? stx) (equal? (syntax-e stx) '#%argument))
 (define (is-#%builtin-function? stx) (equal? (syntax-e stx) '#%builtin-function))
 
 ; in:   untyped AST
@@ -30,20 +31,27 @@
       ]
      [(list (? is-#%app? t) exprs ..1)
       (begin
-        (define callee (car exprs))
-        (define t-callee (rec callee))
-        (define t-args (map rec (cdr exprs)))
-        (check-function-args (function-type-arg-types (car t-callee)) t-args)
+        (define callee (car exprs))               ; callee is #<syntax ...>
+        (define t-callee (rec callee))            ; t-callee is #<(type . #<syntax ...>)>
+        (define t-args (map rec (cdr exprs)))     ; t-args are (list #<(type . #<syntax ...>)> ...)
+        (check-function-args (function-type-arg-types (syntax-e (car (syntax-e t-callee)))) (map syntax-e t-args))
 
         ; (how to deal with overloaded functions...?)
-        (define return-type (function-type-ret-type (car t-callee)))
+        (define return-type (function-type-ret-type (syntax-e (car (syntax-e t-callee)))))
 
         ; construct new, typed function call
         (list return-type '#%t-app t-callee t-args)
         )
       ]
-     [(cons (? is-#%builtin-function? t) name)
-      (error "not implemented: #%builtin-function")
+     [(cons (? is-#%argument? t) name-stx)
+      ; this is already deprecated, but for the moment we play along
+      (define name (syntax-e name-stx))
+      (list (get-argument-type f name name-stx) '#%t-argument name-stx)
+      ]
+     [(cons (? is-#%builtin-function? t) name-stx)
+      ; this is already deprecated, but for the moment we play along
+      (define name (syntax-e name-stx))
+      (list (get-builtin-function-type name name-stx) '#%t-builtin-function name-stx)
       ]
      #;[(list (? is-#%dot? t) obj field)
         ; 1. recurse to obj
@@ -59,12 +67,37 @@
           (list (car t-then) '#%t-if t-expr t-then t-else))
         )
       ]
+      [(? number? lit) (list 'int stx)]
      )
    stx)
   )
 
 (define (check-function-args param-types t-args)
   (for ([p param-types] [arg t-args]) (begin
-                                        (unless (eq? p (car arg)) (error "argument type mismatch"))
+                                        (unless (eq? p (syntax-e (car arg))) (error "argument type mismatch"))
                                         ))
   )
+
+(define builtin-function-types (hash
+  '= (function-type (list 'int 'int) 'int)
+  '* (function-type (list 'int 'int) 'int)
+))
+
+(define (get-argument-type f name stx)
+  (define arg-type (get-argument-type* name (function-args f)))
+  (when (not arg-type) (raise-syntax-error #f "invalid argument" stx))
+  arg-type
+)
+
+(define (get-argument-type* name args)
+  (match args
+    [(cons (list arg-name arg-type) rest) (if (equal? arg-name name) arg-type (get-argument-type* name rest))]
+    ['() #f]
+  )
+)
+
+(define (get-builtin-function-type function-name stx)
+  (hash-ref builtin-function-types
+            function-name
+            (lambda () (raise-syntax-error #f "invalid builtin" stx)))
+)

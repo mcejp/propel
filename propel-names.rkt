@@ -47,26 +47,26 @@
 ; start by looking in the closest scope and proceed outward
 ; return a _bound identifier_ structure
 (define (resolve-names/symbol f stx sym)
-  (define arg (lookup-function-argument f sym))
+  (define arg (lookup-function-argument f sym stx))
   (define module-func (lookup-module-function (function-module f) sym))
   (cond
     [arg arg]
     [module-func module-func]
-    [(set-member? builtins sym) (cons '#%builtin-function sym)]
+    [(set-member? builtins sym) (cons '#%builtin-function stx)]
     [else (raise-syntax-error #f "unresolved symbol" stx)]
     )
   )
 
-(define (lookup-function-argument f sym)
+(define (lookup-function-argument f sym stx)
   ; iterate function arguments
-  (lookup-function-argument* (function-args f) sym)
+  (lookup-function-argument* (function-args f) sym stx)
   )
 
-(define (lookup-function-argument* args sym)
+(define (lookup-function-argument* args sym stx)
   (cond
     [(empty? args) #f]
-    [(equal? (car (car args)) sym) (cons '#%arg-name sym)]
-    [else (lookup-function-argument* (cdr args) sym)])
+    [(equal? (car (car args)) sym) (cons '#%argument stx)]
+    [else (lookup-function-argument* (cdr args) sym stx)])
   )
 
 (define (lookup-module-function mod sym)
