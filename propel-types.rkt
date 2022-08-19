@@ -6,14 +6,13 @@
 
 (provide resolve-types/function)
 
-(struct function-type (arg-types ret-type))
-
 (define (resolve-types/function f)
   (match f [(function name args ret body module)
             (struct-copy function f [body (resolve-types f body)])]))
 
 (define (is-#%argument? stx) (equal? (syntax-e stx) '#%argument))
 (define (is-#%builtin-function? stx) (equal? (syntax-e stx) '#%builtin-function))
+(define (is-#%module-function? stx) (equal? (syntax-e stx) '#%module-function))
 
 ; in:   untyped AST
 ; out:  (cons type AST)
@@ -27,7 +26,7 @@
      [(list (? is-#%begin? t) stmts ..1)
       (let ([t-stmts (map rec stmts)])
         ; create typed #begin block as '(<type> #%t-begin <stmt> ...)
-        (append (list (car (last t-stmts)) '#%t-begin) t-stmts))
+        (append (list (car (syntax-e (last t-stmts))) '#%t-begin) t-stmts))
       ]
      [(list (? is-#%app? t) exprs ..1)
       (begin
@@ -62,12 +61,22 @@
             [t-then (rec then)]
             [t-else (rec else)])
         (begin
-          (unless (= (car t-then) (car t-else)) (error "if: expression type mismatch"))
+          ; this is soo broken broken broken broken!
+          (define t-then-type (syntax-e (car (syntax-e t-then))))
+          (define t-else-type (syntax-e (car (syntax-e t-else))))
+
+          (unless (equal? t-then-type t-else-type)
+                  (raise-syntax-error #f "if: body expression type mismatch" stx))
           ; create typed #if block as '(<type> #%t-if <expr> <then> <else>)
-          (list (car t-then) '#%t-if t-expr t-then t-else))
+          (list t-then-type '#%t-if t-expr t-then t-else))
         )
       ]
-      [(? number? lit) (list 'int stx)]
+     [(cons (? is-#%module-function? t) name-stx)
+      ; this is already deprecated, but for the moment we play along
+      (define name (syntax-e name-stx))
+      (list (get-module-function-type (function-module f) name name-stx) '#%t-module-function name-stx)
+      ]
+     [(? number? lit) (list 'int stx)]
      )
    stx)
   )
@@ -80,6 +89,7 @@
 
 (define builtin-function-types (hash
   '= (function-type (list 'int 'int) 'int)
+  '- (function-type (list 'int 'int) 'int)
   '* (function-type (list 'int 'int) 'int)
 ))
 
@@ -100,4 +110,12 @@
   (hash-ref builtin-function-types
             function-name
             (lambda () (raise-syntax-error #f "invalid builtin" stx)))
+)
+
+(define (get-module-function-type mod function-name stx)
+  (let ([f (hash-ref (module-functions mod)
+                     function-name
+                     (lambda () (raise-syntax-error #f "invalid module function" stx)))])
+    (function-type (map cadr (function-args f)) (function-ret f))
+  )
 )

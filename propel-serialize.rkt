@@ -2,11 +2,13 @@
 
 (provide compress-srcloc-tree ; not clear if we want to export this, but useful for unit test
          serialize-expr
-         serialize-module)
+         serialize-module
+         )
 
 (require "propel-models.rkt"
          "propel-names.rkt"
          "propel-syntax.rkt"
+         racket/serialize
          racket/syntax-srcloc)
 
 (define (serialize-module mod)
@@ -41,6 +43,7 @@
      (match-let ([(cons expr-a srcloc-a) (serialize-expr a)]
                  [(cons expr-b srcloc-b) (serialize-expr b)])
        (cons (cons expr-a expr-b) (list srcloc-a srcloc-b)))]
+    [(? function-type? t) (cons (struct->vector t) (syntax-srcloc stx))]
     [(? literal? lit) (cons lit (syntax-srcloc stx))]
     [(? symbol? sym) (cons sym (syntax-srcloc stx))]))
 

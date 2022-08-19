@@ -33,3 +33,4 @@ Note: All of these must be represented as `#<syntax>` objects, this is quite ann
 ### Open questions
 
 - how to represent types in compiler?
+- why aren't we using `syntax-parse`?

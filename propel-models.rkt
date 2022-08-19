@@ -8,11 +8,16 @@
          function-ret
          function-body
          function-module
+         function-type
+         function-type?
+         function-type-arg-types
+         function-type-ret-type
          module
          module-functions
          )
 
 (struct module (functions) #:transparent)
+(struct function-type (arg-types ret-type) #:transparent)
 
 ; (symbol list symbol syntax)
 (struct function (name args ret body module) #:mutable #:transparent

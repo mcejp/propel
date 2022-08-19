@@ -38,7 +38,7 @@
   (define f #`(function '#,name '#,args '#,ret (quote-syntax #,mapped-form) #f))
   ;#`(module-defun '#,(syntax-e name) (function '#,name '#,args '#,ret #,new-stx))
   (define final-stx (datum->syntax stx (list #'module-defun `(quote ,(syntax-e name)) f)))
-  (print final-stx)
+  ;(println final-stx)
   final-stx
   )
 
