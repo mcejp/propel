@@ -17,7 +17,10 @@
     (match (syntax-e stx)
       ; split the different parts of the syntax
       [(list _defun name args ret body ...)
-       (defun1 stx name args ret (datum->syntax stx (cons 'begin body)))])))
+       (defun1 stx name args ret (datum->syntax stx
+                                                (cons (datum->syntax _defun 'begin _defun) body)
+                                                stx))]
+      )))
 
 ; TODO comments explaining what the body looks like during each step
 (define-for-syntax (defun1 stx name args ret body)

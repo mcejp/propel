@@ -85,4 +85,5 @@
                    (- (srcloc-position tree) (srcloc-position last-srcloc))
                    (srcloc-span tree))
              (struct-copy srcloc tree [line line] [column column])))]
-    [#f (list "N/A" last-srcloc)]))
+    ;[#f (list "N/A" last-srcloc)]
+    ))
