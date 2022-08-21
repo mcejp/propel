@@ -35,7 +35,7 @@
   ;(display new-stx)
 
   ; add to preprocessed function to module function table
-  (define f #`(function '#,name '#,args '#,ret (quote-syntax #,mapped-form) #f))
+  (define f #`(function '#,name '#,args '#,ret (quote-syntax #,mapped-form) #f #f))
   ;#`(module-defun '#,(syntax-e name) (function '#,name '#,args '#,ret #,new-stx))
   (define final-stx (datum->syntax stx (list #'module-defun `(quote ,(syntax-e name)) f)))
   ;(println final-stx)

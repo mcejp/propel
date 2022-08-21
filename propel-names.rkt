@@ -13,8 +13,8 @@
 ; - program-defined function
 
 (define (resolve-names/function f)
-  (match f [(function name args ret body module)
-            (struct-copy function f [body (resolve-names f body)])]))
+  (let ([body (function-body f)])
+       (struct-copy function f [body (resolve-names f body)])))
 
 (define (resolve-names f stx)
   (define rec (curry resolve-names f))     ; recurse

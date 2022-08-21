@@ -16,13 +16,14 @@
       (hash-map functions (λ (name f) (serialize-function f))))))
 
 (define (serialize-function f)
-  (match-let ([(function name args ret body module) f])
+  (match-let ([(function name args ret body body-type-tree module) f])
     (begin
       (define body-ser (serialize-expr body))
       (list name
             args
             ret
             (car body-ser)
+            body-type-tree
             (compress-srcloc-tree (cdr body-ser))))))
 
 ; return (cons expr-tree srcloc-tree)

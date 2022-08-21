@@ -36,6 +36,7 @@
 (dump "out/20-core-forms.rkt" propel-module)
 
 (define (update-functions updater)
+  (define fs (module-functions propel-module))
   (hash-for-each fs (λ (name f) (let ([f* (updater f)])
                                   (begin
                                     ;(println f*)

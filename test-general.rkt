@@ -15,6 +15,7 @@
      ((foo Bar))
      str
      (#%begin (#%dot foo name))
+     #f
      ((,(string->path "/workspace/lisp-experiments/tests/dot.rkt") 2 0 29 46)
       (#f 0 0 0 46)
       ((#f 1 2 34 8) (#f 0 0 0 8) (#f 0 0 0 8) (#f 0 0 0 8)))))))
@@ -30,6 +31,7 @@
      int
      (begin
        (+ n 1))
+      #f
      ((,(string->path "/workspace/lisp-experiments/tests/hello.rkt") 2 0 29 44)
       (#f 0 1 1 5)
       ((#f 1 1 32 7) (#f 0 1 1 1) (#f 0 2 2 1) (#f 0 2 2 1)))))))
