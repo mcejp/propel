@@ -1,6 +1,7 @@
 #lang racket
 
 (require "propel-models.rkt"
+         "propel-names.rkt"
          "propel-syntax.rkt"
          )
 
@@ -10,10 +11,6 @@
   (let ([body (function-body f)])
        (struct-copy function f [body-type-tree (resolve-types f body)])
        ))
-
-(define (is-#%argument? stx) (equal? (syntax-e stx) '#%argument))
-(define (is-#%builtin-function? stx) (equal? (syntax-e stx) '#%builtin-function))
-(define (is-#%module-function? stx) (equal? (syntax-e stx) '#%module-function))
 
 ; in:   AST
 ; out:  (type . subtree)
@@ -27,11 +24,10 @@
       (let ([sub-trees (map rec stmts)])
         (cons (car (last sub-trees)) sub-trees)
         )]
-     [(list (? is-#%app? t) exprs ..1)
+     [(list (? is-#%app? t) callee args ...)
       (begin
-        (define callee (car exprs))               ; callee is #<syntax ...>
-        (define callee-tt (rec callee))          ; t-callee is (type . #<syntax ...>)
-        (define arg-tts (map rec (cdr exprs)))     ; t-args are (list (type . #<syntax ...>) ...)
+        (define callee-tt (rec callee))
+        (define arg-tts (map rec args))
         (check-function-args (function-type-arg-types (car callee-tt)) (map car arg-tts))
 
         ; (how to deal with overloaded functions...?)
