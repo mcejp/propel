@@ -4,7 +4,14 @@
          "propel-syntax.rkt"
          )
 
-(provide resolve-names/function)
+(provide is-#%argument?
+         is-#%builtin-function?
+         is-#%module-function?
+         resolve-names/function)
+
+(define (is-#%argument? stx) (equal? (syntax-e stx) '#%argument))
+(define (is-#%builtin-function? stx) (equal? (syntax-e stx) '#%builtin-function))
+(define (is-#%module-function? stx) (equal? (syntax-e stx) '#%module-function))
 
 ;; NAME RESOLUTION
 ; for the moment, any symbol that we encounter can refer either to:

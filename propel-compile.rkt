@@ -2,6 +2,7 @@
 
 (require racket/serialize
          racket/struct
+         "backend-c++.rkt"
          "propel-models.rkt"
          "propel-names.rkt"
          "propel-serialize.rkt"
@@ -49,3 +50,7 @@
 
 (update-functions resolve-types/function)
 (dump "out/40-types.rkt" propel-module)
+
+(with-output-to-file "out/50-cpp.cpp"
+                     (λ () (compile-module-to-c++ propel-module))
+                     #:exists 'replace)

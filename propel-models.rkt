@@ -7,6 +7,7 @@
          function-args
          function-ret
          function-body
+         function-body-type-tree
          function-module
          function-type
          function-type?
