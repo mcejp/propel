@@ -5,6 +5,7 @@
          is-#%dot?
          is-#%if?
          is-begin?
+         literal?
          parse-module
          resolve-forms
          resolve-forms/module!
@@ -18,6 +19,7 @@
 (define (is-#%if? stx) (equal? (syntax-e stx) '#%if))
 (define (is-begin? stx) (equal? (syntax-e stx) 'begin))
 (define (is-if? stx) (equal? (syntax-e stx) 'if))
+(define (literal? lit) (or (number? lit)))
 
 (define (parse-module path)
   (dynamic-require path 'propel-module)

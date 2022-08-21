@@ -4,8 +4,7 @@
          "propel-syntax.rkt"
          )
 
-(provide literal?
-         resolve-names/function)
+(provide resolve-names/function)
 
 ;; NAME RESOLUTION
 ; for the moment, any symbol that we encounter can refer either to:
@@ -16,8 +15,6 @@
 (define (resolve-names/function f)
   (match f [(function name args ret body module)
             (struct-copy function f [body (resolve-names f body)])]))
-
-(define (literal? lit) (or (number? lit)))
 
 (define (resolve-names f stx)
   (define rec (curry resolve-names f))     ; recurse
