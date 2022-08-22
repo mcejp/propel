@@ -1,6 +1,6 @@
 ## Propel language
 
-Run tests: `raco test test*.rkt`
+Run tests: `PLT_CS_DEBUG=1 raco test test*.rkt`
 
 ```
    Source (DSL in Racket)
