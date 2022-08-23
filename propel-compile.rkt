@@ -12,7 +12,8 @@
 
 (require racket/fasl)
 
-(define propel-module (parse-module "flyover.rkt"))
+; TODO: iterate over all test cases, or better, encapsulate compile flow
+(define propel-module (parse-module "tests/factorial.rkt"))
 
 #;(call-with-output-file "parsed.rkt"
     (λ (out) (write (serialize (module-functions propel-module)) out))

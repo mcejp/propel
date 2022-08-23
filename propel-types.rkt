@@ -28,7 +28,7 @@
       (begin
         (define callee-tt (rec callee))
         (define arg-tts (map rec args))
-        (check-function-args (function-type-arg-types (car callee-tt)) (map car arg-tts))
+        (check-function-args stx (function-type-arg-types (car callee-tt)) (map car arg-tts))
 
         ; (how to deal with overloaded functions...?)
         (define return-type (function-type-ret-type (car callee-tt)))
@@ -73,9 +73,10 @@
      ))
 
 
-(define (check-function-args param-types t-args)
+(define (check-function-args stx param-types t-args)
   (for ([p param-types] [arg t-args]) (begin
-                                        (unless (eq? p arg) (error "argument type mismatch"))
+                                        (unless (eq? p arg)
+                                                (raise-syntax-error #f (format "argument type mismatch: expecting ~a, got ~a" p arg) stx))
                                         ))
   )
 
