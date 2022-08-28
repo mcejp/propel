@@ -75,11 +75,12 @@
 
 
 (define (check-function-args stx param-types t-args)
-  (for ([p param-types] [arg t-args]) (begin
-                                        (unless (eq? p arg)
-                                                (raise-syntax-error #f (format "argument type mismatch: expecting ~a, got ~a" p arg) stx))
-                                        ))
-  )
+  (for ([p param-types] [arg t-args] [index (range 1 (add1 (length t-args)))])
+    (begin
+      (unless (eq? p arg)
+        (raise-syntax-error #f
+                            (format "argument ~a type mismatch: expecting ~a, got ~a" index p arg)
+                            stx)))))
 
 (define (get-argument-type f name stx)
   (define arg-type (get-argument-type* name (function-args f)))
