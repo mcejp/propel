@@ -9,7 +9,7 @@
 (provide is-#%argument?
          is-#%builtin-function?
          is-#%module-function?
-         resolve-names/function)
+         resolve-names/module!)
 
 (define (is-#%argument? stx) (equal? (syntax-e stx) '#%argument))
 (define (is-#%builtin-function? stx) (equal? (syntax-e stx) '#%builtin-function))
@@ -21,13 +21,30 @@
 ; - built-in function
 ; - program-defined function
 
+(define (resolve-names/module! mod)
+  (update-module-types! mod (curry resolve-names/type (module-scope mod)))
+  (update-module-functions mod resolve-names/function)
+)
+
 (define (resolve-names/function f)
   (define outer-scope (module-scope (function-module f)))
 
-  (let ([body (function-body f)])
-       (struct-copy function f [args (map (match-lambda [(list name type) (list name (resolve-type-name outer-scope type))]) (function-args f))]
-                               [ret (resolve-type-name outer-scope (function-ret f))]
-                               [body (resolve-names/form f (function-scope f) body)])))
+  (let ([args (function-args f)] [ret (function-ret f)] [body (function-body f)])
+    (struct-copy function
+                 f
+                 [args
+                  (map (match-lambda
+                         [(list name type) (list name (resolve-type-name outer-scope type))])
+                       args)]
+                 [ret (resolve-type-name outer-scope ret)]
+                 [body (resolve-names/form f (function-scope f) body)])))
+
+(define (resolve-names/type scope type)
+  (match type
+    ;; NB: right now we throw away the #%deftype tag... not good, we want to keep that information
+    [(list '#%deftype type-expr) (resolve-names/type scope type-expr)]
+    [(? symbol? sym) (resolve-type-name scope sym)]
+    ))
 
 (define (resolve-names/form f current-scope stx)
   (define rec (curry resolve-names/form f current-scope))     ; recurse

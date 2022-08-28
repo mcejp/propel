@@ -38,7 +38,7 @@
 (resolve-forms/module! propel-module)
 (dump "out/20-core-forms.rkt" propel-module)
 
-(update-module-functions propel-module resolve-names/function)
+(resolve-names/module! propel-module)
 (dump "out/30-names.rkt" propel-module)
 
 (update-module-functions propel-module resolve-types/function)
