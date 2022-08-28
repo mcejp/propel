@@ -29,21 +29,27 @@
 (define (resolve-names/function f)
   (define outer-scope (module-scope (function-module f)))
 
-  (let ([args (function-args f)] [ret (function-ret f)] [body (function-body f)])
+  (let* ([args (function-args f)]
+         [ret (function-ret f)]
+         [body (function-body f)]
+         ;; these are a poor approximation, we can do better
+         [args-stx body]
+         [ret-stx body])
     (struct-copy function
                  f
                  [args
                   (map (match-lambda
-                         [(list name type) (list name (resolve-type-name outer-scope type))])
+                         [(list name type) (list name (resolve-type-name outer-scope args-stx type))])
                        args)]
-                 [ret (resolve-type-name outer-scope ret)]
+                 [ret (resolve-type-name outer-scope ret-stx ret)]
                  [body (resolve-names/form f (function-scope f) body)])))
 
 (define (resolve-names/type scope type)
+  (define stx #f) ; FIXME
   (match type
     ;; NB: right now we throw away the #%deftype tag... not good, we want to keep that information
     [(list '#%deftype type-expr) (resolve-names/type scope type-expr)]
-    [(? symbol? sym) (resolve-type-name scope sym)]
+    [(? symbol? sym) (resolve-type-name scope stx sym)]
     ))
 
 (define (resolve-names/form f current-scope stx)
@@ -90,10 +96,11 @@
   )
 
 ;; TODO: the names of these functions should be consistent with the above (like resolve-name/...)
-(define (resolve-type-names scope type-names) (map (curry resolve-type-name scope) type-names))
+(define (resolve-type-names scope stx type-names) (map (curry resolve-type-name scope stx) type-names))
 
-(define (resolve-type-name scope type-name)
+(define (resolve-type-name scope stx type-name)
   (define res (scope-try-resolve-type scope type-name))
-  (unless res (error (format "fuuuu ~a" type-name)))
+  ;; in case of an error, quote the failing type literally, because syntax tracking for types is very poor ATM
+  (unless res (raise-syntax-error #f (format "unkown type name ~a" type-name) stx))
   res
 )
