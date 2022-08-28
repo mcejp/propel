@@ -70,6 +70,7 @@
   (#%module-begin
    ;(display "module begin")
    ; oh no no no NO
+   (hash-clear! (module-functions propel-module))
    (hash-clear! (scope-objects (module-scope propel-module)))
 
    expr ...
