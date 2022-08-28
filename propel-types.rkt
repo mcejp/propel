@@ -26,6 +26,8 @@
       (let ([sub-trees (map rec stmts)])
         (cons (car (last sub-trees)) sub-trees)
         )]
+     [(list (? is-#%begin? t))
+      (cons type-V '())]
      [(list (? is-#%app? t) callee args ...)
       (begin
         (define callee-tt (rec callee))

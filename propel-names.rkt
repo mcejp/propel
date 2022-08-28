@@ -60,7 +60,7 @@
    stx
    (match (syntax-e stx)
      [(list (? is-#%app? t) exprs ..1) (cons t (map rec exprs))]
-     [(list (? is-#%begin? t) stmts ..1) (cons t (map rec stmts))]
+     [(list (? is-#%begin? t) stmts ...) (cons t (map rec stmts))]
      [(list (? is-#%dot? t) obj field) (list t (rec obj) field)]
      [(list (? is-#%if? t) expr then else) (list t (rec expr) (rec then) (rec else))]
      [(list expr ...) (map rec expr)]

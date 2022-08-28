@@ -22,7 +22,7 @@
 (define (is-#%if? stx) (equal? (syntax-e stx) '#%if))
 (define (is-begin? stx) (equal? (syntax-e stx) 'begin))
 (define (is-if? stx) (equal? (syntax-e stx) 'if))
-(define (literal? lit) (or (number? lit)))
+(define (literal? lit) (or (boolean? lit) (number? lit)))
 
 (define (parse-module path)
   (dynamic-require path 'propel-module)
@@ -43,7 +43,7 @@
   (datum->syntax
    stx
    (match (syntax-e stx)
-     [(list (? is-begin? _) stmts ..1) (cons '#%begin (map rec stmts))]
+     [(list (? is-begin? _) stmts ...) (cons '#%begin (map rec stmts))]
      [(list (? is-if? _) expr then else) (list '#%if (rec expr) (rec then) (rec else))]
      [(? list? exprs) (cons '#%app (map rec exprs))]
      ; process symbols: replace `camera.set-pos` with `(#%. camera set-pos)`

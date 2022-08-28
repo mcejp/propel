@@ -10,7 +10,8 @@
          scope-try-resolve-symbol
          scope-try-resolve-type
          scope-types
-         type-I)
+         type-I
+         type-V)
 
 (require "propel-models.rkt")
 
@@ -18,6 +19,7 @@
 ;; this is not "by design", more like "for simplicity" (also for generating C headers etc.)
 
 (define type-I '(#%builtin-type I))
+(define type-V '(#%builtin-type V))
 
 ;; scope is defined as a reference to a parent scope + hashmaps of the types and objects (functions, variables) it contains
 
@@ -46,7 +48,7 @@
 
 (define base-scope
   (scope #f
-         (hash 'int type-I)
+         (hash 'int type-I 'Void type-V)
          (hash '=
                ;;(cons II-to-I '(#%builtin-function builtin-eq-ii))
                '(#%builtin-function . builtin-eq-ii)

@@ -34,6 +34,7 @@
 (define (format-type type)
   (cond
     [(equal? type type-I) "int"]
+    [(equal? type type-V) "void"]
     [else (error (format "unhandled type ~a" type))]))
 
 (define (format-function-body f)
@@ -75,6 +76,7 @@
 
          expr))
      (values my-tokens final-expr)]
+    [(list (? is-#%begin? t)) (values '() "")]
     [(list (? is-#%if? t) expr then else)
      (match-define (list expr-tt then-tt else-tt) sub-tts)
 
