@@ -2,6 +2,7 @@
 
 (provide is-#%app?
          is-#%begin?
+         is-#%define?
          is-#%dot?
          is-#%if?
          is-begin?
@@ -18,9 +19,11 @@
 
 (define (is-#%app? stx) (equal? (syntax-e stx) '#%app))
 (define (is-#%begin? stx) (equal? (syntax-e stx) '#%begin))
+(define (is-#%define? stx) (equal? (syntax-e stx) '#%define))
 (define (is-#%dot? stx) (equal? (syntax-e stx) '#%dot))
 (define (is-#%if? stx) (equal? (syntax-e stx) '#%if))
 (define (is-begin? stx) (equal? (syntax-e stx) 'begin))
+(define (is-define? stx) (equal? (syntax-e stx) 'def))
 (define (is-if? stx) (equal? (syntax-e stx) 'if))
 (define (literal? lit) (or (boolean? lit) (number? lit)))
 
@@ -44,6 +47,7 @@
    stx
    (match (syntax-e stx)
      [(list (? is-begin? _) stmts ...) (cons '#%begin (map rec stmts))]
+     [(list (? is-define? _) name value) (list '#%define name (rec value))]
      [(list (? is-if? _) expr then else) (list '#%if (rec expr) (rec then) (rec else))]
      [(? list? exprs) (cons '#%app (map rec exprs))]
      ; process symbols: replace `camera.set-pos` with `(#%. camera set-pos)`

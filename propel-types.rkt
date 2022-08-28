@@ -11,13 +11,13 @@
 
 (define (resolve-types/function f)
   (let ([body (function-body f)])
-       (struct-copy function f [body-type-tree (resolve-types f body)])
+       (struct-copy function f [body-type-tree (resolve-types f (function-scope f) body)])
        ))
 
 ; in:   AST
 ; out:  (type . subtree)
-(define (resolve-types f stx)
-  (define rec (curry resolve-types f))     ; recurse
+(define (resolve-types f current-scope stx)
+  (define rec (curry resolve-types f current-scope))     ; recurse
   ;; (println stx)
   ;stx
 
@@ -48,7 +48,16 @@
       ]
      [(cons (? is-#%builtin-function? t) name-stx)
       (define name (syntax-e name-stx))
-      (cons (get-builtin-function-type name name-stx) #f)
+      (cons (get-builtin-function-type current-scope name-stx name) #f)
+      ]
+     [(list (? is-#%define? t) name-stx value)
+      ;; recurse to value & insert type information
+      (define name (syntax-e name-stx))
+      (define value-tt (rec value))
+      (define value-type (car value-tt))
+
+      (scope-discover-variable-type! current-scope name value-type)
+      (cons type-V value-tt)
       ]
      #;[(list (? is-#%dot? t) obj field)
         ; 1. recurse to obj
@@ -71,6 +80,10 @@
       ; this is already deprecated, but for the moment we play along
       (define name (syntax-e name-stx))
       (cons (get-module-function-type (function-module f) name name-stx) #f)
+      ]
+     [(cons (? is-#%variable? t) name-stx)
+      (define name (syntax-e name-stx))
+      (cons (get-variable-type current-scope name-stx name) #f)
       ]
      [(? number? lit) (cons type-I #f)]
      ))
@@ -97,10 +110,18 @@
   )
 )
 
-(define (get-builtin-function-type function-name stx)
-  (hash-ref builtin-function-types
-            function-name
-            (lambda () (raise-syntax-error #f "invalid builtin" stx)))
+(define (get-builtin-function-type scope stx function-name)
+  (define res (scope-try-resolve-object-type scope function-name))
+  ;; in case of an error, quote the failing type literally, because syntax tracking for types is very poor ATM
+  (unless res (raise-syntax-error #f (format "invalid builtin function ~a (unspecified type)" function-name) stx))
+  res
+)
+
+(define (get-variable-type scope stx var-name)
+  (define res (scope-try-resolve-object-type scope var-name))
+  ;; in case of an error, quote the failing type literally, because syntax tracking for types is very poor ATM
+  (unless res (raise-syntax-error #f (format "couldn't resolve type of variable ~a" var-name) stx))
+  res
 )
 
 (define (get-module-function-type mod function-name stx)

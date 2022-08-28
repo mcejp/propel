@@ -72,11 +72,20 @@
          (if (= index (sub1 (length stmts)))
              (set! my-tokens (append my-tokens tokens))
              (set! my-tokens
+                   ;; TODO: should skip over empty strings
                    (append my-tokens tokens (list (string-append expr ";")))))
 
          expr))
      (values my-tokens final-expr)]
     [(list (? is-#%begin? t)) (values '() "")]
+    [(list (? is-#%define? _) name-stx value)
+     (define value-tt sub-tts)
+     (define-values (value-tokens value-expr) (format-form value value-tt))
+     (define name (syntax-e name-stx))
+     (define value-type (car value-tt))
+
+     (values (flatten (list value-tokens (format "~a ~a = ~a;" (format-type value-type) name value-expr)))
+             "")]
     [(list (? is-#%if? t) expr then else)
      (match-define (list expr-tt then-tt else-tt) sub-tts)
 
@@ -121,6 +130,8 @@
     [(cons (? is-#%builtin-function? t) name-stx)
      (values '() (string-replace (symbol->string (syntax-e name-stx)) "-" "_"))]
     [(cons (? is-#%module-function? t) name-stx)
+     (values '() (symbol->string (syntax-e name-stx)))]
+    [(cons (? is-#%variable? t) name-stx)
      (values '() (symbol->string (syntax-e name-stx)))]
     [(? number? lit) (values '() (number->string lit))]))
 

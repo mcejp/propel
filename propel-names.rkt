@@ -9,11 +9,13 @@
 (provide is-#%argument?
          is-#%builtin-function?
          is-#%module-function?
+         is-#%variable?
          resolve-names/module!)
 
 (define (is-#%argument? stx) (equal? (syntax-e stx) '#%argument))
 (define (is-#%builtin-function? stx) (equal? (syntax-e stx) '#%builtin-function))
 (define (is-#%module-function? stx) (equal? (syntax-e stx) '#%module-function))
+(define (is-#%variable? stx) (equal? (syntax-e stx) '#%variable))
 
 ;; NAME RESOLUTION
 ; for the moment, any symbol that we encounter can refer either to:
@@ -61,6 +63,11 @@
    (match (syntax-e stx)
      [(list (? is-#%app? t) exprs ..1) (cons t (map rec exprs))]
      [(list (? is-#%begin? t) stmts ...) (cons t (map rec stmts))]
+     [(list (? is-#%define? t) name-stx value) (begin
+       (define name (syntax-e name-stx))
+       (scope-insert-variable! current-scope name)
+       (list t name-stx (rec value))
+       )]
      [(list (? is-#%dot? t) obj field) (list t (rec obj) field)]
      [(list (? is-#%if? t) expr then else) (list t (rec expr) (rec then) (rec else))]
      [(list expr ...) (map rec expr)]
