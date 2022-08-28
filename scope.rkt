@@ -31,6 +31,9 @@
     [parent (scope-try-resolve-symbol parent sym)]
     [#t #f]))
 
+;;; result is like:
+;;; (#%deftype int)
+;;; (#%builtin-type I)
 (define (scope-try-resolve-type s sym)
   (define res (hash-ref (scope-types s) sym #f))
   (define parent (scope-parent s))
@@ -43,10 +46,12 @@
 
 (define base-scope
   (scope #f
-         (hash 'int (cons '#%type type-I))
+         (hash 'int type-I)
          (hash '=
                ;;(cons II-to-I '(#%builtin-function builtin-eq-ii))
                '(#%builtin-function . builtin-eq-ii)
+               '+
+               '(#%builtin-function . builtin-add-ii)
                '-
                ;;(cons II-to-I '(#%builtin-function builtin-sub-ii))
                '(#%builtin-function . builtin-sub-ii)
@@ -57,4 +62,11 @@
          #f))
 
 (define builtin-function-types
-  (hash 'builtin-eq-ii II-to-I 'builtin-sub-ii II-to-I 'builtin-mul-ii II-to-I))
+  (hash 'builtin-eq-ii
+        II-to-I
+        'builtin-add-ii
+        II-to-I
+        'builtin-sub-ii
+        II-to-I
+        'builtin-mul-ii
+        II-to-I))

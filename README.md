@@ -35,8 +35,8 @@ Note: All of these must be represented as `#<syntax>` objects, this is quite ann
 ### Open questions
 
 - how to represent types in compiler?
-- why aren't we using `syntax-parse`?
-- usage of pairs vs lists for AST structures
+- why aren't we using `syntax-parse`? -> because we need to execute code, not merely fill a template
+- usage of pairs vs lists for AST structures -> lists get printed more consistently, pairs can get mis-interpreted as list heads
 
 ### Scoping
 

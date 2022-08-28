@@ -1,5 +1,7 @@
 #lang racket
 
+;;; NB: The code that follows is a total disaster.
+
 (require (for-syntax racket/function
                      racket/match
                      )
@@ -11,8 +13,16 @@
 
 (provide (except-out (all-from-out racket) #%module-begin)
          (rename-out [module-begin #%module-begin])
+         deftype
          defun
          )
+
+(define-syntax deftype
+  (lambda (stx)
+    (match (syntax-e stx)
+      [(list _deftype name definition)
+       (datum->syntax stx (list #'module-deftype `(quote ,(syntax-e name)) `(quote ,definition)))
+      ])))
 
 (define-syntax defun
   (lambda (stx)
@@ -60,6 +70,11 @@
 ; oh no no no no
 (define propel-module (module (make-hash) (scope base-scope (make-hash) (make-hash) #t #t)))
 
+(define (module-deftype name type)
+  ;;(hash-set! (module-types propel-module) name type)
+  ;; this is probably wrong... should just put like a marker and then emit a #deftype in the program stream
+  (hash-set! (scope-types (module-scope propel-module)) name (list '#%deftype type)))
+
 (define (module-defun name func)
   (define func-scope (scope (module-scope propel-module) (make-hash) (make-hash) #f #f))
   (define func* (struct-copy function func [module propel-module] [scope func-scope]))
@@ -72,6 +87,7 @@
    ; oh no no no NO
    (hash-clear! (module-functions propel-module))
    (hash-clear! (scope-objects (module-scope propel-module)))
+   (hash-clear! (scope-types (module-scope propel-module)))
 
    expr ...
    ;(process-module-functions module-functions)

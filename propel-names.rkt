@@ -89,10 +89,11 @@
     [else (lookup-function-argument* (cdr args) sym stx)])
   )
 
+;; TODO: the names of these functions should be consistent with the above (like resolve-name/...)
 (define (resolve-type-names scope type-names) (map (curry resolve-type-name scope) type-names))
 
 (define (resolve-type-name scope type-name)
   (define res (scope-try-resolve-type scope type-name))
   (unless res (error (format "fuuuu ~a" type-name)))
-  (cdr res)
+  res
 )
