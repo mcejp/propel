@@ -4,7 +4,9 @@
                      racket/match
                      )
 
+         "module.rkt"
          "propel-models.rkt"
+         "scope.rkt"
          )
 
 (provide (except-out (all-from-out racket) #%module-begin)
@@ -35,7 +37,7 @@
   ;(display new-stx)
 
   ; add to preprocessed function to module function table
-  (define f #`(function '#,name '#,args '#,ret (quote-syntax #,mapped-form) #f #f))
+  (define f #`(function '#,name '#,args '#,ret (quote-syntax #,mapped-form) #f #f #f))
   ;#`(module-defun '#,(syntax-e name) (function '#,name '#,args '#,ret #,new-stx))
   (define final-stx (datum->syntax stx (list #'module-defun `(quote ,(syntax-e name)) f)))
   ;(println final-stx)
@@ -56,17 +58,19 @@
   )
 
 ; oh no no no no
-(define propel-module (module (make-hash)))
+(define propel-module (module (make-hash) (scope base-scope (make-hash) (make-hash) #t #t)))
 
 (define (module-defun name func)
-  (define func* (struct-copy function func (module propel-module)))
-  (hash-set! (module-functions propel-module) name func*))
+  (define func-scope (scope (module-scope propel-module) (make-hash) (make-hash) #f #f))
+  (define func* (struct-copy function func [module propel-module] [scope func-scope]))
+  (hash-set! (module-functions propel-module) name func*)
+  (hash-set! (scope-objects (module-scope propel-module)) name (cons '#%module-function name)))
 
 (define-syntax-rule (module-begin expr ...)
   (#%module-begin
    ;(display "module begin")
    ; oh no no no NO
-   (hash-clear! (module-functions propel-module))
+   (hash-clear! (scope-objects (module-scope propel-module)))
 
    expr ...
    ;(process-module-functions module-functions)

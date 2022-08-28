@@ -2,6 +2,8 @@
 
 (require "propel-models.rkt"
          "propel-syntax.rkt"
+         "module.rkt"
+         "scope.rkt"
          )
 
 (provide is-#%argument?
@@ -20,11 +22,15 @@
 ; - program-defined function
 
 (define (resolve-names/function f)
-  (let ([body (function-body f)])
-       (struct-copy function f [body (resolve-names f body)])))
+  (define outer-scope (module-scope (function-module f)))
 
-(define (resolve-names f stx)
-  (define rec (curry resolve-names f))     ; recurse
+  (let ([body (function-body f)])
+       (struct-copy function f [args (map (match-lambda [(list name type) (list name (resolve-type-name outer-scope type))]) (function-args f))]
+                               [ret (resolve-type-name outer-scope (function-ret f))]
+                               [body (resolve-names/form f (function-scope f) body)])))
+
+(define (resolve-names/form f current-scope stx)
+  (define rec (curry resolve-names/form f current-scope))     ; recurse
   ;(print stx)
   ;stx
   (datum->syntax
@@ -35,29 +41,21 @@
      [(list (? is-#%dot? t) obj field) (list t (rec obj) field)]
      [(list (? is-#%if? t) expr then else) (list t (rec expr) (rec then) (rec else))]
      [(list expr ...) (map rec expr)]
-     [(? symbol? sym) (resolve-names/symbol f stx sym)]
+     [(? symbol? sym) (resolve-names/symbol f stx sym current-scope)]
      [(? literal? lit) stx]
      )
    stx)
   )
 
-(define builtins (set 'game-quit
-                      'get-scene-camera
-                      '=
-                      '-
-                      '*
-                      ))
-
 ; resolve symbol
 ; start by looking in the closest scope and proceed outward
 ; return a _bound identifier_ structure
-(define (resolve-names/symbol f stx sym)
+(define (resolve-names/symbol f stx sym current-scope)
   (define arg (lookup-function-argument f sym stx))
-  (define module-func (lookup-module-function (function-module f) sym))
+  (define from-scope (scope-try-resolve-symbol current-scope sym))
   (cond
+    [from-scope from-scope]
     [arg arg]
-    [module-func module-func]
-    [(set-member? builtins sym) (cons '#%builtin-function stx)]
     [else (raise-syntax-error #f "unresolved symbol" stx)]
     )
   )
@@ -74,7 +72,10 @@
     [else (lookup-function-argument* (cdr args) sym stx)])
   )
 
-(define (lookup-module-function mod sym)
-  (define func (hash-ref (module-functions mod) sym #f))
-  (if func (cons '#%module-function sym) #f)
-  )
+(define (resolve-type-names scope type-names) (map (curry resolve-type-name scope) type-names))
+
+(define (resolve-type-name scope type-name)
+  (define res (scope-try-resolve-type scope type-name))
+  (unless res (error (format "fuuuu ~a" type-name)))
+  (cdr res)
+)

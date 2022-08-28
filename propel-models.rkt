@@ -13,12 +13,10 @@
          function-type?
          function-type-arg-types
          function-type-ret-type
-         module
-         module-functions
+         function-scope
          )
 
-(struct module (functions) #:transparent)
 (struct function-type (arg-types ret-type) #:transparent)
 
 ; (symbol list symbol syntax list module)
-(struct function (name args ret body body-type-tree module) #:transparent)
+(struct function (name args ret body body-type-tree module scope) #:transparent)

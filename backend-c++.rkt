@@ -4,32 +4,37 @@
 
 (require "propel-models.rkt"
          "propel-names.rkt"
-         "propel-syntax.rkt")
+         "propel-syntax.rkt"
+         "module.rkt"
+         "scope.rkt")
 
 (define (compile-module-to-c++ mod)
-  ; iterate functions, generate C++ prototypes
-  (define fs (module-functions mod))
-  (hash-for-each fs
-                 (λ (name f)
-                   (begin
-                     (printf "~a;\n" (format-function-prototype f)))))
+  ;; iterate functions, generate C++ prototypes
+  (iterate-module-functions
+   mod
+   (λ (f) (printf "~a;\n" (format-function-prototype f))))
   (newline)
-  (hash-for-each fs
-                 (λ (name f)
-                   (begin
-                     (printf "~a {\n" (format-function-prototype f))
-                     (format-function-body f)
-                     (printf "}\n")))))
+  (iterate-module-functions mod
+                            (λ (f)
+                              (begin
+                                (printf "~a {\n" (format-function-prototype f))
+                                (format-function-body f)
+                                (printf "}\n")))))
 
 (define (format-function-prototype f)
   (define name (function-name f))
   (define ret-type (function-ret f))
   (define param-list-str
     (string-join (map format-parameter-prototype (function-args f)) ", "))
-  (format "~a ~a(~a)" ret-type name param-list-str))
+  (format "~a ~a(~a)" (format-type ret-type) name param-list-str))
 
 (define (format-parameter-prototype prm)
-  (match-let ([(list name type) prm]) (format "~a ~a" type name)))
+  (match-let ([(list name type) prm]) (format "~a ~a" (format-type type) name)))
+
+(define (format-type type)
+  (cond
+    [(equal? type type-I) "int"]
+    [else (error (format "unhandled type ~a" type))]))
 
 (define (format-function-body f)
   (define-values (tokens final-expr)
@@ -44,7 +49,7 @@
 
 (define (make-placeholder-variable type)
   (define name "$placeholder$") ; FIXME
-  (values (format "~a ~a;" type name) name))
+  (values (format "~a ~a;" (format-type type) name) name))
 
 ;; Return a pair of
 ;; 1. a list of _tokens_, each being one of "{", "}" or other string representing one line of source code
@@ -112,7 +117,7 @@
     [(cons (? is-#%argument? t) name-stx)
      (values '() (symbol->string (syntax-e name-stx)))]
     [(cons (? is-#%builtin-function? t) name-stx)
-     (values '() (format "builtin_~a" (symbol->string (syntax-e name-stx))))]
+     (values '() (string-replace (symbol->string (syntax-e name-stx)) "-" "_"))]
     [(cons (? is-#%module-function? t) name-stx)
      (values '() (symbol->string (syntax-e name-stx)))]
     [(? number? lit) (values '() (number->string lit))]))

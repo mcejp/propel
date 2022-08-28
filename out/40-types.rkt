@@ -1,30 +1,45 @@
 ((factorial
-  ((n int))
-  int
+  ((n (#%builtin-type I)))
+  (#%builtin-type I)
   (#%begin
    (#%if
-    (#%app (#%builtin-function . =) (#%argument . n) 0)
+    (#%app (#%builtin-function . builtin-eq-ii) (#%argument . n) 0)
     1
     (#%app
-     (#%builtin-function . *)
+     (#%builtin-function . builtin-mul-ii)
      (#%argument . n)
      (#%app
       (#%module-function . factorial)
-      (#%app (#%builtin-function . -) (#%argument . n) 1)))))
-  (int
-   (int
-    (int (#(struct:function-type (int int) int) . #f) (int . #f) (int . #f))
-    (int . #f)
-    (int
-     (#(struct:function-type (int int) int) . #f)
-     (int . #f)
-     (int
-      (#(struct:function-type (int) int) . #f)
-      (int
-       (#(struct:function-type (int int) int) . #f)
-       (int . #f)
-       (int . #f))))))
-  ((#<path:/workspace/lisp-experiments/flyover.rkt> 27 0 503 86)
+      (#%app (#%builtin-function . builtin-sub-ii) (#%argument . n) 1)))))
+  ((#%builtin-type I)
+   ((#%builtin-type I)
+    ((#%builtin-type I)
+     (#(struct:function-type
+        ((#%builtin-type I) (#%builtin-type I))
+        (#%builtin-type I))
+      .
+      #f)
+     ((#%builtin-type I) . #f)
+     ((#%builtin-type I) . #f))
+    ((#%builtin-type I) . #f)
+    ((#%builtin-type I)
+     (#(struct:function-type
+        ((#%builtin-type I) (#%builtin-type I))
+        (#%builtin-type I))
+      .
+      #f)
+     ((#%builtin-type I) . #f)
+     ((#%builtin-type I)
+      (#(struct:function-type ((#%builtin-type I)) (#%builtin-type I)) . #f)
+      ((#%builtin-type I)
+       (#(struct:function-type
+          ((#%builtin-type I) (#%builtin-type I))
+          (#%builtin-type I))
+        .
+        #f)
+       ((#%builtin-type I) . #f)
+       ((#%builtin-type I) . #f))))))
+  ((#<path:/workspace/lisp-experiments/tests/factorial.rkt> 2 0 29 86)
    (#f 0 0 0 86)
    ((#f 1 2 33 52)
     (#f 0 0 0 52)

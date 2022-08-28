@@ -1,8 +1,10 @@
 #lang racket
 
-(require "propel-models.rkt"
+(require "module.rkt"
+         "propel-models.rkt"
          "propel-names.rkt"
          "propel-syntax.rkt"
+         "scope.rkt"
          )
 
 (provide resolve-types/function)
@@ -16,7 +18,7 @@
 ; out:  (type . subtree)
 (define (resolve-types f stx)
   (define rec (curry resolve-types f))     ; recurse
-  ;(print stx)
+  ;; (println stx)
   ;stx
 
    (match (syntax-e stx)
@@ -43,7 +45,6 @@
       (cons (get-argument-type f name name-stx) #f)
       ]
      [(cons (? is-#%builtin-function? t) name-stx)
-      ; this is already deprecated, but for the moment we play along
       (define name (syntax-e name-stx))
       (cons (get-builtin-function-type name name-stx) #f)
       ]
@@ -69,7 +70,7 @@
       (define name (syntax-e name-stx))
       (cons (get-module-function-type (function-module f) name name-stx) #f)
       ]
-     [(? number? lit) (cons 'int #f)]
+     [(? number? lit) (cons type-I #f)]
      ))
 
 
@@ -79,12 +80,6 @@
                                                 (raise-syntax-error #f (format "argument type mismatch: expecting ~a, got ~a" p arg) stx))
                                         ))
   )
-
-(define builtin-function-types (hash
-  '= (function-type (list 'int 'int) 'int)
-  '- (function-type (list 'int 'int) 'int)
-  '* (function-type (list 'int 'int) 'int)
-))
 
 (define (get-argument-type f name stx)
   (define arg-type (get-argument-type* name (function-args f)))

@@ -11,7 +11,10 @@
          resolve-forms/module!
          )
 
-(require "propel-models.rkt")
+(require "propel-models.rkt"
+         "module.rkt"
+         "scope.rkt"
+)
 
 (define (is-#%app? stx) (equal? (syntax-e stx) '#%app))
 (define (is-#%begin? stx) (equal? (syntax-e stx) '#%begin))
@@ -26,14 +29,12 @@
 )
 
 (define (resolve-forms/module! mod)
-  (define fs (module-functions mod))
-
-  ; Resolve forms in all functions
-  (hash-for-each fs (λ (name f) (hash-set!
-                                 fs name (struct-copy
-                                          function f
-                                          [body (resolve-forms (function-body f))]))))
-)
+  (update-module-functions mod (λ (f) (begin
+    (struct-copy
+      function f
+      [body (resolve-forms (function-body f))])
+      )))
+  )
 
 (define (resolve-forms stx)
   (define rec resolve-forms)     ; recurse

@@ -29,10 +29,19 @@ Note: All of these must be represented as `#<syntax>` objects, this is quite ann
 #### Already deprecated
 
 - `(#%argument <name-stx>)`
-- `(#%builtin-function <name-stx>)`
+- `(#%builtin-function <name-stx>)` -- maybe we *do* want this, because it tells us how to figure out the function signature
 - `(#%module-function <name>)`
 
 ### Open questions
 
 - how to represent types in compiler?
 - why aren't we using `syntax-parse`?
+- usage of pairs vs lists for AST structures
+
+### Scoping
+
+- for now, it is not very elegant:
+  - types can be built-in or module-level
+  - functions can be built-in or module-level (functions names are _not_ values)
+  - (constants can be built-in or module-level or local)
+  - variables can be built-in or module-level or arguments or local

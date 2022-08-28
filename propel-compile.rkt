@@ -3,6 +3,7 @@
 (require racket/serialize
          racket/struct
          "backend-c++.rkt"
+         "module.rkt"
          "propel-models.rkt"
          "propel-names.rkt"
          "propel-serialize.rkt"
@@ -37,19 +38,10 @@
 (resolve-forms/module! propel-module)
 (dump "out/20-core-forms.rkt" propel-module)
 
-(define (update-functions updater)
-  (define fs (module-functions propel-module))
-  (hash-for-each fs (λ (name f) (let ([f* (updater f)])
-                                  (begin
-                                    ;(println f*)
-                                    (hash-set! fs name f*))
-                                    ))))
-
-
-(update-functions resolve-names/function)
+(update-module-functions propel-module resolve-names/function)
 (dump "out/30-names.rkt" propel-module)
 
-(update-functions resolve-types/function)
+(update-module-functions propel-module resolve-types/function)
 (dump "out/40-types.rkt" propel-module)
 
 (with-output-to-file "out/50-cpp.cpp"

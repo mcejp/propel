@@ -4,30 +4,36 @@
          serialize-expr
          serialize-module)
 
-(require "propel-models.rkt"
+(require "module.rkt"
+         "propel-models.rkt"
          "propel-names.rkt"
          "propel-syntax.rkt"
+         "scope.rkt"
          racket/serialize
          racket/syntax-srcloc)
 
 (define (serialize-module mod)
-  (match-let ([(module functions) mod])
+  (match-let ([(module functions scope
+                 ) mod])
     (begin
       (hash-map functions (λ (name f) (serialize-function f))))))
 
 (define (serialize-function f)
-  (match-let ([(function name args ret body body-type-tree module) f])
+  (match-let ([(function name args ret body body-type-tree module scope) f])
     (begin
+      ;; (printf "serialize-func: body ~a\n" body)
       (define body-ser (serialize-expr body))
       (list name
             args
             ret
             (car body-ser)
             body-type-tree
+            ;; TODO scope
             (compress-srcloc-tree (cdr body-ser))))))
 
 ; return (cons expr-tree srcloc-tree)
 (define (serialize-expr stx)
+  ;; (printf "serialize-expr: ~a\n" stx)
   (match (syntax-e stx)
     [(list form ...)
      (begin
