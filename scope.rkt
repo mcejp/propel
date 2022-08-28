@@ -9,6 +9,7 @@
          scope-objects
          scope-try-resolve-symbol
          scope-try-resolve-type
+         scope-types
          type-I)
 
 (require "propel-models.rkt")

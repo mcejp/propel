@@ -15,8 +15,10 @@
 (define (serialize-module mod)
   (match-let ([(module functions scope
                  ) mod])
-    (begin
-      (hash-map functions (λ (name f) (serialize-function f))))))
+    ;; This is totally weird... we should not be pulling stuff out of the scope.
+    ;; Should just serialize the whole thing if that's what's right.
+    (append (hash-map (scope-types scope) (λ (name f) (serialize-type name f)))
+            (hash-map functions (λ (name f) (serialize-function f))))))
 
 (define (serialize-function f)
   (match-let ([(function name args ret body body-type-tree module scope) f])
@@ -96,3 +98,6 @@
              (struct-copy srcloc tree [line line] [column column])))]
     ;[#f (list "N/A" last-srcloc)]
     ))
+
+(define (serialize-type name t)
+  (list name t))
