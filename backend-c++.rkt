@@ -84,8 +84,11 @@
      (define name (syntax-e name-stx))
      (define value-type (car value-tt))
 
-     (values (flatten (list value-tokens (format "~a ~a = ~a;" (format-type value-type) name value-expr)))
-             "")]
+     (values
+      (flatten
+       (list value-tokens
+             (format "~a ~a = ~a;" (format-type value-type) name value-expr)))
+      "")]
     [(list (? is-#%if? t) expr then else)
      (match-define (list expr-tt then-tt else-tt) sub-tts)
 
@@ -131,8 +134,11 @@
      (values '() (string-replace (symbol->string (syntax-e name-stx)) "-" "_"))]
     [(cons (? is-#%module-function? t) name-stx)
      (values '() (symbol->string (syntax-e name-stx)))]
-    [(cons (? is-#%variable? t) name-stx)
-     (values '() (symbol->string (syntax-e name-stx)))]
+    [(list (? is-#%scoped-var? t) level-stx name-stx)
+     (values '()
+             (make-scoped-name
+              (syntax-e level-stx)
+              (syntax-e name-stx)))] ; FIXME: resolve absolute name
     [(? number? lit) (values '() (number->string lit))]))
 
 (define (print-tokens tokens indent)
@@ -156,3 +162,6 @@
 
 (define (print-indent indent)
   (display (string-append* (make-list indent "  "))))
+
+(define (make-scoped-name level name)
+  (format "scope~a_~a" level name))

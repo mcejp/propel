@@ -9,13 +9,13 @@
 (provide is-#%argument?
          is-#%builtin-function?
          is-#%module-function?
-         is-#%variable?
+         is-#%scoped-var?
          resolve-names/module!)
 
 (define (is-#%argument? stx) (equal? (syntax-e stx) '#%argument))
 (define (is-#%builtin-function? stx) (equal? (syntax-e stx) '#%builtin-function))
 (define (is-#%module-function? stx) (equal? (syntax-e stx) '#%module-function))
-(define (is-#%variable? stx) (equal? (syntax-e stx) '#%variable))
+(define (is-#%scoped-var? stx) (equal? (syntax-e stx) '#%scoped-var))
 
 ;; NAME RESOLUTION
 ; for the moment, any symbol that we encounter can refer either to:

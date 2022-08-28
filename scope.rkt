@@ -8,7 +8,7 @@
          scope-discover-variable-type!
          scope-insert-variable!
          scope-objects
-         scope-try-resolve-object-type
+         scope-lookup-object-type
          scope-try-resolve-symbol
          scope-try-resolve-type
          scope-types
@@ -26,15 +26,17 @@
 ;; scope is defined as a reference to a parent scope + hashmaps of the types and objects (functions, variables) it contains
 
 (struct scope
-        (parent types
+        (parent level
+                types
                 objects
                 object-types
                 allows-new-types
                 allows-new-functions))
 
 (define (scope-insert-variable! s name)
-  ;; FIXME: must check for redefinition!!!!
-  (hash-set! (scope-objects s) name (cons '#%variable name)))
+  (when (hash-has-key? (scope-objects s) name)
+    (error 'scope-insert-variable! "redefinition of ~a" name))
+  (hash-set! (scope-objects s) name (list '#%scoped-var (scope-level s) name)))
 
 (define (scope-discover-variable-type! s name type)
   (unless (hash-has-key? (scope-objects s) name)
@@ -42,13 +44,10 @@
 
   (hash-set! (scope-object-types s) name type))
 
-(define (scope-try-resolve-object-type s sym)
-  (define res (hash-ref (scope-object-types s) sym #f))
-  (define parent (scope-parent s))
-  (cond
-    [res res]
-    [parent (scope-try-resolve-object-type parent sym)]
-    [#t #f]))
+(define (scope-lookup-object-type s level sym)
+  (if (= (scope-level s) level)
+      (hash-ref (scope-object-types s) sym #f)
+      (scope-lookup-object-type (scope-parent s) level sym)))
 
 (define (scope-try-resolve-symbol s sym)
   (define res (hash-ref (scope-objects s) sym #f))
@@ -73,6 +72,7 @@
 
 (define base-scope
   (scope #f
+         0
          (hash 'int type-I 'Void type-V)
          (hash '=
                ;;(cons II-to-I '(#%builtin-function builtin-eq-ii))

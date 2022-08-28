@@ -3,5 +3,5 @@
 (defun add ([a int] [b int]) int
   (def left a)
   (def right b)
-  (def sum (+ a b))
+  (def sum (+ left right))
   sum)

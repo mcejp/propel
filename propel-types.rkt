@@ -81,9 +81,10 @@
       (define name (syntax-e name-stx))
       (cons (get-module-function-type (function-module f) name name-stx) #f)
       ]
-     [(cons (? is-#%variable? t) name-stx)
+     [(list (? is-#%scoped-var? t) level-stx name-stx)
+      (define level (syntax-e level-stx))   ; silly that we have to do this...
       (define name (syntax-e name-stx))
-      (cons (get-variable-type current-scope name-stx name) #f)
+      (cons (get-variable-type current-scope name-stx level name) #f)
       ]
      [(? number? lit) (cons type-I #f)]
      ))
@@ -111,14 +112,14 @@
 )
 
 (define (get-builtin-function-type scope stx function-name)
-  (define res (scope-try-resolve-object-type scope function-name))
+  (define res (scope-lookup-object-type scope 0 function-name))
   ;; in case of an error, quote the failing type literally, because syntax tracking for types is very poor ATM
   (unless res (raise-syntax-error #f (format "invalid builtin function ~a (unspecified type)" function-name) stx))
   res
 )
 
-(define (get-variable-type scope stx var-name)
-  (define res (scope-try-resolve-object-type scope var-name))
+(define (get-variable-type scope stx level var-name)
+  (define res (scope-lookup-object-type scope level var-name))
   ;; in case of an error, quote the failing type literally, because syntax tracking for types is very poor ATM
   (unless res (raise-syntax-error #f (format "couldn't resolve type of variable ~a" var-name) stx))
   res
