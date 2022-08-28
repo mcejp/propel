@@ -1,8 +1,10 @@
 # List the start up tasks. Learn more https://www.gitpod.io/docs/config-start-tasks/
 tasks:
-  - init: |
+  # Before-task seems to take less time than building a custom Docker image
+  - before: |
       wget https://download.racket-lang.org/installers/8.6/racket-8.6-x86_64-linux-cs.sh
       sudo sh racket-8.6-x86_64-linux-cs.sh --unix-style --dest /usr/
+      rm racket-8.6-x86_64-linux-cs.sh
       raco pkg install --auto fmt racket-langserver
 
 vscode:
