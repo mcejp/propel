@@ -28,7 +28,7 @@
 (define (literal? lit) (or (boolean? lit) (number? lit)))
 
 (define (parse-module path)
-  (dynamic-require path 'propel-module)
+  (dynamic-require path 'propel-module-stx)
 )
 
 (define (resolve-forms/module! mod)

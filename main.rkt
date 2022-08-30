@@ -8,7 +8,8 @@
          "propel-names.rkt"
          "propel-serialize.rkt"
          "propel-syntax.rkt"
-         "propel-types.rkt")
+         "propel-types.rkt"
+         "scope.rkt")
 
 (require racket/fasl)
 
@@ -16,8 +17,59 @@
   (when intermediate-output-dir
     (make-directory* intermediate-output-dir))
 
-  ; TODO: iterate over all test cases, or better, encapsulate compile flow
-  (define propel-module (parse-module path))
+  (define propel-module-stx (parse-module path))
+
+  ; convert module syntax into legacy module structure
+
+  (define (module-legacy-parse stx)
+    (define propel-module
+      (module (make-hash)
+              (scope base-scope 1 (make-hash) (make-hash) (make-hash) #t #t)
+        ))
+
+    (define (defun1 stx name-stx args-stx ret-stx body-stx)
+      (define func-scope
+        (scope (module-scope propel-module)
+               2
+               (make-hash)
+               (make-hash)
+               (make-hash)
+               #f
+               #f))
+      (define name (syntax->datum name-stx))
+      (define args (syntax->datum args-stx)) ; bad
+      (define ret (syntax->datum ret-stx)) ; baaad
+      (define func
+        (function name args ret body-stx #f propel-module func-scope))
+      (hash-set! (module-functions propel-module) name func)
+      (hash-set! (scope-objects (module-scope propel-module))
+                 name
+                 (cons '#%module-function name)))
+
+    (define (is-defun? stx)
+      (equal? (syntax-e stx) 'defun))
+    (define (is-deftype? stx)
+      (equal? (syntax-e stx) 'deftype))
+
+    (for ([stx (syntax-e propel-module-stx)])
+      (match (syntax-e stx)
+        [(list (? is-defun? t) name args ret body ...)
+         (defun1
+          stx
+          name
+          args
+          ret
+          (datum->syntax stx (cons (datum->syntax t 'begin t) body) stx))]
+        [(list (? is-deftype? t) name definition)
+         ;;(hash-set! (module-types propel-module) name type)
+         ;; this is probably wrong... should just put like a marker and then emit a #deftype in the program stream
+         (hash-set! (scope-types (module-scope propel-module))
+                    (syntax->datum name) ; not great
+                    (list '#%deftype (syntax->datum definition) ; bad!
+                          ))]))
+    propel-module)
+
+  (define propel-module (module-legacy-parse propel-module-stx))
 
   #;(call-with-output-file
      "parsed.rkt"
