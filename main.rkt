@@ -63,4 +63,5 @@
    "50-cpp.cpp"
    (λ () (compile-module-to-c++ propel-module))))
 
-(compile-propel-module "tests/factorial.rkt" "out")
+(for ([testcase '("def-local" "deftype" "factorial" "hello")])
+  (compile-propel-module (~a "tests/" testcase ".rkt") (~a "out/" testcase)))
