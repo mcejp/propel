@@ -7,6 +7,7 @@
          scope
          scope-discover-variable-type!
          scope-insert-variable!
+         scope-object-types
          scope-objects
          scope-lookup-object-type
          scope-try-resolve-symbol

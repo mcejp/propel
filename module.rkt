@@ -1,9 +1,7 @@
 #lang racket
 
 (provide iterate-module-functions
-         module
-         module-functions
-         module-scope
+         (struct-out module)
          update-module-functions
          update-module-types!)
 
@@ -12,7 +10,7 @@
 
 ;;; this is super messed up in that we list functions directly,
 ;;; but types (which may be reference by functions) are inside the module-level scope
-(struct module (functions scope) #:transparent)
+(struct module (functions scope body) #:mutable #:transparent)
 
 (define (iterate-module-functions mod cb)
   (define fns (module-functions mod))

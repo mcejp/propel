@@ -8,12 +8,14 @@
 
 (provide is-#%argument?
          is-#%builtin-function?
+         is-#%external-function?
          is-#%module-function?
          is-#%scoped-var?
          resolve-names/module!)
 
 (define (is-#%argument? stx) (equal? (syntax-e stx) '#%argument))
 (define (is-#%builtin-function? stx) (equal? (syntax-e stx) '#%builtin-function))
+(define (is-#%external-function? stx) (equal? (syntax-e stx) '#%external-function))
 (define (is-#%module-function? stx) (equal? (syntax-e stx) '#%module-function))
 (define (is-#%scoped-var? stx) (equal? (syntax-e stx) '#%scoped-var))
 
@@ -24,9 +26,14 @@
 ; - program-defined function
 
 (define (resolve-names/module! mod)
+  (set-module-body! mod (resolve-names/form #f (module-scope mod) (module-body mod)))
   (update-module-types! mod (curry resolve-names/type (module-scope mod)))
   (update-module-functions mod resolve-names/function)
 )
+
+(define (resolve-names/types-in-arg-list scope args-stx)
+  (map (lambda (arg) (match (syntax-e arg) [(list name-stx type-stx) (list name-stx (resolve-type-name scope type-stx (syntax->datum type-stx)))]))
+       (syntax-e args-stx)))
 
 (define (resolve-names/function f)
   (define outer-scope (module-scope (function-module f)))
@@ -39,10 +46,7 @@
          [ret-stx body])
     (struct-copy function
                  f
-                 [args
-                  (map (match-lambda
-                         [(list name type) (list name (resolve-type-name outer-scope args-stx type))])
-                       args)]
+                 [args (resolve-names/types-in-arg-list outer-scope (datum->syntax args-stx args args-stx))]
                  [ret (resolve-type-name outer-scope ret-stx ret)]
                  [body (resolve-names/form f (function-scope f) body)])))
 
@@ -54,9 +58,17 @@
     [(? symbol? sym) (resolve-type-name scope stx sym)]
     ))
 
+(define (resolve-names/type-stx scope stx)
+  (match (syntax-e stx)
+    ;; NB: right now we throw away the #%deftype tag... not good, we want to keep that information
+    ;[(list '#%deftype type-expr) (resolve-names/type scope type-expr)]
+    [(? symbol? sym) (resolve-type-name scope stx sym)]
+    ))
+
 (define (resolve-names/form f current-scope stx)
   (define rec (curry resolve-names/form f current-scope))     ; recurse
-  ;(print stx)
+
+  ;(printf "resolve-names/form ~a\n" stx)
   ;stx
   (datum->syntax
    stx
@@ -69,7 +81,13 @@
        (list t name-stx (rec value))
        )]
      [(list (? is-#%dot? t) obj field) (list t (rec obj) field)]
+     [(list (? is-#%external-function? t) name-stx args-stx ret-stx)
+      (list t name-stx
+        (resolve-names/types-in-arg-list current-scope args-stx)
+        (resolve-names/type-stx current-scope ret-stx))]
      [(list (? is-#%if? t) expr then else) (list t (rec expr) (rec then) (rec else))]
+     [(list (? is-defun? t) name args ret body ...) 0]      ; !!!!
+     [(list (? is-deftype? t) name definition) 0]           ; !!!!
      [(list expr ...) (map rec expr)]
      [(? symbol? sym) (resolve-names/symbol f stx sym current-scope)]
      [(? literal? lit) stx]
@@ -81,7 +99,7 @@
 ; start by looking in the closest scope and proceed outward
 ; return a _bound identifier_ structure
 (define (resolve-names/symbol f stx sym current-scope)
-  (define arg (lookup-function-argument f sym stx))
+  (define arg (if f (lookup-function-argument f sym stx) #f))
   (define from-scope (scope-try-resolve-symbol current-scope sym))
   (cond
     [from-scope from-scope]

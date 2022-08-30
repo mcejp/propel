@@ -7,7 +7,8 @@
          "scope.rkt"
          )
 
-(provide resolve-types/function)
+(provide resolve-types
+         resolve-types/function)
 
 (define (resolve-types/function f)
   (let ([body (function-body f)])
@@ -63,6 +64,13 @@
         ; 1. recurse to obj
         ; 2. resolve field
         ]
+     [(list (? is-#%external-function? t) name-stx args-stx ret-stx)
+      (define name (syntax-e name-stx))
+      (define args (syntax->datum args-stx))
+      (define ret (syntax->datum ret-stx))
+
+      (cons (function-type (map cadr args) ret) #f)
+      ]
      [(list (? is-#%if? t) expr then else)
       (let ([expr-tt (rec expr)]
             [then-tt (rec then)]
@@ -93,7 +101,7 @@
 (define (check-function-args stx param-types t-args)
   (for ([p param-types] [arg t-args] [index (range 1 (add1 (length t-args)))])
     (begin
-      (unless (eq? p arg)
+      (unless (equal? p arg)
         (raise-syntax-error #f
                             (format "argument ~a type mismatch: expecting ~a, got ~a" index p arg)
                             stx)))))
@@ -104,9 +112,12 @@
   arg-type
 )
 
+(define (coerce-to-not-syntax thing)
+  (if (syntax? thing) (syntax-e thing) thing))
+
 (define (get-argument-type* name args)
   (match args
-    [(cons (list arg-name arg-type) rest) (if (equal? arg-name name) arg-type (get-argument-type* name rest))]
+    [(cons (list arg-name arg-type) rest) (if (equal? (coerce-to-not-syntax arg-name) name) arg-type (get-argument-type* name rest))]
     ['() #f]
   )
 )

@@ -29,7 +29,8 @@
   (format "~a ~a(~a)" (format-type ret-type) name param-list-str))
 
 (define (format-parameter-prototype prm)
-  (match-let ([(list name type) prm]) (format "~a ~a" (format-type type) name)))
+  (match-let ([(list name-stx type) prm])
+    (format "~a ~a" (format-type type) (syntax-e name-stx))))
 
 (define (format-type type)
   (cond

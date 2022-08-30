@@ -6,6 +6,9 @@
          is-#%dot?
          is-#%if?
          is-begin?
+         is-decl-external-fun?
+         is-deftype?
+         is-defun?
          literal?
          parse-module
          resolve-forms
@@ -23,7 +26,10 @@
 (define (is-#%dot? stx) (equal? (syntax-e stx) '#%dot))
 (define (is-#%if? stx) (equal? (syntax-e stx) '#%if))
 (define (is-begin? stx) (equal? (syntax-e stx) 'begin))
+(define (is-decl-external-fun? stx) (equal? (syntax-e stx) 'decl-external-fun))
 (define (is-define? stx) (equal? (syntax-e stx) 'def))
+(define (is-deftype? stx) (equal? (syntax-e stx) 'deftype))
+(define (is-defun? stx) (equal? (syntax-e stx) 'defun))
 (define (is-if? stx) (equal? (syntax-e stx) 'if))
 (define (literal? lit) (or (boolean? lit) (number? lit)))
 
@@ -41,13 +47,17 @@
 
 (define (resolve-forms stx)
   (define rec resolve-forms)     ; recurse
-  ;(print stx)
+  ; (printf "resolve-forms ~a\n" (syntax-e stx))
 
   (datum->syntax
    stx
    (match (syntax-e stx)
      [(list (? is-begin? _) stmts ...) (cons '#%begin (map rec stmts))]
+     [(list (? is-decl-external-fun? t) name-stx args-stx ret-stx)
+      (list '#%define name-stx (list '#%external-function name-stx args-stx ret-stx))]
      [(list (? is-define? _) name value) (list '#%define name (rec value))]
+     [(list (? is-defun? t) name args ret body ...) stx]  ; ???
+     [(list (? is-deftype? t) name definition) stx]       ; ???
      [(list (? is-if? _) expr then else) (list '#%if (rec expr) (rec then) (rec else))]
      [(? list? exprs) (cons '#%app (map rec exprs))]
      ; process symbols: replace `camera.set-pos` with `(#%. camera set-pos)`

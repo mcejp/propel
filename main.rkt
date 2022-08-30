@@ -25,7 +25,7 @@
     (define propel-module
       (module (make-hash)
               (scope base-scope 1 (make-hash) (make-hash) (make-hash) #t #t)
-        ))
+        (resolve-forms (datum->syntax stx (cons #'begin (syntax-e stx)) stx))))
 
     (define (defun1 stx name-stx args-stx ret-stx body-stx)
       (define func-scope
@@ -46,13 +46,9 @@
                  name
                  (cons '#%module-function name)))
 
-    (define (is-defun? stx)
-      (equal? (syntax-e stx) 'defun))
-    (define (is-deftype? stx)
-      (equal? (syntax-e stx) 'deftype))
-
     (for ([stx (syntax-e propel-module-stx)])
       (match (syntax-e stx)
+        [(list (? is-decl-external-fun? t) name-stx args-stx ret-stx) (void)]
         [(list (? is-defun? t) name args ret body ...)
          (defun1
           stx
@@ -107,6 +103,8 @@
 
   (resolve-names/module! propel-module)
   (dump "30-names.rkt" propel-module)
+
+  (resolve-types #f (module-scope propel-module) (module-body propel-module))
 
   (update-module-functions propel-module resolve-types/function)
   (dump "40-types.rkt" propel-module)
