@@ -85,7 +85,9 @@
                '(#%builtin-function . builtin-sub-ii)
                '*
                ;;(cons II-to-I '(#%builtin-function builtin-mul-ii)))
-               '(#%builtin-function . builtin-mul-ii))
+               '(#%builtin-function . builtin-mul-ii)
+               '<
+               '(#%builtin-function . builtin-lessthan-ii))
          (hash 'builtin-eq-ii
                II-to-I
                'builtin-add-ii
@@ -93,6 +95,8 @@
                'builtin-sub-ii
                II-to-I
                'builtin-mul-ii
+               II-to-I
+               'builtin-lessthan-ii
                II-to-I)
          #f
          #f))
