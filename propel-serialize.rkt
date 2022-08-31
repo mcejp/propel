@@ -13,14 +13,16 @@
          racket/syntax-srcloc)
 
 (define (serialize-module mod)
-  (match-let ([(module functions scope
-                 body) mod])
+  (match-let ([(module scope body
+                 body-type-tree) mod])
     ;; This is totally weird... we should not be pulling stuff out of the scope.
     ;; Should just serialize the whole thing if that's what's right.
     (define body-ser (serialize-expr body))
     (append (hash-map (scope-types scope) (λ (name f) (serialize-type name f)))
-            (hash-map functions (λ (name f) (serialize-function f)))
-            (list (car body-ser) (compress-srcloc-tree (cdr body-ser))))))
+            ;(hash-map functions (λ (name f) (serialize-function f)))
+            (list (car body-ser)
+                  body-type-tree
+                  (compress-srcloc-tree (cdr body-ser))))))
 
 (define (serialize-function f)
   (match-let ([(function name args ret body body-type-tree module scope) f])

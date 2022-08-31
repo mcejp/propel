@@ -1,9 +1,20 @@
-((my-int (#%deftype int))
- (add
-  ((a my-int) (b my-int))
-  my-int
-  (begin (+ a b))
-  #f
-  ((#<path:/workspace/lisp-experiments/tests/deftype.rkt> 4 0 51 52)
-   (#f 0 1 1 5)
-   ((#f 1 1 43 7) (#f 0 1 1 1) (#f 0 2 2 1) (#f 0 2 2 1)))))
+((#%begin
+  (#%deftype my-int int)
+  (#%defun add ((a my-int) (b my-int)) my-int (#%begin (#%app + a b))))
+ #f
+ ((#<path:/workspace/lisp-experiments/propel.rkt> 9 32 262 10)
+  (#f 0 0 0 10)
+  ((#<path:/workspace/lisp-experiments/tests/deftype.rkt> -7 -32 -233 20)
+   (#f 0 0 0 20)
+   (#f 0 9 9 6)
+   (#f 0 7 7 3))
+  ((#f 2 -16 6 52)
+   (#f 0 0 0 52)
+   (#f 0 7 7 3)
+   ((#f 0 4 4 23)
+    ((#f 0 1 1 10) (#f 0 1 1 1) (#f 0 2 2 6))
+    ((#f 0 8 8 10) (#f 0 1 1 1) (#f 0 2 2 6)))
+   (#f 0 9 9 6)
+   ((#f 0 -35 -35 52)
+    (#f 0 0 0 52)
+    ((#f 1 2 44 7) (#f 0 0 0 7) (#f 0 1 1 1) (#f 0 2 2 1) (#f 0 2 2 1))))))

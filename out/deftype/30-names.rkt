@@ -1,17 +1,37 @@
 ((my-int (#%builtin-type I))
- (add
-  ((a (#%builtin-type I)) (b (#%builtin-type I)))
-  (#%builtin-type I)
-  (#%begin
-   (#%app
-    (#%builtin-function . builtin-add-ii)
-    (#%argument . a)
-    (#%argument . b)))
-  #f
-  ((#<path:/workspace/lisp-experiments/tests/deftype.rkt> 4 0 51 52)
+ (#%begin
+  (#%deftype my-int (#%builtin-type I))
+  (#%defun
+   add
+   ((a (#%builtin-type I)) (b (#%builtin-type I)))
+   (#%builtin-type I)
+   (#%begin
+    (#%app
+     (#%builtin-function . builtin-add-ii)
+     (#%scoped-var 2 a)
+     (#%scoped-var 2 b)))))
+ #f
+ ((#<path:/workspace/lisp-experiments/propel.rkt> 9 32 262 10)
+  (#f 0 0 0 10)
+  ((#<path:/workspace/lisp-experiments/tests/deftype.rkt> -7 -32 -233 20)
+   (#f 0 0 0 20)
+   (#f 0 9 9 6)
+   ((#f 0 -9 -9 20) (#f 0 0 0 20) (#f 0 0 0 20)))
+  ((#f 2 0 22 52)
    (#f 0 0 0 52)
-   ((#f 1 2 44 7)
-    (#f 0 0 0 7)
-    ((#f 0 1 1 1) (#f 0 0 0 1))
-    ((#f 0 2 2 1) (#f 0 0 0 1))
-    ((#f 0 2 2 1) (#f 0 0 0 1))))))
+   (#f 0 7 7 3)
+   ((#f 0 -7 -7 52)
+    ((#f 0 0 0 52)
+     (#f 0 13 13 1)
+     ((#f 0 -13 -13 52) (#f 0 0 0 52) (#f 0 0 0 52)))
+    ((#f 0 0 0 52)
+     (#f 0 24 24 1)
+     ((#f 0 -24 -24 52) (#f 0 0 0 52) (#f 0 0 0 52))))
+   ((#f 0 0 0 52) (#f 0 0 0 52) (#f 0 0 0 52))
+   ((#f 0 0 0 52)
+    (#f 0 0 0 52)
+    ((#f 1 2 44 7)
+     (#f 0 0 0 7)
+     ((#f 0 1 1 1) (#f 0 0 0 1))
+     ((#f 0 2 2 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
+     ((#f 0 2 2 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1)))))))

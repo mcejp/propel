@@ -4,15 +4,12 @@
 ;;; thus, ok to have the same requirement for types
 
 (provide base-scope
-         scope
+         (struct-out scope)
          scope-discover-variable-type!
          scope-insert-variable!
-         scope-object-types
-         scope-objects
          scope-lookup-object-type
          scope-try-resolve-symbol
          scope-try-resolve-type
-         scope-types
          type-I
          type-V)
 
@@ -40,8 +37,8 @@
   (hash-set! (scope-objects s) name (list '#%scoped-var (scope-level s) name)))
 
 (define (scope-discover-variable-type! s name type)
-  (unless (hash-has-key? (scope-objects s) name)
-    (error "scope-discover-variable-type! called for invalid symbol"))
+  ;(unless (hash-has-key? (scope-objects s) name)
+  ;  (error "scope-discover-variable-type! called for invalid symbol"))
 
   (hash-set! (scope-object-types s) name type))
 

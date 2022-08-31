@@ -3,6 +3,8 @@
 (provide is-#%app?
          is-#%begin?
          is-#%define?
+         is-#%deftype?
+         is-#%defun?
          is-#%dot?
          is-#%if?
          is-begin?
@@ -12,7 +14,7 @@
          literal?
          parse-module
          resolve-forms
-         resolve-forms/module!
+        ;  resolve-forms/module!
          )
 
 (require "propel-models.rkt"
@@ -23,6 +25,8 @@
 (define (is-#%app? stx) (equal? (syntax-e stx) '#%app))
 (define (is-#%begin? stx) (equal? (syntax-e stx) '#%begin))
 (define (is-#%define? stx) (equal? (syntax-e stx) '#%define))
+(define (is-#%deftype? stx) (equal? (syntax-e stx) '#%deftype))
+(define (is-#%defun? stx) (equal? (syntax-e stx) '#%defun))
 (define (is-#%dot? stx) (equal? (syntax-e stx) '#%dot))
 (define (is-#%if? stx) (equal? (syntax-e stx) '#%if))
 (define (is-begin? stx) (equal? (syntax-e stx) 'begin))
@@ -37,14 +41,6 @@
   (dynamic-require path 'propel-module-stx)
 )
 
-(define (resolve-forms/module! mod)
-  (update-module-functions mod (λ (f) (begin
-    (struct-copy
-      function f
-      [body (resolve-forms (function-body f))])
-      )))
-  )
-
 (define (resolve-forms stx)
   (define rec resolve-forms)     ; recurse
   ; (printf "resolve-forms ~a\n" (syntax-e stx))
@@ -56,8 +52,9 @@
      [(list (? is-decl-external-fun? t) name-stx args-stx ret-stx)
       (list '#%define name-stx (list '#%external-function name-stx args-stx ret-stx))]
      [(list (? is-define? _) name value) (list '#%define name (rec value))]
-     [(list (? is-defun? t) name args ret body ...) stx]  ; ???
-     [(list (? is-deftype? t) name definition) stx]       ; ???
+     [(list (? is-defun? t) name args ret body-stx ...)
+      (list '#%defun name args ret (rec (datum->syntax stx (cons #'begin body-stx) stx)))]
+     [(list (? is-deftype? t) name definition) (list '#%deftype name definition)]
      [(list (? is-if? _) expr then else) (list '#%if (rec expr) (rec then) (rec else))]
      [(? list? exprs) (cons '#%app (map rec exprs))]
      ; process symbols: replace `camera.set-pos` with `(#%. camera set-pos)`

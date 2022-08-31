@@ -7,19 +7,13 @@
          "scope.rkt"
          )
 
-(provide resolve-types
-         resolve-types/function)
-
-(define (resolve-types/function f)
-  (let ([body (function-body f)])
-       (struct-copy function f [body-type-tree (resolve-types f (function-scope f) body)])
-       ))
+(provide resolve-types)
 
 ; in:   AST
 ; out:  (type . subtree)
 (define (resolve-types f current-scope stx)
   (define rec (curry resolve-types f current-scope))     ; recurse
-  ;; (println stx)
+  ; (printf "resolve-types ~a\n" stx)
   ;stx
 
    (match (syntax-e stx)
@@ -42,11 +36,6 @@
         (cons return-type (cons callee-tt arg-tts))
         )
       ]
-     [(cons (? is-#%argument? t) name-stx)
-      ; this is already deprecated, but for the moment we play along
-      (define name (syntax-e name-stx))
-      (cons (get-argument-type f name name-stx) #f)
-      ]
      [(cons (? is-#%builtin-function? t) name-stx)
       (define name (syntax-e name-stx))
       (cons (get-builtin-function-type current-scope name-stx name) #f)
@@ -60,10 +49,45 @@
       (scope-discover-variable-type! current-scope name value-type)
       (cons type-V value-tt)
       ]
+     [(list (? is-#%defun? t) name-stx args-stx ret-stx body-stx)
+      (define name (syntax-e name-stx))
+
+      (define func-scope
+        (scope current-scope
+               (add1 (scope-level current-scope))
+               (make-hash)
+               (make-hash)
+               (make-hash)
+               #f
+               #f))
+      ;; insert arguments
+      (for ([arg-stx (syntax-e args-stx)])
+        (match-define (list name-stx type-stx) (syntax-e arg-stx))
+        (define name (syntax-e name-stx))
+        ;(hash-set! (scope-objects func-scope) name (cons '#%argument name-stx))
+        ;(scope-insert-variable! func-scope name)
+        (scope-discover-variable-type! func-scope name (syntax->datum type-stx))
+        )
+
+      (define arg-types (map (lambda (arg-stx) (begin
+        (match-define (list name-stx type-stx) (syntax-e arg-stx))
+        (syntax->datum type-stx)
+        )) (syntax-e args-stx)))
+
+      (define ret-type (syntax->datum ret-stx))
+
+      (scope-discover-variable-type! current-scope name
+        (function-type arg-types ret-type))
+
+      (define body-tt (resolve-types f func-scope body-stx))
+      ;(list t name-stx args-stx ret-stx body-stx)
+      (cons type-V body-tt)
+      ]
      #;[(list (? is-#%dot? t) obj field)
         ; 1. recurse to obj
         ; 2. resolve field
         ]
+     [(list (? is-#%deftype? t) name-stx definition-stx) (cons type-V #f)]
      [(list (? is-#%external-function? t) name-stx args-stx ret-stx)
       (define name (syntax-e name-stx))
       (define args (syntax->datum args-stx))
@@ -84,11 +108,6 @@
           (list then-t expr-tt then-tt else-tt)
         ))
       ]
-     [(cons (? is-#%module-function? t) name-stx)
-      ; this is already deprecated, but for the moment we play along
-      (define name (syntax-e name-stx))
-      (cons (get-module-function-type (function-module f) name name-stx) #f)
-      ]
      [(list (? is-#%scoped-var? t) level-stx name-stx)
       (define level (syntax-e level-stx))   ; silly that we have to do this...
       (define name (syntax-e name-stx))
@@ -106,22 +125,6 @@
                             (format "argument ~a type mismatch: expecting ~a, got ~a" index p arg)
                             stx)))))
 
-(define (get-argument-type f name stx)
-  (define arg-type (get-argument-type* name (function-args f)))
-  (when (not arg-type) (raise-syntax-error #f "invalid argument" stx))
-  arg-type
-)
-
-(define (coerce-to-not-syntax thing)
-  (if (syntax? thing) (syntax-e thing) thing))
-
-(define (get-argument-type* name args)
-  (match args
-    [(cons (list arg-name arg-type) rest) (if (equal? (coerce-to-not-syntax arg-name) name) arg-type (get-argument-type* name rest))]
-    ['() #f]
-  )
-)
-
 (define (get-builtin-function-type scope stx function-name)
   (define res (scope-lookup-object-type scope 0 function-name))
   ;; in case of an error, quote the failing type literally, because syntax tracking for types is very poor ATM
@@ -134,12 +137,4 @@
   ;; in case of an error, quote the failing type literally, because syntax tracking for types is very poor ATM
   (unless res (raise-syntax-error #f (format "couldn't resolve type of variable ~a" var-name) stx))
   res
-)
-
-(define (get-module-function-type mod function-name stx)
-  (let ([f (hash-ref (module-functions mod)
-                     function-name
-                     (lambda () (raise-syntax-error #f "invalid module function" stx)))])
-    (function-type (map cadr (function-args f)) (function-ret f))
-  )
 )

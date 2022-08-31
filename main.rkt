@@ -17,55 +17,15 @@
   (when intermediate-output-dir
     (make-directory* intermediate-output-dir))
 
-  (define propel-module-stx (parse-module path))
+  (define stx (parse-module path))
 
   ; convert module syntax into legacy module structure
 
-  (define (module-legacy-parse stx)
-    (define propel-module
-      (module (make-hash)
-              (scope base-scope 1 (make-hash) (make-hash) (make-hash) #t #t)
-        (resolve-forms (datum->syntax stx (cons #'begin (syntax-e stx)) stx))))
-
-    (define (defun1 stx name-stx args-stx ret-stx body-stx)
-      (define func-scope
-        (scope (module-scope propel-module)
-               2
-               (make-hash)
-               (make-hash)
-               (make-hash)
-               #f
-               #f))
-      (define name (syntax->datum name-stx))
-      (define args (syntax->datum args-stx)) ; bad
-      (define ret (syntax->datum ret-stx)) ; baaad
-      (define func
-        (function name args ret body-stx #f propel-module func-scope))
-      (hash-set! (module-functions propel-module) name func)
-      (hash-set! (scope-objects (module-scope propel-module))
-                 name
-                 (cons '#%module-function name)))
-
-    (for ([stx (syntax-e propel-module-stx)])
-      (match (syntax-e stx)
-        [(list (? is-decl-external-fun? t) name-stx args-stx ret-stx) (void)]
-        [(list (? is-defun? t) name args ret body ...)
-         (defun1
-          stx
-          name
-          args
-          ret
-          (datum->syntax stx (cons (datum->syntax t 'begin t) body) stx))]
-        [(list (? is-deftype? t) name definition)
-         ;;(hash-set! (module-types propel-module) name type)
-         ;; this is probably wrong... should just put like a marker and then emit a #deftype in the program stream
-         (hash-set! (scope-types (module-scope propel-module))
-                    (syntax->datum name) ; not great
-                    (list '#%deftype (syntax->datum definition) ; bad!
-                          ))]))
-    propel-module)
-
-  (define propel-module (module-legacy-parse propel-module-stx))
+  (define propel-module
+    (module (scope base-scope 1 (make-hash) (make-hash) (make-hash) #t #t)
+            (resolve-forms
+              (datum->syntax stx (cons #'begin (syntax-e stx)) stx))
+      #f))
 
   #;(call-with-output-file
      "parsed.rkt"
@@ -98,20 +58,22 @@
 
   ;(print module-functions)
 
-  (resolve-forms/module! propel-module)
+  ; (resolve-forms/module! propel-module)
   (dump "20-core-forms.rkt" propel-module)
 
   (resolve-names/module! propel-module)
   (dump "30-names.rkt" propel-module)
 
-  (resolve-types #f (module-scope propel-module) (module-body propel-module))
+  (define tt
+    (resolve-types #f (module-scope propel-module) (module-body propel-module)))
+  (set-module-body-type-tree! propel-module tt)
 
-  (update-module-functions propel-module resolve-types/function)
+  ; (update-module-functions propel-module resolve-types/function)
   (dump "40-types.rkt" propel-module)
 
   (with-intermediate-output-to-file
    "50-cpp.cpp"
    (λ () (compile-module-to-c++ propel-module))))
 
-(for ([testcase '("def-local" "deftype" "factorial" "hello")])
+(for ([testcase '("2048" "def-local" "deftype" "factorial" "hello")])
   (compile-propel-module (~a "tests/" testcase ".rkt") (~a "out/" testcase)))

@@ -9,31 +9,23 @@
          "scope.rkt")
 
 (define (compile-module-to-c++ mod)
-  ;; iterate functions, generate C++ prototypes
-  (iterate-module-functions
-   mod
-   (λ (f) (printf "~a;\n" (format-function-prototype f))))
-  (newline)
-  (iterate-module-functions mod
-                            (λ (f)
-                              (begin
-                                (printf "~a {\n" (format-function-prototype f))
-                                (format-function-body f)
-                                (printf "}\n")))))
+  ;; TODO: generate C++ prototypes
 
-(define (format-function-prototype f)
-  (define name (function-name f))
-  (define ret-type (function-ret f))
+  (define-values (tokens final-expr)
+    (format-form (module-body mod) (module-body-type-tree mod)))
+  (print-tokens tokens 0))
+
+(define (format-function-prototype name args ret)
   (define param-list-str
-    (string-join (map format-parameter-prototype (function-args f)) ", "))
-  (format "~a ~a(~a)" (format-type ret-type) name param-list-str))
+    (string-join (map format-parameter-prototype args) ", "))
+  (format "~a ~a(~a)" (format-type ret) name param-list-str))
 
 (define (format-parameter-prototype prm)
-  (match-let ([(list name-stx type) prm])
-    (format "~a ~a" (format-type type) (syntax-e name-stx))))
+  (match-let ([(list name type) prm]) (format "~a ~a" (format-type type) name)))
 
 (define (format-type type)
   (cond
+    [(function-type? type) "<function-type>"]
     [(equal? type type-I) "int"]
     [(equal? type type-V) "void"]
     [else (error (format "unhandled type ~a" type))]))
@@ -90,6 +82,19 @@
        (list value-tokens
              (format "~a ~a = ~a;" (format-type value-type) name value-expr)))
       "")]
+    [(list (? is-#%deftype? _) name-stx definition-stx) (values '() "")]
+    [(list (? is-#%defun? _) name-stx args-stx ret-stx body-stx)
+     (define body-tt sub-tts)
+     (define-values (tokens final-expr) (format-form body-stx body-tt))
+
+     (values (flatten (list (format-function-prototype (syntax->datum name-stx)
+                                                       (syntax->datum args-stx)
+                                                       (syntax->datum ret-stx))
+                            "{"
+                            tokens
+                            (format "return ~a;" final-expr)
+                            "}"))
+             "")]
     [(list (? is-#%if? t) expr then else)
      (match-define (list expr-tt then-tt else-tt) sub-tts)
 
@@ -132,6 +137,8 @@
     [(cons (? is-#%argument? t) name-stx)
      (values '() (symbol->string (syntax-e name-stx)))]
     [(cons (? is-#%builtin-function? t) name-stx)
+     (values '() (string-replace (symbol->string (syntax-e name-stx)) "-" "_"))]
+    [(list (? is-#%external-function? t) name-stx args-stx ret-stx)
      (values '() (string-replace (symbol->string (syntax-e name-stx)) "-" "_"))]
     [(cons (? is-#%module-function? t) name-stx)
      (values '() (symbol->string (syntax-e name-stx)))]
