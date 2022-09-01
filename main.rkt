@@ -24,7 +24,7 @@
   (define propel-module
     (module (scope base-scope 1 (make-hash) (make-hash) (make-hash) #t #t)
             (resolve-forms
-              (datum->syntax stx (cons #'begin (syntax-e stx)) stx))
+             (datum->syntax stx (cons #'begin (syntax-e stx)) stx))
       #f))
 
   #;(call-with-output-file

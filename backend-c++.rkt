@@ -39,7 +39,9 @@
 (define (map-values proc lst1 lst2)
   (define (wrap e1 e2)
     (call-with-values (lambda () (proc e1 e2)) list))
-  (apply values (apply map list (map wrap lst1 lst2))))
+  (if (> (length lst1) 0)
+      (let () (apply values (apply map list (map wrap lst1 lst2))))
+      (values '() '())))
 
 (define (make-placeholder-variable type)
   (define name "$placeholder$") ; FIXME
@@ -50,6 +52,7 @@
 ;; 2. a string representing the result of the form, or #f if void probably...
 ;; The reason for this circus is that we do not distinguish statements and expressions, but C++ does.
 (define (format-form form type-tree)
+  ;; (printf "format-form ~a\n" form)
   (match-define (cons form-type sub-tts)
     type-tree) ; separate resultant type from type sub-trees
   (match (syntax-e form)
