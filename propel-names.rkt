@@ -63,11 +63,21 @@
    stx
    (match (syntax-e stx)
      [(list (? is-#%app? t) exprs ..1) (cons t (map rec exprs))]
-     [(list (? is-#%begin? t) stmts ...) (cons t (map rec stmts))]
+     [(list (? is-#%begin? t) stmts ...)
+      (define nested-scope
+        (scope current-scope
+               (add1 (scope-level current-scope))
+               (make-hash)
+               (make-hash)
+               (make-hash)
+               #f
+               #f))
+      (cons t (map (curry resolve-names/form f nested-scope) stmts))
+     ]
      [(list (? is-#%define? t) name-stx value) (begin
        (define name (syntax-e name-stx))
-       (scope-insert-variable! current-scope name)
-       (list t name-stx (rec value))
+       (scope-insert-variable! current-scope name stx)
+       (list t (rec name-stx) (rec value))
        )]
      [(list (? is-#%deftype? t) name-stx definition-stx)
       (define resolved-definition (resolve-names/type-stx current-scope definition-stx))
@@ -84,7 +94,7 @@
       ; (hash-set! (scope-objects current-scope)
       ;            name
       ;            (cons '#%module-function name))
-      (scope-insert-variable! current-scope name)
+      (scope-insert-variable! current-scope name stx)
 
       (define func-scope
         (scope current-scope
@@ -99,7 +109,7 @@
         (match-define (list name-stx type-stx) (syntax-e arg-stx))
         (define name (syntax-e name-stx))
         ;(hash-set! (scope-objects func-scope) name (cons '#%argument name-stx))
-        (scope-insert-variable! func-scope name)
+        (scope-insert-variable! func-scope name stx)
         )
 
       (define resolved-args (resolve-names/types-in-arg-list current-scope args-stx))
@@ -113,6 +123,7 @@
         (resolve-names/types-in-arg-list current-scope args-stx)
         (resolve-names/type-stx current-scope ret-stx))]
      [(list (? is-#%if? t) expr then else) (list t (rec expr) (rec then) (rec else))]
+     [(list (? is-#%set-var? t) target expr) (list t (rec target) (rec expr))]
      [(list expr ...) (map rec expr)]
      [(? symbol? sym) (resolve-names/symbol f stx sym current-scope)]
      [(? literal? lit) stx]

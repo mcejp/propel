@@ -31,9 +31,9 @@
                 allows-new-types
                 allows-new-functions))
 
-(define (scope-insert-variable! s name)
+(define (scope-insert-variable! s name stx)
   (when (hash-has-key? (scope-objects s) name)
-    (error 'scope-insert-variable! "redefinition of ~a" name))
+    (raise-syntax-error #f (format "redefinition of ~a" name) stx))
   (hash-set! (scope-objects s) name (list '#%scoped-var (scope-level s) name)))
 
 (define (scope-discover-variable-type! s name type)
@@ -66,6 +66,7 @@
     [parent (scope-try-resolve-type parent sym)]
     [#t #f]))
 
+(define I-to-I (function-type (list type-I) type-I))
 (define II-to-I (function-type (list type-I type-I) type-I))
 
 (define base-scope
@@ -84,7 +85,13 @@
                ;;(cons II-to-I '(#%builtin-function builtin-mul-ii)))
                '(#%builtin-function . builtin-mul-ii)
                '<
-               '(#%builtin-function . builtin-lessthan-ii))
+               '(#%builtin-function . builtin-lessthan-ii)
+               '>
+               '(#%builtin-function . builtin-greaterthan-ii)
+               'and
+               '(#%builtin-function . builtin-and-ii)
+               'not
+               '(#%builtin-function . builtin-not-i))
          (hash 'builtin-eq-ii
                II-to-I
                'builtin-add-ii
@@ -94,6 +101,12 @@
                'builtin-mul-ii
                II-to-I
                'builtin-lessthan-ii
-               II-to-I)
+               II-to-I
+               'builtin-greaterthan-ii
+               II-to-I
+               'builtin-and-ii
+               II-to-I
+               'builtin-not-i
+               I-to-I)
          #f
          #f))

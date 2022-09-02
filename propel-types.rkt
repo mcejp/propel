@@ -18,7 +18,17 @@
 
    (match (syntax-e stx)
      [(list (? is-#%begin? t) stmts ..1)
-      (let ([sub-trees (map rec stmts)])
+      ;; stupid that we duplicate this code from propel-names.rkt
+      (define nested-scope
+        (scope current-scope
+               (add1 (scope-level current-scope))
+               (make-hash)
+               (make-hash)
+               (make-hash)
+               #f
+               #f))
+
+      (let ([sub-trees (map (curry resolve-types f nested-scope) stmts)])
         (cons (car (last sub-trees)) sub-trees)
         )]
      [(list (? is-#%begin? t))
@@ -40,11 +50,12 @@
       (define name (syntax-e name-stx))
       (cons (get-builtin-function-type current-scope name-stx name) #f)
       ]
-     [(list (? is-#%define? t) name-stx value)
+     [(list (? is-#%define? t) var-stx value)
       ;; recurse to value & insert type information
-      (define name (syntax-e name-stx))
       (define value-tt (rec value))
       (define value-type (car value-tt))
+
+      (match-define (list '#%scoped-var level name) (syntax->datum var-stx))
 
       (scope-discover-variable-type! current-scope name value-type)
       (cons type-V value-tt)
@@ -113,11 +124,26 @@
       (define name (syntax-e name-stx))
       (cons (get-variable-type current-scope name-stx level name) #f)
       ]
+     [(list (? is-#%set-var? t) target-stx expr-stx)
+      (let ([target-tt (rec target-stx)]
+            [expr-tt (rec expr-stx)])
+        (begin
+          (define target-t (car target-tt))
+          (define expr-t (car expr-tt))
+          (unless (equal? target-t expr-t)
+                  (raise-syntax-error #f "set!: variable vs expression type mismatch" stx))
+          (list type-V target-tt expr-tt)
+        ))
+      ]
      [(? number? lit) (cons type-I #f)]
      ))
 
 
 (define (check-function-args stx param-types t-args)
+  (unless (equal? (length param-types) (length t-args))
+    (raise-syntax-error #f
+                        (format "expected ~a arguments, got ~a" (length param-types) (length t-args))
+                        stx))
   (for ([p param-types] [arg t-args] [index (range 1 (add1 (length t-args)))])
     (begin
       (unless (equal? p arg)

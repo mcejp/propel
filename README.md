@@ -2,6 +2,10 @@
 
 Run tests: `PLT_CS_DEBUG=1 raco test test*.rkt`
 
+2048:
+
+`PLT_CS_DEBUG=1 racket main.rkt && g++ -o 2048 out/2048/50-cpp.cpp harness.cpp && ./2048`
+
 ```
    Source (DSL in Racket)
 -> Source with macros expanded (propel.rkt)

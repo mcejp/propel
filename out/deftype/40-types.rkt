@@ -1,5 +1,4 @@
-((my-int (#%builtin-type I))
- (#%begin
+((#%begin
   (#%deftype my-int (#%builtin-type I))
   (#%defun
    add
@@ -8,8 +7,8 @@
    (#%begin
     (#%app
      (#%builtin-function . builtin-add-ii)
-     (#%scoped-var 2 a)
-     (#%scoped-var 2 b)))))
+     (#%scoped-var 3 a)
+     (#%scoped-var 3 b)))))
  ((#%builtin-type V)
   ((#%builtin-type V) . #f)
   ((#%builtin-type V)

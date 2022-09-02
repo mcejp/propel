@@ -11,29 +11,43 @@
 (define (compile-module-to-c++ mod)
   ;; TODO: generate C++ prototypes
 
+  (displayln
+   "\
+inline int builtin_eq_ii(int a, int b) { return a == b; }
+inline int builtin_add_ii(int a, int b) { return a + b; }
+inline int builtin_sub_ii(int a, int b) { return a - b; }
+inline int builtin_mul_ii(int a, int b) { return a * b; }
+inline int builtin_lessthan_ii(int a, int b) { return (a < b) ? 1 : 0; }
+inline int builtin_greaterthan_ii(int a, int b) { return (a > b) ? 1 : 0; }
+inline int builtin_and_ii(int a, int b) { return a && b; }
+inline int builtin_not_i(int a) { return a ? 0 : 1; }
+")
+
   (define-values (tokens final-expr)
     (format-form (module-body mod) (module-body-type-tree mod)))
   (print-tokens tokens 0))
 
-(define (format-function-prototype name args ret)
+(define (format-function-prototype c-name args ret)
   (define param-list-str
     (string-join (map format-parameter-prototype args) ", "))
-  (format "~a ~a(~a)" (format-type ret) name param-list-str))
+  (format "~a ~a(~a)" (format-type ret) c-name param-list-str))
+
+(define (format-function-type-as-prototype name type)
+  (match-define (function-type args ret) type)
+  (define param-list-str (string-join (map format-type args) ", "))
+  (format "~a ~a(~a);" (format-type ret) name param-list-str))
 
 (define (format-parameter-prototype prm)
-  (match-let ([(list name type) prm]) (format "~a ~a" (format-type type) name)))
+  ;; FIXME: NO NO NO NO NO
+  (match-let ([(list name type) prm])
+    (format "~a scope3_~a" (format-type type) (sanitize-name name))))
 
 (define (format-type type)
   (cond
-    [(function-type? type) "<function-type>"]
+    [(function-type? type) "auto"]
     [(equal? type type-I) "int"]
     [(equal? type type-V) "void"]
     [else (error (format "unhandled type ~a" type))]))
-
-(define (format-function-body f)
-  (define-values (tokens final-expr)
-    (format-form (function-body f) (function-body-type-tree f)))
-  (print-tokens (append tokens (list (format "return ~a;" final-expr))) 1))
 
 ;; https://stackoverflow.com/a/39986599
 (define (map-values proc lst1 lst2)
@@ -43,8 +57,11 @@
       (let () (apply values (apply map list (map wrap lst1 lst2))))
       (values '() '())))
 
+(define placeholder-counter 0)
+
 (define (make-placeholder-variable type)
-  (define name "$placeholder$") ; FIXME
+  (define name (format "tmp~a" placeholder-counter))
+  (set! placeholder-counter (add1 placeholder-counter))
   (values (format "~a ~a;" (format-type type) name) name))
 
 ;; Return a pair of
@@ -74,43 +91,75 @@
          expr))
      (values my-tokens final-expr)]
     [(list (? is-#%begin? t)) (values '() "")]
-    [(list (? is-#%define? _) name-stx value)
+    [(list (? is-#%define? _) var-stx value)
      (define value-tt sub-tts)
+     (define-values (var-tokens var-expr) (format-form var-stx (cons #f #f)))
+
+     (unless (eq? var-tokens '())
+       (raise-syntax-error #f "unsupported assignment" form))
      (define-values (value-tokens value-expr) (format-form value value-tt))
-     (define name (syntax-e name-stx))
      (define value-type (car value-tt))
 
      (values
       (flatten
-       (list value-tokens
-             (format "~a ~a = ~a;" (format-type value-type) name value-expr)))
+       (list
+        value-tokens
+        (format "~a ~a = ~a;" (format-type value-type) var-expr value-expr)))
       "")]
     [(list (? is-#%deftype? _) name-stx definition-stx) (values '() "")]
     [(list (? is-#%defun? _) name-stx args-stx ret-stx body-stx)
      (define body-tt sub-tts)
      (define-values (tokens final-expr) (format-form body-stx body-tt))
 
-     (values (flatten (list (format-function-prototype (syntax->datum name-stx)
+     (define c-name
+       (format "scope2_~a"
+               (sanitize-name
+                (syntax->datum name-stx)))) ; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+     (values (flatten (list (format-function-prototype c-name
                                                        (syntax->datum args-stx)
                                                        (syntax->datum ret-stx))
                             "{"
                             tokens
-                            (format "return ~a;" final-expr)
+                            (if (equal? (syntax->datum ret-stx) type-V)
+                                (format "~a;" final-expr)
+                                (format "return ~a;" final-expr))
                             "}"))
              "")]
     [(list (? is-#%if? t) expr then else)
      (match-define (list expr-tt then-tt else-tt) sub-tts)
 
      (define result-type (car then-tt))
-     (define-values (result-placeholder-tokens result-placeholder-name)
-       (make-placeholder-variable result-type))
 
      (define-values (test-tokens test-expr) (format-form expr expr-tt))
      (define-values (then-tokens then-expr) (format-form then then-tt))
      (define-values (else-tokens else-expr) (format-form else else-tt))
 
-     (define self-tokens
-       (flatten (list result-placeholder-tokens
+     (if (equal? result-type type-V)
+         ;; no temporary needed if void
+         (let ()
+           (begin
+             (define self-tokens
+               (flatten (list test-tokens
+                              (format "if (~a)" test-expr)
+                              "{"
+                              then-tokens
+                              (format "~a;" then-expr)
+                              "}"
+                              "else"
+                              "{"
+                              else-tokens
+                              (format "~a;" else-expr)
+                              "}")))
+
+             (values self-tokens "")))
+         (let ()
+           (begin
+             (define-values (result-placeholder-tokens result-placeholder-name)
+               (make-placeholder-variable result-type))
+             (define self-tokens
+               (flatten
+                (list result-placeholder-tokens
                       test-tokens
                       (format "if (~a)" test-expr)
                       "{"
@@ -123,7 +172,7 @@
                       (format "~a = ~a;" result-placeholder-name else-expr)
                       "}")))
 
-     (values self-tokens result-placeholder-name)]
+             (values self-tokens result-placeholder-name))))]
     [(list (? is-#%app? t) callee args ...)
      (match-define (cons callee-tt arg-tts) sub-tts)
      (define-values (callee-tokens callee-expr) (format-form callee callee-tt))
@@ -140,9 +189,10 @@
     [(cons (? is-#%argument? t) name-stx)
      (values '() (symbol->string (syntax-e name-stx)))]
     [(cons (? is-#%builtin-function? t) name-stx)
-     (values '() (string-replace (symbol->string (syntax-e name-stx)) "-" "_"))]
+     (values '() (sanitize-name (syntax-e name-stx)))]
     [(list (? is-#%external-function? t) name-stx args-stx ret-stx)
-     (values '() (string-replace (symbol->string (syntax-e name-stx)) "-" "_"))]
+     (define name (sanitize-name (syntax-e name-stx)))
+     (values (list (format-function-type-as-prototype name form-type)) name)]
     [(cons (? is-#%module-function? t) name-stx)
      (values '() (symbol->string (syntax-e name-stx)))]
     [(list (? is-#%scoped-var? t) level-stx name-stx)
@@ -150,6 +200,16 @@
              (make-scoped-name
               (syntax-e level-stx)
               (syntax-e name-stx)))] ; FIXME: resolve absolute name
+    [(list (? is-#%set-var? t) target-stx expr-stx)
+     ;; TODO: this will a rewrite to match specific target forms (variable, array element...)
+     (match-define (list target-tt expr-tt) sub-tts)
+     (define-values (target-tokens target-expr)
+       (format-form target-stx target-tt))
+     (define-values (expr-tokens expr-expr) (format-form expr-stx expr-tt))
+     (unless (eq? target-tokens '())
+       (raise-syntax-error #f "unsupported assignment" form))
+     (values (flatten (list expr-tokens))
+             (format "~a = ~a;" target-expr expr-expr))]
     [(? number? lit) (values '() (number->string lit))]))
 
 (define (print-tokens tokens indent)
@@ -172,7 +232,10 @@
     ['() #f]))
 
 (define (print-indent indent)
-  (display (string-append* (make-list indent "  "))))
+  (display (string-append* (make-list indent "    "))))
+
+(define (sanitize-name name)
+  (string-replace (symbol->string name) "-" "_"))
 
 (define (make-scoped-name level name)
-  (format "scope~a_~a" level name))
+  (format "scope~a_~a" level (sanitize-name name)))
