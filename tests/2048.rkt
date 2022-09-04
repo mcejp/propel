@@ -81,7 +81,7 @@
   (if (< output-pos 4) (brd-set-with-rotation 3 y dir 0) (dummy-void))
 )
 
-(defun do-turn () Void
+(defun generate-new-stone () Void
   ;; better: (def new-stone-value (random-choice '(2 4)))
   (def new-stone-value (if (< (random-int 0 100) 90) 2 4))
   ;; count empty spots
@@ -93,13 +93,15 @@
   (def x (brd-get-nth-empty-slot-x nth-spot))
   (def y (brd-get-nth-empty-slot-y nth-spot))
   ;; better: (set! ([] the-board y x) new-stone-value)
-  ;;(brd-set x y new-stone-value)
+  (brd-set x y new-stone-value)
   ;(animate-stone-placement x y new-stone-value)
 
   ;; TODO: check if valid move exists, else game over
+)
 
+(defun make-turn ((dir int)) Void
   ;; wait for player to choose movement direction
-  (def dir (get-player-input))
+  ;(def dir (get-player-input))
 
   ;; TODO: check if move valid
 

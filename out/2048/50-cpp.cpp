@@ -126,7 +126,7 @@ void scope2_update_row(int scope3_y, int scope3_dir)
     ;
 }
 ;
-void scope2_do_turn()
+void scope2_generate_new_stone()
 {
     int tmp2;
     if (builtin_lessthan_ii(scope2_random_int(0, 100), 90))
@@ -147,10 +147,13 @@ void scope2_do_turn()
     ;
     int scope4_y = scope2_brd_get_nth_empty_slot_y(scope4_nth_spot);
     ;
-    int scope4_dir = scope2_get_player_input();
-    ;
-    scope2_update_row(0, scope4_dir);
-    scope2_update_row(1, scope4_dir);
-    scope2_update_row(2, scope4_dir);
-    scope2_update_row(3, scope4_dir);
+    scope2_brd_set(scope4_x, scope4_y, scope4_new_stone_value);
+}
+;
+void scope2_make_turn(int scope3_dir)
+{
+    scope2_update_row(0, scope3_dir);
+    scope2_update_row(1, scope3_dir);
+    scope2_update_row(2, scope3_dir);
+    scope2_update_row(3, scope3_dir);
 }

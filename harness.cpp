@@ -79,8 +79,6 @@ void mark_merged(int pos, int value) {
 
 void dummy_void() {}
 
-void scope2_do_turn();
-
 void display_board() {
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
@@ -106,10 +104,12 @@ void generate_board() {
     }
 }
 
+void scope2_make_turn(int scope3_dir);
+
 int main() {
     display_board();
     generate_board();
     display_board();
-    scope2_do_turn();
+    scope2_make_turn(0);
     display_board();
 }
