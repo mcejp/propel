@@ -24,9 +24,7 @@
                (add1 (scope-level current-scope))
                (make-hash)
                (make-hash)
-               (make-hash)
-               #f
-               #f))
+               (make-hash)))
 
       (let ([sub-trees (map (curry resolve-types f nested-scope) stmts)])
         (cons (car (last sub-trees)) sub-trees)
@@ -68,9 +66,7 @@
                (add1 (scope-level current-scope))
                (make-hash)
                (make-hash)
-               (make-hash)
-               #f
-               #f))
+               (make-hash)))
       ;; insert arguments
       (for ([arg-stx (syntax-e args-stx)])
         (match-define (list name-stx type-stx) (syntax-e arg-stx))

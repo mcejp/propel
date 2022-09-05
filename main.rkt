@@ -22,7 +22,7 @@
   ; convert module syntax into legacy module structure
 
   (define propel-module
-    (module (scope base-scope 1 (make-hash) (make-hash) (make-hash) #t #t)
+    (module (scope base-scope 1 (make-hash) (make-hash) (make-hash))
             (resolve-forms
              (datum->syntax stx (cons #'begin (syntax-e stx)) stx))
       #f))

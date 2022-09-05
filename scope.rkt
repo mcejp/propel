@@ -23,13 +23,7 @@
 
 ;; scope is defined as a reference to a parent scope + hashmaps of the types and objects (functions, variables) it contains
 
-(struct scope
-        (parent level
-                types
-                objects
-                object-types
-                allows-new-types
-                allows-new-functions))
+(struct scope (parent level types objects object-types))
 
 (define (scope-insert-variable! s name stx)
   (when (hash-has-key? (scope-objects s) name)
@@ -107,6 +101,4 @@
                'builtin-and-ii
                II-to-I
                'builtin-not-i
-               I-to-I)
-         #f
-         #f))
+               I-to-I)))

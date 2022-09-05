@@ -69,9 +69,7 @@
                (add1 (scope-level current-scope))
                (make-hash)
                (make-hash)
-               (make-hash)
-               #f
-               #f))
+               (make-hash)))
       (cons t (map (curry resolve-names/form f nested-scope) stmts))
      ]
      [(list (? is-#%define? t) name-stx value) (begin
@@ -101,9 +99,7 @@
                (add1 (scope-level current-scope))
                (make-hash)
                (make-hash)
-               (make-hash)
-               #f
-               #f))
+               (make-hash)))
       ;; insert arguments
       (for ([arg-stx (syntax-e args-stx)])
         (match-define (list name-stx type-stx) (syntax-e arg-stx))
