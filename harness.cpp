@@ -104,12 +104,12 @@ void generate_board() {
     }
 }
 
-void scope2_make_turn(int scope3_dir);
+void make_turn(int scope3_dir);
 
 int main() {
     display_board();
     generate_board();
     display_board();
-    scope2_make_turn(0);
+    make_turn(0);
     display_board();
 }

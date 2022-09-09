@@ -4,15 +4,15 @@
    ((a (#%builtin-type I)) (b (#%builtin-type I)))
    (#%builtin-type I)
    (#%begin
-    (#%define (#%scoped-var 4 left) (#%scoped-var 3 a))
-    (#%define (#%scoped-var 4 right) (#%scoped-var 3 b))
+    (#%define (#%scoped-var 2 left) (#%scoped-var 2 a))
+    (#%define (#%scoped-var 2 right) (#%scoped-var 2 b))
     (#%define
-     (#%scoped-var 4 sum)
+     (#%scoped-var 2 sum)
      (#%app
       (#%builtin-function . builtin-add-ii)
-      (#%scoped-var 4 left)
-      (#%scoped-var 4 right)))
-    (#%scoped-var 4 sum))))
+      (#%scoped-var 2 left)
+      (#%scoped-var 2 right)))
+    (#%scoped-var 2 sum))))
  #f
  ((#<path:/workspace/lisp-experiments/propel.rkt> 9 32 262 10)
   (#f 0 0 0 10)

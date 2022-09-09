@@ -40,7 +40,7 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
 (define (format-parameter-prototype prm)
   ;; FIXME: NO NO NO NO NO
   (match-let ([(list name type) prm])
-    (format "~a scope3_~a" (format-type type) (sanitize-name name))))
+    (format "~a scope2_~a" (format-type type) (sanitize-name name))))
 
 (define (format-type type)
   (cond
@@ -63,6 +63,12 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
   (define name (format "tmp~a" placeholder-counter))
   (set! placeholder-counter (add1 placeholder-counter))
   (values (format "~a ~a;" (format-type type) name) name))
+
+(define (is-module-scope-var? stx)
+  (match (syntax-e stx)
+    [(list (? is-#%scoped-var? t) level-stx name-stx)
+     (= (syntax-e level-stx) 1)]
+    [else #f]))
 
 ;; Return a pair of
 ;; 1. a list of _tokens_, each being one of "{", "}" or other string representing one line of source code
@@ -100,21 +106,36 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
      (define-values (value-tokens value-expr) (format-form value value-tt))
      (define value-type (car value-tt))
 
-     (values
-      (flatten
-       (list
-        value-tokens
-        (format "~a ~a = ~a;" (format-type value-type) var-expr value-expr)))
-      "")]
+     ;; special treatment for function defines
+     ;; (not sure if this is the cleanest approach)
+     (define is-#%define-external-function?
+       (and (list? (syntax-e value))
+            (is-#%external-function? (car (syntax-e value)))))
+     (if is-#%define-external-function?
+         (begin
+           (unless (is-module-scope-var? var-stx)
+             (raise-syntax-error #f
+                                 "deftype allowed only in module scope"
+                                 form))
+           ;; FIXME: if we want to go this way, we must assert the name of the variable being defined
+           ;;        equals the name of the external function
+           (values value-tokens ""))
+         (let ()
+           (values (flatten (list value-tokens
+                                  (format "~a ~a = ~a;"
+                                          (format-type value-type)
+                                          var-expr
+                                          value-expr)))
+                   "")))]
     [(list (? is-#%deftype? _) name-stx definition-stx) (values '() "")]
     [(list (? is-#%defun? _) name-stx args-stx ret-stx body-stx)
      (define body-tt sub-tts)
      (define-values (tokens final-expr) (format-form body-stx body-tt))
 
      (define c-name
-       (format "scope2_~a"
-               (sanitize-name
-                (syntax->datum name-stx)))) ; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+       (make-scoped-name
+        1
+        (syntax->datum name-stx))) ; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
      (values (flatten (list (format-function-prototype c-name
                                                        (syntax->datum args-stx)
@@ -238,4 +259,6 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
   (string-replace (symbol->string name) "-" "_"))
 
 (define (make-scoped-name level name)
-  (format "scope~a_~a" level (sanitize-name name)))
+  (if (= level 1)
+      (sanitize-name name)
+      (format "scope~a_~a" level (sanitize-name name))))

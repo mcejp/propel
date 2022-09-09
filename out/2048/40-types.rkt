@@ -1,36 +1,36 @@
 ((#%begin
   (#%define
-   (#%scoped-var 2 get-player-input)
+   (#%scoped-var 1 get-player-input)
    (#%external-function get-player-input () (#%builtin-type I)))
   (#%define
-   (#%scoped-var 2 random-int)
+   (#%scoped-var 1 random-int)
    (#%external-function
     random-int
     ((min (#%builtin-type I)) (max (#%builtin-type I)))
     (#%builtin-type I)))
   (#%define
-   (#%scoped-var 2 brd-count-empty-spots)
+   (#%scoped-var 1 brd-count-empty-spots)
    (#%external-function brd-count-empty-spots () (#%builtin-type I)))
   (#%define
-   (#%scoped-var 2 brd-get-nth-empty-slot-x)
+   (#%scoped-var 1 brd-get-nth-empty-slot-x)
    (#%external-function
     brd-get-nth-empty-slot-x
     ((index (#%builtin-type I)))
     (#%builtin-type I)))
   (#%define
-   (#%scoped-var 2 brd-get-nth-empty-slot-y)
+   (#%scoped-var 1 brd-get-nth-empty-slot-y)
    (#%external-function
     brd-get-nth-empty-slot-y
     ((index (#%builtin-type I)))
     (#%builtin-type I)))
   (#%define
-   (#%scoped-var 2 brd-get-with-rotation)
+   (#%scoped-var 1 brd-get-with-rotation)
    (#%external-function
     brd-get-with-rotation
     ((x (#%builtin-type I)) (y (#%builtin-type I)) (dir (#%builtin-type I)))
     (#%builtin-type I)))
   (#%define
-   (#%scoped-var 2 brd-set-with-rotation)
+   (#%scoped-var 1 brd-set-with-rotation)
    (#%external-function
     brd-set-with-rotation
     ((x (#%builtin-type I))
@@ -39,32 +39,32 @@
      (stone (#%builtin-type I)))
     (#%builtin-type V)))
   (#%define
-   (#%scoped-var 2 is-marked-merged)
+   (#%scoped-var 1 is-marked-merged)
    (#%external-function
     is-marked-merged
     ((pos (#%builtin-type I)))
     (#%builtin-type I)))
   (#%define
-   (#%scoped-var 2 mark-merged)
+   (#%scoped-var 1 mark-merged)
    (#%external-function
     mark-merged
     ((pos (#%builtin-type I)) (value (#%builtin-type I)))
     (#%builtin-type V)))
   (#%define
-   (#%scoped-var 2 dummy-void)
+   (#%scoped-var 1 dummy-void)
    (#%external-function dummy-void () (#%builtin-type V)))
-  (#%define (#%scoped-var 2 DIR-LEFT) 0)
+  (#%define (#%scoped-var 1 DIR-LEFT) 0)
   (#%defun
    brd-set
    ((x (#%builtin-type I)) (y (#%builtin-type I)) (value (#%builtin-type I)))
    (#%builtin-type V)
    (#%begin
     (#%app
-     (#%scoped-var 2 brd-set-with-rotation)
-     (#%scoped-var 3 x)
-     (#%scoped-var 3 y)
-     (#%scoped-var 2 DIR-LEFT)
-     (#%scoped-var 3 value))))
+     (#%scoped-var 1 brd-set-with-rotation)
+     (#%scoped-var 2 x)
+     (#%scoped-var 2 y)
+     (#%scoped-var 1 DIR-LEFT)
+     (#%scoped-var 2 value))))
   (#%defun
    and3
    ((a (#%builtin-type I)) (b (#%builtin-type I)) (c (#%builtin-type I)))
@@ -74,9 +74,9 @@
      (#%builtin-function . builtin-and-ii)
      (#%app
       (#%builtin-function . builtin-and-ii)
-      (#%scoped-var 3 a)
-      (#%scoped-var 3 b))
-     (#%scoped-var 3 c))))
+      (#%scoped-var 2 a)
+      (#%scoped-var 2 b))
+     (#%scoped-var 2 c))))
   (#%defun
    update-column
    ((x (#%builtin-type I))
@@ -86,208 +86,208 @@
    (#%builtin-type I)
    (#%begin
     (#%define
-     (#%scoped-var 4 stone)
+     (#%scoped-var 2 stone)
      (#%app
-      (#%scoped-var 2 brd-get-with-rotation)
-      (#%scoped-var 3 x)
-      (#%scoped-var 3 y)
-      (#%scoped-var 3 dir)))
+      (#%scoped-var 1 brd-get-with-rotation)
+      (#%scoped-var 2 x)
+      (#%scoped-var 2 y)
+      (#%scoped-var 2 dir)))
     (#%if
-     (#%scoped-var 4 stone)
+     (#%scoped-var 2 stone)
      (#%begin
       (#%define
-       (#%scoped-var 5 should-merge)
+       (#%scoped-var 2 should-merge)
        (#%app
-        (#%scoped-var 2 and3)
+        (#%scoped-var 1 and3)
         (#%app
          (#%builtin-function . builtin-greaterthan-ii)
-         (#%scoped-var 3 output-pos)
+         (#%scoped-var 2 output-pos)
          0)
         (#%app
          (#%builtin-function . builtin-eq-ii)
          (#%app
-          (#%scoped-var 2 brd-get-with-rotation)
+          (#%scoped-var 1 brd-get-with-rotation)
           (#%app
            (#%builtin-function . builtin-sub-ii)
-           (#%scoped-var 3 output-pos)
+           (#%scoped-var 2 output-pos)
            1)
-          (#%scoped-var 3 y)
-          (#%scoped-var 3 dir))
-         (#%scoped-var 4 stone))
+          (#%scoped-var 2 y)
+          (#%scoped-var 2 dir))
+         (#%scoped-var 2 stone))
         (#%app
          (#%builtin-function . builtin-not-i)
          (#%app
-          (#%scoped-var 2 is-marked-merged)
+          (#%scoped-var 1 is-marked-merged)
           (#%app
            (#%builtin-function . builtin-sub-ii)
-           (#%scoped-var 3 output-pos)
+           (#%scoped-var 2 output-pos)
            1)))))
       (#%if
-       (#%scoped-var 5 should-merge)
+       (#%scoped-var 2 should-merge)
        (#%begin
         (#%app
-         (#%scoped-var 2 brd-set-with-rotation)
+         (#%scoped-var 1 brd-set-with-rotation)
          (#%app
           (#%builtin-function . builtin-sub-ii)
-          (#%scoped-var 3 output-pos)
+          (#%scoped-var 2 output-pos)
           1)
-         (#%scoped-var 3 y)
-         (#%scoped-var 3 dir)
+         (#%scoped-var 2 y)
+         (#%scoped-var 2 dir)
          (#%app
           (#%builtin-function . builtin-mul-ii)
           2
-          (#%scoped-var 4 stone)))
+          (#%scoped-var 2 stone)))
         (#%app
-         (#%scoped-var 2 mark-merged)
+         (#%scoped-var 1 mark-merged)
          (#%app
           (#%builtin-function . builtin-sub-ii)
-          (#%scoped-var 3 output-pos)
+          (#%scoped-var 2 output-pos)
           1)
          1)
-        (#%scoped-var 3 output-pos))
+        (#%scoped-var 2 output-pos))
        (#%begin
         (#%app
-         (#%scoped-var 2 brd-set-with-rotation)
-         (#%scoped-var 3 output-pos)
-         (#%scoped-var 3 y)
-         (#%scoped-var 3 dir)
-         (#%scoped-var 4 stone))
-        (#%app (#%scoped-var 2 mark-merged) (#%scoped-var 3 output-pos) 0)
+         (#%scoped-var 1 brd-set-with-rotation)
+         (#%scoped-var 2 output-pos)
+         (#%scoped-var 2 y)
+         (#%scoped-var 2 dir)
+         (#%scoped-var 2 stone))
+        (#%app (#%scoped-var 1 mark-merged) (#%scoped-var 2 output-pos) 0)
         (#%app
          (#%builtin-function . builtin-add-ii)
-         (#%scoped-var 3 output-pos)
+         (#%scoped-var 2 output-pos)
          1))))
-     (#%scoped-var 3 output-pos))))
+     (#%scoped-var 2 output-pos))))
   (#%defun
    update-row
    ((y (#%builtin-type I)) (dir (#%builtin-type I)))
    (#%builtin-type V)
    (#%begin
-    (#%define (#%scoped-var 4 output-pos) 0)
+    (#%define (#%scoped-var 2 output-pos) 0)
     (#%set-var
-     (#%scoped-var 4 output-pos)
+     (#%scoped-var 2 output-pos)
      (#%app
-      (#%scoped-var 2 update-column)
+      (#%scoped-var 1 update-column)
       0
-      (#%scoped-var 3 y)
-      (#%scoped-var 3 dir)
-      (#%scoped-var 4 output-pos)))
+      (#%scoped-var 2 y)
+      (#%scoped-var 2 dir)
+      (#%scoped-var 2 output-pos)))
     (#%set-var
-     (#%scoped-var 4 output-pos)
+     (#%scoped-var 2 output-pos)
      (#%app
-      (#%scoped-var 2 update-column)
+      (#%scoped-var 1 update-column)
       1
-      (#%scoped-var 3 y)
-      (#%scoped-var 3 dir)
-      (#%scoped-var 4 output-pos)))
+      (#%scoped-var 2 y)
+      (#%scoped-var 2 dir)
+      (#%scoped-var 2 output-pos)))
     (#%set-var
-     (#%scoped-var 4 output-pos)
+     (#%scoped-var 2 output-pos)
      (#%app
-      (#%scoped-var 2 update-column)
+      (#%scoped-var 1 update-column)
       2
-      (#%scoped-var 3 y)
-      (#%scoped-var 3 dir)
-      (#%scoped-var 4 output-pos)))
+      (#%scoped-var 2 y)
+      (#%scoped-var 2 dir)
+      (#%scoped-var 2 output-pos)))
     (#%set-var
-     (#%scoped-var 4 output-pos)
+     (#%scoped-var 2 output-pos)
      (#%app
-      (#%scoped-var 2 update-column)
+      (#%scoped-var 1 update-column)
       3
-      (#%scoped-var 3 y)
-      (#%scoped-var 3 dir)
-      (#%scoped-var 4 output-pos)))
+      (#%scoped-var 2 y)
+      (#%scoped-var 2 dir)
+      (#%scoped-var 2 output-pos)))
     (#%if
      (#%app
       (#%builtin-function . builtin-lessthan-ii)
-      (#%scoped-var 4 output-pos)
+      (#%scoped-var 2 output-pos)
       1)
      (#%app
-      (#%scoped-var 2 brd-set-with-rotation)
+      (#%scoped-var 1 brd-set-with-rotation)
       0
-      (#%scoped-var 3 y)
-      (#%scoped-var 3 dir)
+      (#%scoped-var 2 y)
+      (#%scoped-var 2 dir)
       0)
-     (#%app (#%scoped-var 2 dummy-void)))
+     (#%app (#%scoped-var 1 dummy-void)))
     (#%if
      (#%app
       (#%builtin-function . builtin-lessthan-ii)
-      (#%scoped-var 4 output-pos)
+      (#%scoped-var 2 output-pos)
       2)
      (#%app
-      (#%scoped-var 2 brd-set-with-rotation)
+      (#%scoped-var 1 brd-set-with-rotation)
       1
-      (#%scoped-var 3 y)
-      (#%scoped-var 3 dir)
+      (#%scoped-var 2 y)
+      (#%scoped-var 2 dir)
       0)
-     (#%app (#%scoped-var 2 dummy-void)))
+     (#%app (#%scoped-var 1 dummy-void)))
     (#%if
      (#%app
       (#%builtin-function . builtin-lessthan-ii)
-      (#%scoped-var 4 output-pos)
+      (#%scoped-var 2 output-pos)
       3)
      (#%app
-      (#%scoped-var 2 brd-set-with-rotation)
+      (#%scoped-var 1 brd-set-with-rotation)
       2
-      (#%scoped-var 3 y)
-      (#%scoped-var 3 dir)
+      (#%scoped-var 2 y)
+      (#%scoped-var 2 dir)
       0)
-     (#%app (#%scoped-var 2 dummy-void)))
+     (#%app (#%scoped-var 1 dummy-void)))
     (#%if
      (#%app
       (#%builtin-function . builtin-lessthan-ii)
-      (#%scoped-var 4 output-pos)
+      (#%scoped-var 2 output-pos)
       4)
      (#%app
-      (#%scoped-var 2 brd-set-with-rotation)
+      (#%scoped-var 1 brd-set-with-rotation)
       3
-      (#%scoped-var 3 y)
-      (#%scoped-var 3 dir)
+      (#%scoped-var 2 y)
+      (#%scoped-var 2 dir)
       0)
-     (#%app (#%scoped-var 2 dummy-void)))))
+     (#%app (#%scoped-var 1 dummy-void)))))
   (#%defun
    generate-new-stone
    ()
    (#%builtin-type V)
    (#%begin
     (#%define
-     (#%scoped-var 4 new-stone-value)
+     (#%scoped-var 2 new-stone-value)
      (#%if
       (#%app
        (#%builtin-function . builtin-lessthan-ii)
-       (#%app (#%scoped-var 2 random-int) 0 100)
+       (#%app (#%scoped-var 1 random-int) 0 100)
        90)
       2
       4))
     (#%define
-     (#%scoped-var 4 num-empty-spots)
-     (#%app (#%scoped-var 2 brd-count-empty-spots)))
+     (#%scoped-var 2 num-empty-spots)
+     (#%app (#%scoped-var 1 brd-count-empty-spots)))
     (#%define
-     (#%scoped-var 4 nth-spot)
-     (#%app (#%scoped-var 2 random-int) 0 (#%scoped-var 4 num-empty-spots)))
+     (#%scoped-var 2 nth-spot)
+     (#%app (#%scoped-var 1 random-int) 0 (#%scoped-var 2 num-empty-spots)))
     (#%define
-     (#%scoped-var 4 x)
+     (#%scoped-var 2 x)
      (#%app
-      (#%scoped-var 2 brd-get-nth-empty-slot-x)
-      (#%scoped-var 4 nth-spot)))
+      (#%scoped-var 1 brd-get-nth-empty-slot-x)
+      (#%scoped-var 2 nth-spot)))
     (#%define
-     (#%scoped-var 4 y)
+     (#%scoped-var 2 y)
      (#%app
-      (#%scoped-var 2 brd-get-nth-empty-slot-y)
-      (#%scoped-var 4 nth-spot)))
+      (#%scoped-var 1 brd-get-nth-empty-slot-y)
+      (#%scoped-var 2 nth-spot)))
     (#%app
-     (#%scoped-var 2 brd-set)
-     (#%scoped-var 4 x)
-     (#%scoped-var 4 y)
-     (#%scoped-var 4 new-stone-value))))
+     (#%scoped-var 1 brd-set)
+     (#%scoped-var 2 x)
+     (#%scoped-var 2 y)
+     (#%scoped-var 2 new-stone-value))))
   (#%defun
    make-turn
    ((dir (#%builtin-type I)))
    (#%builtin-type V)
    (#%begin
-    (#%app (#%scoped-var 2 update-row) 0 (#%scoped-var 3 dir))
-    (#%app (#%scoped-var 2 update-row) 1 (#%scoped-var 3 dir))
-    (#%app (#%scoped-var 2 update-row) 2 (#%scoped-var 3 dir))
-    (#%app (#%scoped-var 2 update-row) 3 (#%scoped-var 3 dir)))))
+    (#%app (#%scoped-var 1 update-row) 0 (#%scoped-var 2 dir))
+    (#%app (#%scoped-var 1 update-row) 1 (#%scoped-var 2 dir))
+    (#%app (#%scoped-var 1 update-row) 2 (#%scoped-var 2 dir))
+    (#%app (#%scoped-var 1 update-row) 3 (#%scoped-var 2 dir)))))
  ((#%builtin-type V)
   ((#%builtin-type V) #(struct:function-type () (#%builtin-type I)) . #f)
   ((#%builtin-type V)

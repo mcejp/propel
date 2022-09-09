@@ -7,13 +7,13 @@ inline int builtin_greaterthan_ii(int a, int b) { return (a > b) ? 1 : 0; }
 inline int builtin_and_ii(int a, int b) { return a && b; }
 inline int builtin_not_i(int a) { return a ? 0 : 1; }
 
-int scope2_add(int scope3_a, int scope3_b)
+int add(int scope2_a, int scope2_b)
 {
-    int scope4_left = scope3_a;
+    int scope2_left = scope2_a;
     ;
-    int scope4_right = scope3_b;
+    int scope2_right = scope2_b;
     ;
-    int scope4_sum = builtin_add_ii(scope4_left, scope4_right);
+    int scope2_sum = builtin_add_ii(scope2_left, scope2_right);
     ;
-    return scope4_sum;
+    return scope2_sum;
 }

@@ -5,14 +5,14 @@
    (#%builtin-type I)
    (#%begin
     (#%if
-     (#%app (#%builtin-function . builtin-eq-ii) (#%scoped-var 3 n) 0)
+     (#%app (#%builtin-function . builtin-eq-ii) (#%scoped-var 2 n) 0)
      1
      (#%app
       (#%builtin-function . builtin-mul-ii)
-      (#%scoped-var 3 n)
+      (#%scoped-var 2 n)
       (#%app
-       (#%scoped-var 2 factorial)
-       (#%app (#%builtin-function . builtin-sub-ii) (#%scoped-var 3 n) 1)))))))
+       (#%scoped-var 1 factorial)
+       (#%app (#%builtin-function . builtin-sub-ii) (#%scoped-var 2 n) 1)))))))
  ((#%builtin-type V)
   ((#%builtin-type V)
    (#%builtin-type I)

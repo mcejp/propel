@@ -8,7 +8,7 @@ inline int builtin_and_ii(int a, int b) { return a && b; }
 inline int builtin_not_i(int a) { return a ? 0 : 1; }
 
 ;
-int scope2_add(int scope3_a, int scope3_b)
+int add(int scope2_a, int scope2_b)
 {
-    return builtin_add_ii(scope3_a, scope3_b);
+    return builtin_add_ii(scope2_a, scope2_b);
 }

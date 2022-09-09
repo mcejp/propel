@@ -4,7 +4,7 @@
    ((n (#%builtin-type I)))
    (#%builtin-type I)
    (#%begin
-    (#%app (#%builtin-function . builtin-add-ii) (#%scoped-var 3 n) 1))))
+    (#%app (#%builtin-function . builtin-add-ii) (#%scoped-var 2 n) 1))))
  #f
  ((#<path:/workspace/lisp-experiments/propel.rkt> 9 32 262 10)
   (#f 0 0 0 10)

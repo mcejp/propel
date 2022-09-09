@@ -63,15 +63,7 @@
    stx
    (match (syntax-e stx)
      [(list (? is-#%app? t) exprs ..1) (cons t (map rec exprs))]
-     [(list (? is-#%begin? t) stmts ...)
-      (define nested-scope
-        (scope current-scope
-               (add1 (scope-level current-scope))
-               (make-hash)
-               (make-hash)
-               (make-hash)))
-      (cons t (map (curry resolve-names/form f nested-scope) stmts))
-     ]
+     [(list (? is-#%begin? t) stmts ...) (cons t (map rec stmts))]
      [(list (? is-#%define? t) name-stx value) (begin
        (define name (syntax-e name-stx))
        (scope-insert-variable! current-scope name stx)

@@ -18,15 +18,7 @@
 
    (match (syntax-e stx)
      [(list (? is-#%begin? t) stmts ..1)
-      ;; stupid that we duplicate this code from propel-names.rkt
-      (define nested-scope
-        (scope current-scope
-               (add1 (scope-level current-scope))
-               (make-hash)
-               (make-hash)
-               (make-hash)))
-
-      (let ([sub-trees (map (curry resolve-types f nested-scope) stmts)])
+      (let ([sub-trees (map rec stmts)])
         (cons (car (last sub-trees)) sub-trees)
         )]
      [(list (? is-#%begin? t))
