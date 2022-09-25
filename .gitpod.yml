@@ -5,7 +5,7 @@ tasks:
       wget https://download.racket-lang.org/installers/8.6/racket-8.6-x86_64-linux-cs.sh
       sudo sh racket-8.6-x86_64-linux-cs.sh --unix-style --dest /usr/
       rm racket-8.6-x86_64-linux-cs.sh
-      raco pkg install --auto fmt racket-langserver
+      raco pkg install --auto --no-docs fmt racket-langserver
 
 vscode:
   extensions:
