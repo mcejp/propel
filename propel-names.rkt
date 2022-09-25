@@ -54,6 +54,20 @@
     [(? symbol? sym) (resolve-type-name scope stx sym)]
     ))
 
+(define (resolve-names/form-with-new-scope current-scope stx #:inject-symbols [inject-symbols '()])
+  (define nested-scope
+    (scope current-scope
+           (add1 (scope-level current-scope))
+           (make-hash)
+           (make-hash)
+           (make-hash)))
+
+  (for ([name inject-symbols])
+    (scope-insert-variable! nested-scope name stx))
+
+  (resolve-names/form #f nested-scope stx)
+  )
+
 (define (resolve-names/form f current-scope stx)
   (define rec (curry resolve-names/form f current-scope))     ; recurse
 
@@ -86,24 +100,21 @@
       ;            (cons '#%module-function name))
       (scope-insert-variable! current-scope name stx)
 
-      (define func-scope
-        (scope current-scope
-               (add1 (scope-level current-scope))
-               (make-hash)
-               (make-hash)
-               (make-hash)))
-      ;; insert arguments
-      (for ([arg-stx (syntax-e args-stx)])
-        (match-define (list name-stx type-stx) (syntax-e arg-stx))
-        (define name (syntax-e name-stx))
-        ;(hash-set! (scope-objects func-scope) name (cons '#%argument name-stx))
-        (scope-insert-variable! func-scope name stx)
-        )
-
       (define resolved-args (resolve-names/types-in-arg-list current-scope args-stx))
       (define resolved-ret (resolve-type-name current-scope ret-stx (syntax->datum ret-stx))) ; ???
 
-      (list t name-stx resolved-args resolved-ret (resolve-names/form f func-scope body-stx))
+      ;; extract argument names for injection into function body scope
+      (define arg-names
+        (for/list ([arg-stx (syntax-e args-stx)])
+          (match-define (list name-stx type-stx) (syntax-e arg-stx))
+          (syntax-e name-stx)
+        ))
+
+      (list t
+            name-stx
+            resolved-args
+            resolved-ret
+            (resolve-names/form-with-new-scope current-scope body-stx #:inject-symbols arg-names))
       ]
      [(list (? is-#%dot? t) obj field) (list t (rec obj) field)]
      [(list (? is-#%external-function? t) name-stx args-stx ret-stx)
