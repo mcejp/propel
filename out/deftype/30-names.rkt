@@ -11,9 +11,9 @@
      (#%scoped-var 2 a)
      (#%scoped-var 2 b)))))
  #f
- ((#<path:/workspace/lisp-experiments/propel.rkt> 9 32 262 10)
-  (#f 0 0 0 10)
-  ((#<path:/workspace/lisp-experiments/tests/deftype.rkt> -7 -32 -233 20)
+ ((#<path:/workspace/lisp-experiments/propel-syntax.rkt> 46 80 1638 2)
+  (#f 0 0 0 2)
+  ((#<path:tests/deftype.rkt> -46 -80 -1638 20)
    (#f 0 0 0 20)
    (#f 0 9 9 6)
    ((#f 0 -9 -9 20) (#f 0 0 0 20) (#f 0 0 0 20)))

@@ -14,9 +14,9 @@
        (#%scoped-var 1 factorial)
        (#%app (#%builtin-function . builtin-sub-ii) (#%scoped-var 2 n) 1)))))))
  #f
- ((#<path:/workspace/lisp-experiments/propel.rkt> 9 32 262 10)
-  (#f 0 0 0 10)
-  ((#<path:/workspace/lisp-experiments/tests/factorial.rkt> -7 -32 -233 86)
+ ((#<path:/workspace/lisp-experiments/propel-syntax.rkt> 46 80 1638 2)
+  (#f 0 0 0 2)
+  ((#<path:tests/factorial.rkt> -46 -80 -1638 86)
    (#f 0 0 0 86)
    (#f 0 7 7 9)
    ((#f 0 -7 -7 86)

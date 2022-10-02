@@ -41,8 +41,10 @@
 (define (literal? lit) (or (boolean? lit) (number? lit)))
 
 (define (parse-module path)
-  (dynamic-require path 'propel-module-stx)
-)
+  (set! path (string->path path))
+  (parameterize ([port-count-lines-enabled #t])
+    (with-input-from-file	path (lambda () (begin
+      (datum->syntax #'() (sequence->list (in-port (curry read-syntax path))) #'()))))))
 
 (define (resolve-forms stx)
   (define rec resolve-forms)     ; recurse

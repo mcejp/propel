@@ -1,5 +1,3 @@
-#lang s-exp "../propel.rkt"
-
 ;; 4 rows x 4 columns
 ;(deftype Board (array I 4 4))
 ;(defvar the-board (Board))
