@@ -94,7 +94,9 @@
        (when (equal? column #f)
          (set! column 0))
 
-       (list (list (if (equal? path last-path) #f path)
+       ; TODO: when path changes, reset also last-srcloc
+       ; (in other words, don't try to compute srcloc difference across different files)
+       (list (list (if (equal? path last-path) #f (relativize path))
                    (- line (srcloc-line last-srcloc))
                    (- column (srcloc-column last-srcloc))
                    (- (srcloc-position tree) (srcloc-position last-srcloc))
@@ -102,6 +104,26 @@
              (struct-copy srcloc tree [line line] [column column])))]
     ;[#f (list "N/A" last-srcloc)]
     ))
+
+;; Inspect path and if it points into Propel sources, relativize it
+(define (relativize path)
+  (define propel-src-dir (drop-right (explode-path (syntax-source #'())) 1))
+  (define-values (without-prefix remainder)
+    (drop-common-prefix (explode-path path) propel-src-dir))
+
+  (if (eq? remainder '())
+      (apply build-path
+             (cons "#INT#" without-prefix)) ; successfully removed prefix
+      path ; prefix does not appear; return original path
+      ))
+
+;; Recursively remove prefix sergments from path. Returns #f if path and prefix do not start with tha same segment
+(define (remove-prefix path-segments prefix-segments)
+  (if (eq? prefix-segments '())
+      path-segments ; prefix exhausted
+      (if (equal? (car path-segments) (car prefix-segments))
+          (remove-prefix (cdr path-segments) (cdr prefix-segments))
+          #f)))
 
 (define (serialize-type name t)
   (list name t))
