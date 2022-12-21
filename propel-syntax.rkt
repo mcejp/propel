@@ -40,11 +40,12 @@
 (define (is-set!? stx) (equal? (syntax-e stx) 'set!))
 (define (literal? lit) (or (boolean? lit) (number? lit)))
 
+;; Parse a module and return it wrapped with a #'(begin ...) syntax form
 (define (parse-module path)
   (set! path (string->path path))
   (parameterize ([port-count-lines-enabled #t])
     (with-input-from-file	path (lambda () (begin
-      (datum->syntax #'() (sequence->list (in-port (curry read-syntax path))) #'()))))))
+      (datum->syntax #'() (cons #'begin (sequence->list (in-port (curry read-syntax path)))) #'()))))))
 
 (define (resolve-forms stx)
   (define rec resolve-forms)     ; recurse
