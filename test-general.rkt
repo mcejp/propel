@@ -1,37 +1,47 @@
 #lang racket/base
 
 (require rackunit
+         "module.rkt"
          "propel-serialize.rkt"
-         "propel-syntax.rkt")
+         "propel-syntax.rkt"
+         "scope.rkt")
 
 (test-case
  "dot.rkt"
- (define mod (parse-module "tests/dot.rkt"))
- (resolve-forms/module! mod)
+ (define stx (parse-module "tests/dot.rkt"))
+ (define mod (syntax->module (resolve-forms stx)))
  (define ser (serialize-module mod))
  (check-equal?
   ser
-  `((get-name
-     ((foo Bar))
-     str
-     (#%begin (#%dot foo name))
-     #f
-     ((,(string->path "/workspace/lisp-experiments/tests/dot.rkt") 2 0 29 46)
+  `((#%begin (#%defun get-name ((foo Bar)) str (#%begin (#%dot foo name))))
+    #f
+    ((,(string->path "#INT#/propel-syntax.rkt") 47 95 1726 2)
+     (#f 0 0 0 2)
+     ((,(string->path "tests/dot.rkt") -47 -95 -1726 46)
       (#f 0 0 0 46)
-      ((#f 1 2 34 8) (#f 0 0 0 8) (#f 0 0 0 8) (#f 0 0 0 8)))))))
+      (#f 0 7 7 8)
+      ((#f 0 9 9 11) ((#f 0 1 1 9) (#f 0 1 1 3) (#f 0 4 4 3)))
+      (#f 0 6 6 3)
+      ((#f 0 -28 -28 46)
+       (#f 0 0 0 46)
+       ((#f 1 2 34 8) (#f 0 0 0 8) (#f 0 0 0 8) (#f 0 0 0 8))))))))
 
 (test-case
  "hello.rkt"
- (define mod (parse-module "tests/hello.rkt"))
+ (define stx (parse-module "tests/hello.rkt"))
+ (define mod (syntax->module (resolve-forms stx)))
  (define ser (serialize-module mod))
  (check-equal?
   ser
-  `((increment
-     ((n int))
-     int
-     (begin
-       (+ n 1))
-     #f
-     ((,(string->path "/workspace/lisp-experiments/tests/hello.rkt") 2 0 29 44)
-      (#f 0 1 1 5)
-      ((#f 1 1 32 7) (#f 0 1 1 1) (#f 0 2 2 1) (#f 0 2 2 1)))))))
+  `((#%begin (#%defun increment ((n int)) int (#%begin (#%app + n 1))))
+    #f
+    ((,(string->path "#INT#/propel-syntax.rkt") 47 95 1726 2)
+     (#f 0 0 0 2)
+     ((,(string->path "tests/hello.rkt") -47 -95 -1726 44)
+      (#f 0 0 0 44)
+      (#f 0 7 7 9)
+      ((#f 0 10 10 9) ((#f 0 1 1 7) (#f 0 1 1 1) (#f 0 2 2 3)))
+      (#f 0 6 6 3)
+      ((#f 0 -27 -27 44)
+       (#f 0 0 0 44)
+       ((#f 1 2 33 7) (#f 0 0 0 7) (#f 0 1 1 1) (#f 0 2 2 1) (#f 0 2 2 1))))))))
