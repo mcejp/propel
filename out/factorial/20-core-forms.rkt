@@ -6,9 +6,9 @@
    (#%begin
     (#%if (#%app = n 0) 1 (#%app * n (#%app factorial (#%app - n 1)))))))
  #f
- ((#<path:/workspace/lisp-experiments/propel-syntax.rkt> 46 80 1638 2)
+ ((#<path:#INT#/propel-syntax.rkt> 47 95 1726 2)
   (#f 0 0 0 2)
-  ((#<path:tests/factorial.rkt> -46 -80 -1638 86)
+  ((#<path:tests/factorial.rkt> -47 -95 -1726 86)
    (#f 0 0 0 86)
    (#f 0 7 7 9)
    ((#f 0 10 10 9) ((#f 0 1 1 7) (#f 0 1 1 1) (#f 0 2 2 3)))
