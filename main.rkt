@@ -20,11 +20,15 @@
   (define stx (parse-module path))
 
   ; convert module syntax into legacy module structure
-
-  (define propel-module
-    (module (scope base-scope 1 (make-hash) (make-hash) (make-hash))
-            (resolve-forms stx)
-      #f))
+  ; why this is necessary:
+  ;  - latter parts of the compilation pipeline (dump, resolve-names, resolve-types...) still work
+  ;    with this representation
+  ; why we decided to move on from it:
+  ;  - we used to have a list of functions directly in module; we abandoned this because functions
+  ;    can be nested
+  ;  - now we still keep a 'scope' object, but it's pointless as well, all scoping can be derived from
+  ;    the syntax tree itself
+  (define propel-module (syntax->module (resolve-forms stx)))
 
   #;(call-with-output-file
      "parsed.rkt"
