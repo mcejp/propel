@@ -1,0 +1,28 @@
+on:
+  - push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - uses: Bogdanp/setup-racket@v1.9
+      with:
+        architecture: 'x64'  # or: 'x64', 'x86', 'arm32', 'arm64' (or 'aarch64')
+        distribution: 'full' # or: 'minimal' (but you probably don't want 'minimal', see note at the bottom of this doc)
+        variant: 'CS'        # or: 'BC' for Racket Before Chez
+        version: '8.6'       # or: 'stable' for the latest version, 'current' for the latest snapshot, 'pre-release' for the latest pre-release build
+    - run: raco pkg install --auto --no-docs fmt
+
+    - run: sh fmt.sh
+    - run: PLT_CS_DEBUG=1 raco test test*.rkt
+    - run: PLT_CS_DEBUG=1 racket main.rkt
+
+    # Test that 2048 compiles & runs
+    - run: g++ -o 2048 out/2048/50-cpp.cpp harness.cpp
+    - run: ./2048
+    - run: rm 2048
+
+    # Check that working directory is clean
+    - run: git status --porcelain
+    - run: test -z "$(git status --porcelain)"
