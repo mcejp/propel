@@ -6,14 +6,6 @@ Run tests: `PLT_CS_DEBUG=1 raco test test*.rkt`
 
 `PLT_CS_DEBUG=1 racket main.rkt && g++ -o 2048 out/2048/50-cpp.cpp harness.cpp && ./2048`
 
-```
-   Source (DSL in Racket)
--> Source with macros expanded (propel.rkt)
--> Source with syntax forms expanded (`player.pos.x`, `#%app` etc; propel-syntax.rkt)
--> Resolved names (propel-names.rkt)
--> Resolved types (propel-types.rkt)
-```
-
 ### Primitive types
 
 - `void` / `nil`
@@ -21,15 +13,20 @@ Run tests: `PLT_CS_DEBUG=1 raco test test*.rkt`
 
 ### Core forms (TBD)
 
-- `(#%app <func> <args>)`
+- `(#%app <func> <args>...*)`
 - `(#%begin <stmt> ...+)`
-- `(#%construct <type> <args>)`
+- `(#%construct <type> <args>...*)`
 - `(#%dot <expr> <name>)`
 - `(#%if <expr> <then> <else>)`
 - `(#%scoped-var <depth-stx> <name-stx>)` (no reason for depth to be represented with a `#(syntax)`, it's a limitation of the current architecture)
 
 Note: All of these must be represented as `#<syntax>` objects, this is quite annoying.
       Might be better to preserve original syntax objects explicitly as another field in the representation.
+
+#### Core forms for types
+
+- `(#%array-type <element-type> <size>)`
+- `(#%builtin-type I)` / `(#%builtin-type V)`
 
 #### Already deprecated
 
