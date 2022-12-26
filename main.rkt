@@ -4,6 +4,7 @@
          racket/struct
          "backend-c++.rkt"
          "module.rkt"
+         "propel-expand.rkt"
          "propel-models.rkt"
          "propel-names.rkt"
          "propel-serialize.rkt"
@@ -19,10 +20,13 @@
 
   (define stx (parse-module path))
 
+  ;; expand macros
+  (set! stx (expand-forms stx))
+
   ; convert module syntax into legacy module structure
   ; why this is necessary:
-  ;  - latter parts of the compilation pipeline (dump, resolve-names, resolve-types...) still work
-  ;    with this representation
+  ;  - latter parts of the compilation pipeline (resolve-names, resolve-types, serialize-module...)
+  ;    still work with this representation
   ; why we decided to move on from it:
   ;  - we used to have a list of functions directly in module; we abandoned this because functions
   ;    can be nested
