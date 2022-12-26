@@ -82,5 +82,5 @@
    "50-cpp.cpp"
    (λ () (compile-module-to-c++ propel-module))))
 
-(for ([testcase '("2048" "def-local" "deftype" "factorial" "hello")])
+(for ([testcase '("2048" "def-local" "deftype" "factorial" "hello" "void")])
   (compile-propel-module (~a "tests/" testcase ".rkt") (~a "out/" testcase)))

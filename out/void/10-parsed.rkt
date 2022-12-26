@@ -1,0 +1,13 @@
+((#%begin (#%app Void) (#%defun empty () Void (#%begin (#%app Void))))
+ #f
+ ((#<path:#INT#/propel-syntax.rkt> 47 95 1726 2)
+  (#f 0 0 0 2)
+  ((#<path:tests/void.rkt> -47 -95 -1726 6) (#f 0 0 0 6) (#f 0 1 1 4))
+  ((#f 2 -1 7 30)
+   (#f 0 0 0 30)
+   (#f 0 7 7 5)
+   ((#f 0 6 6 2))
+   (#f 0 3 3 4)
+   ((#f 0 -16 -16 30)
+    (#f 0 0 0 30)
+    ((#f 1 2 23 6) (#f 0 0 0 6) (#f 0 1 1 4))))))

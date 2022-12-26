@@ -97,6 +97,17 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
          expr))
      (values my-tokens final-expr)]
     [(list (? is-#%begin? t)) (values '() "")]
+    [(list (? is-#%construct?) type-stx args-stx ...)
+     (begin
+       (unless (equal? (syntax->datum type-stx) type-V)
+         (raise-syntax-error #f
+                             "only Void type can be currently constructed"
+                             form))
+       (unless (empty? args-stx)
+         (raise-syntax-error #f
+                             "expected 0 arguments when constructing Void"
+                             form))
+       (values '() ""))]
     [(list (? is-#%define? _) var-stx value)
      (define value-tt sub-tts)
      (define-values (var-tokens var-expr) (format-form var-stx (cons #f #f)))

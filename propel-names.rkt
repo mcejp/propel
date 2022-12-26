@@ -8,6 +8,7 @@
 
 (provide is-#%argument?
          is-#%builtin-function?
+         is-#%construct?
          is-#%external-function?
          is-#%module-function?
          is-#%scoped-var?
@@ -15,9 +16,11 @@
 
 (define (is-#%argument? stx) (equal? (syntax-e stx) '#%argument))
 (define (is-#%builtin-function? stx) (equal? (syntax-e stx) '#%builtin-function))
+(define (is-#%construct? stx) (equal? (syntax-e stx) '#%construct))
 (define (is-#%external-function? stx) (equal? (syntax-e stx) '#%external-function))
 (define (is-#%module-function? stx) (equal? (syntax-e stx) '#%module-function))
 (define (is-#%scoped-var? stx) (equal? (syntax-e stx) '#%scoped-var))
+(define (is-Void? stx) (equal? (syntax-e stx) 'Void))
 
 ;; NAME RESOLUTION
 ; for the moment, any symbol that we encounter can refer either to:
@@ -76,6 +79,8 @@
   (datum->syntax
    stx
    (match (syntax-e stx)
+     ;; TODO: generalize to any type constructor
+     [(list (? is-#%app? t) (? is-Void? type-stx)) (list '#%construct (resolve-type-name current-scope type-stx (syntax->datum type-stx)))]
      [(list (? is-#%app? t) exprs ..1) (cons t (map rec exprs))]
      [(list (? is-#%begin? t) stmts ...) (cons t (map rec stmts))]
      [(list (? is-#%define? t) name-stx value) (begin

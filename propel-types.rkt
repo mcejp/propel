@@ -40,6 +40,18 @@
       (define name (syntax-e name-stx))
       (cons (get-builtin-function-type current-scope name-stx name) #f)
       ]
+    [(list (? is-#%construct? t) type-stx args-stx ...)
+     (unless (equal? (syntax->datum type-stx) type-V)
+       (println (syntax->datum type-stx))
+       (println type-V)
+       (raise-syntax-error #f
+                           "only Void type can be currently constructed"
+                           stx))
+     (unless (empty? args-stx)
+       (raise-syntax-error #f
+                           "expected 0 arguments when constructing Void"
+                           stx))
+     (cons type-V #f)]
      [(list (? is-#%define? t) var-stx value)
       ;; recurse to value & insert type information
       (define value-tt (rec value))

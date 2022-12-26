@@ -23,6 +23,7 @@ Run tests: `PLT_CS_DEBUG=1 raco test test*.rkt`
 
 - `(#%app <func> <args>)`
 - `(#%begin <stmt> ...+)`
+- `(#%construct <type> <args>)`
 - `(#%dot <expr> <name>)`
 - `(#%if <expr> <then> <else>)`
 - `(#%scoped-var <depth-stx> <name-stx>)` (no reason for depth to be represented with a `#(syntax)`, it's a limitation of the current architecture)
