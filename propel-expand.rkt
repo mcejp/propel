@@ -2,14 +2,37 @@
 
 (provide expand-forms)
 
+(define-namespace-anchor ns)
+
+(define (is-define-transformer? stx)
+  (equal? (syntax-e stx) 'define-transformer))
+
 (define (expand-forms stx)
-  (define rec expand-forms) ; recurse
+  (expand-forms* (make-hash) stx))
+
+;; TODO: macro scoping
+(define (expand-forms* transformers stx)
+  (define rec (curry expand-forms* transformers)) ; recurse
   ; (printf "expand-forms ~a\n" (syntax-e stx))
 
-  (datum->syntax stx
-                 (match (syntax-e stx)
-                   ;; TODO: define-transformer
-                   ;; TODO: if macro, expand
-                   [(? list? exprs) (map rec exprs)]
-                   [_ stx])
-                 stx))
+  (datum->syntax
+   stx
+   (match (syntax-e stx)
+     ;; handle (define-transformer ...) form
+     [(list (? is-define-transformer?) name-stx func-stx)
+      (begin
+        (hash-set! transformers
+                   (syntax->datum name-stx)
+                   (eval func-stx (namespace-anchor->namespace ns)))
+        '(Void))]
+
+     ;; if macro, expand
+     [(list tag-stx args-stx ...)
+      (begin
+        (define tag (syntax->datum tag-stx))
+        (define func (hash-ref transformers tag #f))
+        (if func (apply func args-stx) (map rec (cons tag-stx args-stx))))]
+
+     ;; otherwise pass untouched
+     [_ stx])
+   stx))
