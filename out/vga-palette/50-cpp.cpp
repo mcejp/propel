@@ -8,10 +8,9 @@ inline int builtin_and_ii(int a, int b) { return a && b; }
 inline int builtin_not_i(int a) { return a ? 0 : 1; }
 
 ;
-int my_palette_1 = 1;
 ;
-int my_palette_2 = 2;
+int my_palette[] =
+{
+    1, 2, 3, 4
+}
 ;
-int my_palette_3 = 3;
-;
-int my_palette_4 = 4;
