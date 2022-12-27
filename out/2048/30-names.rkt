@@ -289,9 +289,9 @@
     (#%app (#%scoped-var 1 update-row) 2 (#%scoped-var 2 dir))
     (#%app (#%scoped-var 1 update-row) 3 (#%scoped-var 2 dir)))))
  #f
- ((#<path:#INT#/propel-syntax.rkt> 47 95 1726 2)
+ ((#<path:#INT#/propel-syntax.rkt> 48 95 1794 2)
   (#f 0 0 0 2)
-  ((#<path:tests/2048.rkt> -35 -95 -1493 43)
+  ((#<path:tests/2048.rkt> -36 -95 -1561 43)
    (#f 0 0 0 43)
    ((#f 0 19 19 16) (#f 0 0 0 16) (#f 0 0 0 16) (#f 0 0 0 16))
    ((#f 0 -19 -19 43)

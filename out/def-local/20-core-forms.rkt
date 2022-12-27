@@ -9,9 +9,9 @@
     (#%define sum (#%app + left right))
     sum)))
  #f
- ((#<path:#INT#/propel-syntax.rkt> 47 95 1726 2)
+ ((#<path:#INT#/propel-syntax.rkt> 48 95 1794 2)
   (#f 0 0 0 2)
-  ((#<path:tests/def-local.rkt> -47 -95 -1726 97)
+  ((#<path:tests/def-local.rkt> -48 -95 -1794 97)
    (#f 0 0 0 97)
    (#f 0 7 7 3)
    ((#f 0 4 4 17)
