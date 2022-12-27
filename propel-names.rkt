@@ -6,19 +6,15 @@
          "scope.rkt"
          )
 
-(provide is-#%argument?
-         is-#%builtin-function?
+(provide is-#%builtin-function?
          is-#%construct?
          is-#%external-function?
-         is-#%module-function?
          is-#%scoped-var?
          resolve-names/module!)
 
-(define (is-#%argument? stx) (equal? (syntax-e stx) '#%argument))
 (define (is-#%builtin-function? stx) (equal? (syntax-e stx) '#%builtin-function))
 (define (is-#%construct? stx) (equal? (syntax-e stx) '#%construct))
 (define (is-#%external-function? stx) (equal? (syntax-e stx) '#%external-function))
-(define (is-#%module-function? stx) (equal? (syntax-e stx) '#%module-function))
 (define (is-#%scoped-var? stx) (equal? (syntax-e stx) '#%scoped-var))
 (define (is-Void? stx) (equal? (syntax-e stx) 'Void))
 
@@ -115,9 +111,6 @@
      [(list (? is-#%defun? t) name-stx args-stx ret-stx body-stx)
      (define name (syntax-e name-stx))
       ;; first insert function name into outer scope
-      ; (hash-set! (scope-objects current-scope)
-      ;            name
-      ;            (cons '#%module-function name))
       (scope-insert-variable! current-scope name stx)
 
       (define resolved-args (resolve-names/types-in-arg-list current-scope args-stx))

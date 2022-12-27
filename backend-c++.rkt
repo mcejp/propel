@@ -248,15 +248,11 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
        (string-append callee-expr "(" (string-join arg-exprs ", ") ")"))
 
      (values (list* callee-tokens arg-tokens) call-expr)]
-    [(cons (? is-#%argument? t) name-stx)
-     (values '() (symbol->string (syntax-e name-stx)))]
     [(cons (? is-#%builtin-function? t) name-stx)
      (values '() (sanitize-name (syntax-e name-stx)))]
     [(list (? is-#%external-function? t) name-stx args-stx ret-stx)
      (define name (sanitize-name (syntax-e name-stx)))
      (values (list (format-function-type-as-prototype name form-type)) name)]
-    [(cons (? is-#%module-function? t) name-stx)
-     (values '() (symbol->string (syntax-e name-stx)))]
     [(list (? is-#%scoped-var? t) level-stx name-stx)
      (values '()
              (make-scoped-name

@@ -83,8 +83,6 @@
       (for ([arg-stx (syntax-e args-stx)])
         (match-define (list name-stx type-stx) (syntax-e arg-stx))
         (define name (syntax-e name-stx))
-        ;(hash-set! (scope-objects func-scope) name (cons '#%argument name-stx))
-        ;(scope-insert-variable! func-scope name)
         (scope-discover-variable-type! func-scope name (syntax->datum type-stx))
         )
 
