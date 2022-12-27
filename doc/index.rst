@@ -8,5 +8,6 @@ Propel docs
 
    core-forms
    passes
+   scoping
    syntax
    terminology

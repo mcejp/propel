@@ -13,15 +13,7 @@ Run tests: `PLT_CS_DEBUG=1 raco test test*.rkt`
 
 ### Open questions
 
-- how to represent types in compiler?
+- how to represent types in compiler? -> right now it is a mixture of Racket structures and generic _type forms_
 - why aren't we using `syntax-parse`? -> because we need to execute code, not merely fill a template
 - usage of pairs vs lists for AST structures -> lists get printed more consistently, pairs can get mis-interpreted as list heads.
   Should experiment with structs as well.
-
-### Scoping
-
-- for now, it is not very elegant:
-  - types can be built-in or module-level
-  - functions can be built-in or module-level (functions names are _not_ values)
-  - (constants can be built-in or module-level or local)
-  - variables can be built-in or module-level or arguments or local
