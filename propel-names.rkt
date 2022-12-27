@@ -22,6 +22,10 @@
 (define (is-#%scoped-var? stx) (equal? (syntax-e stx) '#%scoped-var))
 (define (is-Void? stx) (equal? (syntax-e stx) 'Void))
 
+;; only valid in type expressions
+(define (is-#%array-type? stx)
+  (equal? (syntax-e stx) '#%array-type))
+
 ;; NAME RESOLUTION
 ; for the moment, any symbol that we encounter can refer either to:
 ; - function argument
@@ -52,6 +56,10 @@
 (define (resolve-names/type-stx scope stx)
   ; (printf "resolve-names/type-stx ~a\n" stx)
   (match (syntax-e stx)
+    ;; #%array-type form: resolve element type
+    [(list (? is-#%array-type? t) element-type-expr length)
+     (list t (resolve-names/type-stx scope element-type-expr) length)]
+
     ;; NB: right now we throw away the #%deftype tag... not good, we want to keep that information
     ;[(list '#%deftype type-expr) (resolve-names/type scope type-expr)]
     [(? symbol? sym) (resolve-type-name scope stx sym)]
@@ -80,9 +88,16 @@
    stx
    (match (syntax-e stx)
      ;; TODO: generalize to any type constructor
+     ;;       how to decide, though? doable if a named type but what if anonymous?
+     ;;       (we might simply require an explicit 'new' form in the latter case)
      [(list (? is-#%app? t) (? is-Void? type-stx)) (list '#%construct (resolve-type-name current-scope type-stx (syntax->datum type-stx)))]
      [(list (? is-#%app? t) exprs ..1) (cons t (map rec exprs))]
      [(list (? is-#%begin? t) stmts ...) (cons t (map rec stmts))]
+     ;; #%construct form: resolve type name and any arguments
+     [(list (? is-#%construct? t) type-stx args-stx ...)
+      (begin
+        (define resolved-type (resolve-names/type-stx current-scope type-stx))
+        (list* t resolved-type (map rec args-stx)))]
      [(list (? is-#%define? t) name-stx value) (begin
        (define name (syntax-e name-stx))
        (scope-insert-variable! current-scope name stx)

@@ -1,0 +1,20 @@
+((#%begin
+  (#%define
+   (#%scoped-var 1 my-array)
+   (#%construct (#%array-type (#%builtin-type I) 4) 1 2 3 4)))
+ #f
+ ((#<path:#INT#/propel-syntax.rkt> 48 95 1794 2)
+  (#f 0 0 0 2)
+  ((#<path:tests/def-array.rkt> -47 -95 -1769 57)
+   (#f 0 0 0 57)
+   ((#f 0 5 5 8) (#f 0 0 0 8) (#f 0 0 0 8) (#f 0 0 0 8))
+   ((#f 0 9 9 42)
+    (#f 0 1 1 11)
+    ((#f 0 -1 -1 42)
+     (#f 0 14 14 12)
+     ((#f 0 -14 -14 42) (#f 0 0 0 42) (#f 0 0 0 42))
+     (#f 0 31 31 1))
+    (#f 0 3 3 1)
+    (#f 0 2 2 1)
+    (#f 0 2 2 1)
+    (#f 0 2 2 1)))))

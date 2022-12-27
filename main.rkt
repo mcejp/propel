@@ -82,7 +82,8 @@
    "50-cpp.cpp"
    (λ () (compile-module-to-c++ propel-module))))
 
-(for ([testcase '("2048" "def-local"
+(for ([testcase '("2048" "def-array"
+                         "def-local"
                          "deftype"
                          "factorial"
                          "hello"

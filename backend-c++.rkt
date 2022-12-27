@@ -114,30 +114,60 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
 
      (unless (eq? var-tokens '())
        (raise-syntax-error #f "unsupported assignment" form))
-     (define-values (value-tokens value-expr) (format-form value value-tt))
      (define value-type (car value-tt))
+
+     ;; special treatment for array constructors
+     (define is-array-initialization?
+       ;; check if type of value matches `(#%array-type (#%builtin-type I) ,length)
+       (and (pair? (syntax-e value))
+            (equal? (car (syntax->datum value)) '#%construct)
+            (equal? (car value-type) '#%array-type)))
 
      ;; special treatment for function defines
      ;; (not sure if this is the cleanest approach)
      (define is-#%define-external-function?
        (and (list? (syntax-e value))
             (is-#%external-function? (car (syntax-e value)))))
-     (if is-#%define-external-function?
-         (begin
-           (unless (is-module-scope-var? var-stx)
-             (raise-syntax-error #f
-                                 "deftype allowed only in module scope"
-                                 form))
-           ;; FIXME: if we want to go this way, we must assert the name of the variable being defined
-           ;;        equals the name of the external function
-           (values value-tokens ""))
-         (let ()
-           (values (flatten (list value-tokens
-                                  (format "~a ~a = ~a;"
-                                          (format-type value-type)
-                                          var-expr
-                                          value-expr)))
-                   "")))]
+
+     ;; first check for special cases and then fall back to default
+     ;; ugly code ahead :( might be better solved with some kind of transformation pre-pass that
+     ;; transforms the special cases into another form
+     (cond
+       [is-array-initialization?
+        ;; build a definition like int variable[] = {1, 2, 3};
+        (define element-type-str (format-type (list-ref value-type 1)))
+
+        (define the-decl (format "~a ~a[] =" element-type-str var-expr))
+
+        (define args (cddr (syntax-e value)))
+        (define arg-tts (cdr value-tt))
+
+        ;; collect tokens + exprs for all arguments
+        (define-values (arg-tokens arg-exprs)
+          (map-values format-form args arg-tts))
+
+        ;; build tokens as concatenation of all
+        (define values-expr (string-join arg-exprs ", "))
+
+        (values (flatten (list arg-tokens the-decl "{" values-expr "}" ";"))
+                "")]
+       [is-#%define-external-function?
+        (unless (is-module-scope-var? var-stx)
+          (raise-syntax-error #f "deftype allowed only in module scope" form))
+        ;; FIXME: if we want to go this way, we must assert the name of the variable being defined
+        ;;        equals the name of the external function
+        ;; TODO: add an example of what we emit
+        (define-values (value-tokens value-expr) (format-form value value-tt))
+        (values value-tokens "")]
+       [else
+        (let ()
+          (define-values (value-tokens value-expr) (format-form value value-tt))
+          (values (flatten (list value-tokens
+                                 (format "~a ~a = ~a;"
+                                         (format-type value-type)
+                                         var-expr
+                                         value-expr)))
+                  ""))])]
     [(list (? is-#%deftype? _) name-stx definition-stx) (values '() "")]
     [(list (? is-#%defun? _) name-stx args-stx ret-stx body-stx)
      (define body-tt sub-tts)

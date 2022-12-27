@@ -25,6 +25,7 @@
 
 (define (is-#%app? stx) (equal? (syntax-e stx) '#%app))
 (define (is-#%begin? stx) (equal? (syntax-e stx) '#%begin))
+(define (is-#%construct? stx) (equal? (syntax-e stx) '#%construct))
 (define (is-#%define? stx) (equal? (syntax-e stx) '#%define))
 (define (is-#%deftype? stx) (equal? (syntax-e stx) '#%deftype))
 (define (is-#%defun? stx) (equal? (syntax-e stx) '#%defun))
@@ -55,6 +56,9 @@
    stx
    (match (syntax-e stx)
      [(list (? is-begin? _) stmts ...) (cons '#%begin (map rec stmts))]
+     ;; for the moment, allow #%construct form on input, since we don't have type recognition implemented for #%app
+     ;; (and it may never work for anonymous types)
+     [(list (? is-#%construct? t) type-stx args-stx ...) stx]
      [(list (? is-decl-external-fun? t) name-stx args-stx ret-stx)
       (list '#%define name-stx (list '#%external-function name-stx args-stx ret-stx))]
      [(list (? is-define? _) name value) (list '#%define name (rec value))]

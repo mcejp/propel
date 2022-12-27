@@ -11,6 +11,7 @@
 
 ; in:   AST
 ; out:  (type . subtree)
+;; Note that we only return trees of types which have no useful interpretation without having the original expression
 (define (resolve-types f current-scope stx)
   (define rec (curry resolve-types f current-scope))     ; recurse
   ; (printf "resolve-types ~a\n" stx)
@@ -42,18 +43,23 @@
       (define name (syntax-e name-stx))
       (cons (get-builtin-function-type current-scope name-stx name) #f)
       ]
+    ;; warning: *absolute dumpster fire ahead*
     [(list (? is-#%construct? t) type-stx args-stx ...)
-     (unless (equal? (syntax->datum type-stx) type-V)
-       (println (syntax->datum type-stx))
-       (println type-V)
-       (raise-syntax-error #f
-                           "only Void type can be currently constructed"
-                           stx))
-     (unless (empty? args-stx)
-       (raise-syntax-error #f
-                           "expected 0 arguments when constructing Void"
-                           stx))
-     (cons type-V #f)]
+     (match (syntax->datum type-stx)
+       [`(#%array-type (#%builtin-type I) ,length)
+        ;; TODO: validate length
+        (cons (syntax->datum type-stx) (map rec args-stx))]
+       ['(#%builtin-type V)
+        (begin
+          (unless (empty? args-stx)
+            (raise-syntax-error #f
+                                "expected 0 arguments when constructing Void"
+                                stx))
+          (cons type-V #f))]
+       [_
+        (raise-syntax-error #f
+                            "only Void type can be currently constructed"
+                            stx)])]
      [(list (? is-#%define? t) var-stx value)
       ;; recurse to value & insert type information
       (define value-tt (rec value))
