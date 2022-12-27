@@ -31,7 +31,15 @@
       (begin
         (define tag (syntax->datum tag-stx))
         (define func (hash-ref transformers tag #f))
-        (if func (apply func args-stx) (map rec (cons tag-stx args-stx))))]
+        (cond
+          ;; Call transformer and cast result to syntax
+          ;;
+          ;; TODO: This is broken, because it loses srcloc information -- what we'll need to do here
+          ;; is to keep track of *both* the macro source code location and the expansion location
+          [func (rec (datum->syntax stx (apply func args-stx) stx))]
+
+          ;; Just recurse for the entire form
+          [else (map rec (syntax-e stx))]))]
 
      ;; otherwise pass untouched
      [_ stx])
