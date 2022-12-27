@@ -32,7 +32,9 @@
         ; (how to deal with overloaded functions...?)
         (define return-type (function-type-ret-type (car callee-tt)))
 
-        ; construct new, typed function call
+        ;; construct new, typed function call
+        ;; this is a cons of the result type and a list with the type tree for the callee,
+        ;; followed by all the arguments
         (cons return-type (cons callee-tt arg-tts))
         )
       ]
