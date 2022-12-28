@@ -21,9 +21,3 @@ Core forms for type expressions
 - ``(#%builtin-type V)`` aka ``Void``
 - ``function-type`` which is actually a Racket struct right now, but should probably be brought in line
   (one disadvantage is that there is no natural place to store a srcloc)
-
-Deprecated core forms
----------------------
-
-- ``(#%builtin-function <name-stx>)`` -- there doesn't seem to be any need to have this instead of just
-  ``(#%scoped-var 0 <name-stx>)`` (it does make it easier for the back-end to recognize built-ins, though)

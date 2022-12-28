@@ -22,13 +22,19 @@
 (define type-V '(#%builtin-type V))
 
 ;; scope is defined as a reference to a parent scope + hashmaps of the types and objects (functions, variables) it contains
+;;
+;; object is a hash map of name -> alias. aliases are only used for built-in functions; in user code, the alias should always be equal to name
+;; TODO: special names for built-ins is the backend's problem anyway -- should not really be handled here.
+;;       unless somehow necessary for operator overloading.
+;;
+;; object-types is a hash map of name -> type definition
 
 (struct scope (parent level types objects object-types))
 
 (define (scope-insert-variable! s name stx)
   (when (hash-has-key? (scope-objects s) name)
     (raise-syntax-error #f (format "redefinition of ~a" name) stx))
-  (hash-set! (scope-objects s) name (list '#%scoped-var (scope-level s) name)))
+  (hash-set! (scope-objects s) name name))
 
 (define (scope-discover-variable-type! s name type)
   ;(unless (hash-has-key? (scope-objects s) name)
@@ -42,10 +48,10 @@
       (scope-lookup-object-type (scope-parent s) level sym)))
 
 (define (scope-try-resolve-symbol s sym)
-  (define res (hash-ref (scope-objects s) sym #f))
+  (define alias (hash-ref (scope-objects s) sym #f))
   (define parent (scope-parent s))
   (cond
-    [res res]
+    [alias (list '#%scoped-var (scope-level s) alias)]
     [parent (scope-try-resolve-symbol parent sym)]
     [#t #f]))
 
@@ -68,24 +74,21 @@
          0
          (hash 'int type-I 'Void type-V)
          (hash '=
-               ;;(cons II-to-I '(#%builtin-function builtin-eq-ii))
-               '(#%builtin-function . builtin-eq-ii)
+               'builtin-eq-ii
                '+
-               '(#%builtin-function . builtin-add-ii)
+               'builtin-add-ii
                '-
-               ;;(cons II-to-I '(#%builtin-function builtin-sub-ii))
-               '(#%builtin-function . builtin-sub-ii)
+               'builtin-sub-ii
                '*
-               ;;(cons II-to-I '(#%builtin-function builtin-mul-ii)))
-               '(#%builtin-function . builtin-mul-ii)
+               'builtin-mul-ii
                '<
-               '(#%builtin-function . builtin-lessthan-ii)
+               'builtin-lessthan-ii
                '>
-               '(#%builtin-function . builtin-greaterthan-ii)
+               'builtin-greaterthan-ii
                'and
-               '(#%builtin-function . builtin-and-ii)
+               'builtin-and-ii
                'not
-               '(#%builtin-function . builtin-not-i))
+               'builtin-not-i)
          (hash 'builtin-eq-ii
                II-to-I
                'builtin-add-ii

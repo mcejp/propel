@@ -71,9 +71,9 @@
    (#%builtin-type I)
    (#%begin
     (#%app
-     (#%builtin-function . builtin-and-ii)
+     (#%scoped-var 0 builtin-and-ii)
      (#%app
-      (#%builtin-function . builtin-and-ii)
+      (#%scoped-var 0 builtin-and-ii)
       (#%scoped-var 2 a)
       (#%scoped-var 2 b))
      (#%scoped-var 2 c))))
@@ -100,26 +100,23 @@
        (#%app
         (#%scoped-var 1 and3)
         (#%app
-         (#%builtin-function . builtin-greaterthan-ii)
+         (#%scoped-var 0 builtin-greaterthan-ii)
          (#%scoped-var 2 output-pos)
          0)
         (#%app
-         (#%builtin-function . builtin-eq-ii)
+         (#%scoped-var 0 builtin-eq-ii)
          (#%app
           (#%scoped-var 1 brd-get-with-rotation)
-          (#%app
-           (#%builtin-function . builtin-sub-ii)
-           (#%scoped-var 2 output-pos)
-           1)
+          (#%app (#%scoped-var 0 builtin-sub-ii) (#%scoped-var 2 output-pos) 1)
           (#%scoped-var 2 y)
           (#%scoped-var 2 dir))
          (#%scoped-var 2 stone))
         (#%app
-         (#%builtin-function . builtin-not-i)
+         (#%scoped-var 0 builtin-not-i)
          (#%app
           (#%scoped-var 1 is-marked-merged)
           (#%app
-           (#%builtin-function . builtin-sub-ii)
+           (#%scoped-var 0 builtin-sub-ii)
            (#%scoped-var 2 output-pos)
            1)))))
       (#%if
@@ -127,22 +124,13 @@
        (#%begin
         (#%app
          (#%scoped-var 1 brd-set-with-rotation)
-         (#%app
-          (#%builtin-function . builtin-sub-ii)
-          (#%scoped-var 2 output-pos)
-          1)
+         (#%app (#%scoped-var 0 builtin-sub-ii) (#%scoped-var 2 output-pos) 1)
          (#%scoped-var 2 y)
          (#%scoped-var 2 dir)
-         (#%app
-          (#%builtin-function . builtin-mul-ii)
-          2
-          (#%scoped-var 2 stone)))
+         (#%app (#%scoped-var 0 builtin-mul-ii) 2 (#%scoped-var 2 stone)))
         (#%app
          (#%scoped-var 1 mark-merged)
-         (#%app
-          (#%builtin-function . builtin-sub-ii)
-          (#%scoped-var 2 output-pos)
-          1)
+         (#%app (#%scoped-var 0 builtin-sub-ii) (#%scoped-var 2 output-pos) 1)
          1)
         (#%scoped-var 2 output-pos))
        (#%begin
@@ -154,7 +142,7 @@
          (#%scoped-var 2 stone))
         (#%app (#%scoped-var 1 mark-merged) (#%scoped-var 2 output-pos) 0)
         (#%app
-         (#%builtin-function . builtin-add-ii)
+         (#%scoped-var 0 builtin-add-ii)
          (#%scoped-var 2 output-pos)
          1))))
      (#%scoped-var 2 output-pos))))
@@ -197,10 +185,7 @@
       (#%scoped-var 2 dir)
       (#%scoped-var 2 output-pos)))
     (#%if
-     (#%app
-      (#%builtin-function . builtin-lessthan-ii)
-      (#%scoped-var 2 output-pos)
-      1)
+     (#%app (#%scoped-var 0 builtin-lessthan-ii) (#%scoped-var 2 output-pos) 1)
      (#%app
       (#%scoped-var 1 brd-set-with-rotation)
       0
@@ -209,10 +194,7 @@
       0)
      (#%app (#%scoped-var 1 dummy-void)))
     (#%if
-     (#%app
-      (#%builtin-function . builtin-lessthan-ii)
-      (#%scoped-var 2 output-pos)
-      2)
+     (#%app (#%scoped-var 0 builtin-lessthan-ii) (#%scoped-var 2 output-pos) 2)
      (#%app
       (#%scoped-var 1 brd-set-with-rotation)
       1
@@ -221,10 +203,7 @@
       0)
      (#%app (#%scoped-var 1 dummy-void)))
     (#%if
-     (#%app
-      (#%builtin-function . builtin-lessthan-ii)
-      (#%scoped-var 2 output-pos)
-      3)
+     (#%app (#%scoped-var 0 builtin-lessthan-ii) (#%scoped-var 2 output-pos) 3)
      (#%app
       (#%scoped-var 1 brd-set-with-rotation)
       2
@@ -233,10 +212,7 @@
       0)
      (#%app (#%scoped-var 1 dummy-void)))
     (#%if
-     (#%app
-      (#%builtin-function . builtin-lessthan-ii)
-      (#%scoped-var 2 output-pos)
-      4)
+     (#%app (#%scoped-var 0 builtin-lessthan-ii) (#%scoped-var 2 output-pos) 4)
      (#%app
       (#%scoped-var 1 brd-set-with-rotation)
       3
@@ -253,7 +229,7 @@
      (#%scoped-var 2 new-stone-value)
      (#%if
       (#%app
-       (#%builtin-function . builtin-lessthan-ii)
+       (#%scoped-var 0 builtin-lessthan-ii)
        (#%app (#%scoped-var 1 random-int) 0 100)
        90)
       2
@@ -914,10 +890,10 @@
     (#f 0 0 0 62)
     ((#f 1 2 44 17)
      (#f 0 0 0 17)
-     ((#f 0 1 1 3) (#f 0 0 0 3))
+     ((#f 0 1 1 3) (#f 0 0 0 3) (#f 0 0 0 3) (#f 0 0 0 3))
      ((#f 0 4 4 9)
       (#f 0 0 0 9)
-      ((#f 0 1 1 3) (#f 0 0 0 3))
+      ((#f 0 1 1 3) (#f 0 0 0 3) (#f 0 0 0 3) (#f 0 0 0 3))
       ((#f 0 4 4 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
       ((#f 0 2 2 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1)))
      ((#f 0 3 3 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1)))))
@@ -962,18 +938,18 @@
         ((#f 0 1 1 4) (#f 0 0 0 4) (#f 0 0 0 4) (#f 0 0 0 4))
         ((#f 0 5 5 16)
          (#f 0 0 0 16)
-         ((#f 0 1 1 1) (#f 0 0 0 1))
+         ((#f 0 1 1 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
          ((#f 0 2 2 10) (#f 0 0 0 10) (#f 0 0 0 10) (#f 0 0 0 10))
          (#f 0 11 11 1))
         ((#f 1 -14 31 56)
          (#f 0 0 0 56)
-         ((#f 0 1 1 1) (#f 0 0 0 1))
+         ((#f 0 1 1 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
          ((#f 0 2 2 46)
           (#f 0 0 0 46)
           ((#f 0 1 1 21) (#f 0 0 0 21) (#f 0 0 0 21) (#f 0 0 0 21))
           ((#f 0 22 22 16)
            (#f 0 0 0 16)
-           ((#f 0 1 1 1) (#f 0 0 0 1))
+           ((#f 0 1 1 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
            ((#f 0 2 2 10) (#f 0 0 0 10) (#f 0 0 0 10) (#f 0 0 0 10))
            (#f 0 11 11 1))
           ((#f 0 3 3 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
@@ -981,13 +957,13 @@
          ((#f 0 5 5 5) (#f 0 0 0 5) (#f 0 0 0 5) (#f 0 0 0 5)))
         ((#f 1 -50 35 41)
          (#f 0 0 0 41)
-         ((#f 0 1 1 3) (#f 0 0 0 3))
+         ((#f 0 1 1 3) (#f 0 0 0 3) (#f 0 0 0 3) (#f 0 0 0 3))
          ((#f 0 4 4 35)
           (#f 0 0 0 35)
           ((#f 0 1 1 16) (#f 0 0 0 16) (#f 0 0 0 16) (#f 0 0 0 16))
           ((#f 0 17 17 16)
            (#f 0 0 0 16)
-           ((#f 0 1 1 1) (#f 0 0 0 1))
+           ((#f 0 1 1 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
            ((#f 0 2 2 10) (#f 0 0 0 10) (#f 0 0 0 10) (#f 0 0 0 10))
            (#f 0 11 11 1))))))
       ((#f 2 -61 40 306)
@@ -1000,14 +976,14 @@
          ((#f 0 1 1 21) (#f 0 0 0 21) (#f 0 0 0 21) (#f 0 0 0 21))
          ((#f 0 22 22 16)
           (#f 0 0 0 16)
-          ((#f 0 1 1 1) (#f 0 0 0 1))
+          ((#f 0 1 1 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
           ((#f 0 2 2 10) (#f 0 0 0 10) (#f 0 0 0 10) (#f 0 0 0 10))
           (#f 0 11 11 1))
          ((#f 0 3 3 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
          ((#f 0 2 2 3) (#f 0 0 0 3) (#f 0 0 0 3) (#f 0 0 0 3))
          ((#f 0 4 4 11)
           (#f 0 0 0 11)
-          ((#f 0 1 1 1) (#f 0 0 0 1))
+          ((#f 0 1 1 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
           (#f 0 2 2 1)
           ((#f 0 2 2 5) (#f 0 0 0 5) (#f 0 0 0 5) (#f 0 0 0 5))))
         ((#f 1 -51 16 32)
@@ -1015,7 +991,7 @@
          ((#f 0 1 1 11) (#f 0 0 0 11) (#f 0 0 0 11) (#f 0 0 0 11))
          ((#f 0 12 12 16)
           (#f 0 0 0 16)
-          ((#f 0 1 1 1) (#f 0 0 0 1))
+          ((#f 0 1 1 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
           ((#f 0 2 2 10) (#f 0 0 0 10) (#f 0 0 0 10) (#f 0 0 0 10))
           (#f 0 11 11 1))
          (#f 0 3 3 1))
@@ -1036,7 +1012,7 @@
          (#f 0 11 11 1))
         ((#f 1 -24 11 16)
          (#f 0 0 0 16)
-         ((#f 0 1 1 1) (#f 0 0 0 1))
+         ((#f 0 1 1 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
          ((#f 0 2 2 10) (#f 0 0 0 10) (#f 0 0 0 10) (#f 0 0 0 10))
          (#f 0 11 11 1)))))
      ((#f 3 -18 22 10) (#f 0 0 0 10) (#f 0 0 0 10) (#f 0 0 0 10)))))
@@ -1101,7 +1077,7 @@
      (#f 0 0 0 68)
      ((#f 0 4 4 16)
       (#f 0 0 0 16)
-      ((#f 0 1 1 1) (#f 0 0 0 1))
+      ((#f 0 1 1 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
       ((#f 0 2 2 10) (#f 0 0 0 10) (#f 0 0 0 10) (#f 0 0 0 10))
       (#f 0 11 11 1))
      ((#f 0 3 3 33)
@@ -1118,7 +1094,7 @@
      (#f 0 0 0 68)
      ((#f 0 4 4 16)
       (#f 0 0 0 16)
-      ((#f 0 1 1 1) (#f 0 0 0 1))
+      ((#f 0 1 1 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
       ((#f 0 2 2 10) (#f 0 0 0 10) (#f 0 0 0 10) (#f 0 0 0 10))
       (#f 0 11 11 1))
      ((#f 0 3 3 33)
@@ -1135,7 +1111,7 @@
      (#f 0 0 0 68)
      ((#f 0 4 4 16)
       (#f 0 0 0 16)
-      ((#f 0 1 1 1) (#f 0 0 0 1))
+      ((#f 0 1 1 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
       ((#f 0 2 2 10) (#f 0 0 0 10) (#f 0 0 0 10) (#f 0 0 0 10))
       (#f 0 11 11 1))
      ((#f 0 3 3 33)
@@ -1152,7 +1128,7 @@
      (#f 0 0 0 68)
      ((#f 0 4 4 16)
       (#f 0 0 0 16)
-      ((#f 0 1 1 1) (#f 0 0 0 1))
+      ((#f 0 1 1 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
       ((#f 0 2 2 10) (#f 0 0 0 10) (#f 0 0 0 10) (#f 0 0 0 10))
       (#f 0 11 11 1))
      ((#f 0 3 3 33)
@@ -1179,7 +1155,7 @@
       (#f 0 0 0 34)
       ((#f 0 4 4 25)
        (#f 0 0 0 25)
-       ((#f 0 1 1 1) (#f 0 0 0 1))
+       ((#f 0 1 1 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
        ((#f 0 2 2 18)
         (#f 0 0 0 18)
         ((#f 0 1 1 10) (#f 0 0 0 10) (#f 0 0 0 10) (#f 0 0 0 10))

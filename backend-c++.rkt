@@ -248,8 +248,6 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
        (string-append callee-expr "(" (string-join arg-exprs ", ") ")"))
 
      (values (list* callee-tokens arg-tokens) call-expr)]
-    [(cons (? is-#%builtin-function? t) name-stx)
-     (values '() (sanitize-name (syntax-e name-stx)))]
     [(list (? is-#%external-function? t) name-stx args-stx ret-stx)
      (define name (sanitize-name (syntax-e name-stx)))
      (values (list (format-function-type-as-prototype name form-type)) name)]
@@ -296,6 +294,7 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
   (string-replace (symbol->string name) "-" "_"))
 
 (define (make-scoped-name level name)
-  (if (= level 1)
+  ;; for the moment, top-level and built-in symbols are unprefixed, while the rest is prefixed with the level
+  (if (<= level 1)
       (sanitize-name name)
       (format "scope~a_~a" level (sanitize-name name))))

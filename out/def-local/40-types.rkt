@@ -9,7 +9,7 @@
     (#%define
      (#%scoped-var 2 sum)
      (#%app
-      (#%builtin-function . builtin-add-ii)
+      (#%scoped-var 0 builtin-add-ii)
       (#%scoped-var 2 left)
       (#%scoped-var 2 right)))
     (#%scoped-var 2 sum))))
@@ -56,7 +56,7 @@
      ((#f 0 5 5 3) (#f 0 0 0 3) (#f 0 0 0 3) (#f 0 0 0 3))
      ((#f 0 4 4 14)
       (#f 0 0 0 14)
-      ((#f 0 1 1 1) (#f 0 0 0 1))
+      ((#f 0 1 1 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
       ((#f 0 2 2 4) (#f 0 0 0 4) (#f 0 0 0 4) (#f 0 0 0 4))
       ((#f 0 5 5 5) (#f 0 0 0 5) (#f 0 0 0 5) (#f 0 0 0 5))))
     ((#f 1 -17 10 3) (#f 0 0 0 3) (#f 0 0 0 3) (#f 0 0 0 3))))))

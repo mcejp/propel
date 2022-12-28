@@ -6,13 +6,11 @@
          "scope.rkt"
          )
 
-(provide is-#%builtin-function?
-         is-#%construct?
+(provide is-#%construct?
          is-#%external-function?
          is-#%scoped-var?
          resolve-names/module!)
 
-(define (is-#%builtin-function? stx) (equal? (syntax-e stx) '#%builtin-function))
 (define (is-#%construct? stx) (equal? (syntax-e stx) '#%construct))
 (define (is-#%external-function? stx) (equal? (syntax-e stx) '#%external-function))
 (define (is-#%scoped-var? stx) (equal? (syntax-e stx) '#%scoped-var))

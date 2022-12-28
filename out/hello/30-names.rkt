@@ -3,8 +3,7 @@
    increment
    ((n (#%builtin-type I)))
    (#%builtin-type I)
-   (#%begin
-    (#%app (#%builtin-function . builtin-add-ii) (#%scoped-var 2 n) 1))))
+   (#%begin (#%app (#%scoped-var 0 builtin-add-ii) (#%scoped-var 2 n) 1))))
  #f
  ((#<path:#INT#/propel-syntax.rkt> 48 95 1794 2)
   (#f 0 0 0 2)
@@ -20,6 +19,6 @@
     (#f 0 0 0 44)
     ((#f 1 2 33 7)
      (#f 0 0 0 7)
-     ((#f 0 1 1 1) (#f 0 0 0 1))
+     ((#f 0 1 1 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
      ((#f 0 2 2 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
      (#f 0 2 2 1))))))

@@ -7,7 +7,7 @@
    (#%builtin-type I)
    (#%begin
     (#%app
-     (#%builtin-function . builtin-add-ii)
+     (#%scoped-var 0 builtin-add-ii)
      (#%scoped-var 2 a)
      (#%scoped-var 2 b)))))
  #f
@@ -32,6 +32,6 @@
     (#f 0 0 0 52)
     ((#f 1 2 44 7)
      (#f 0 0 0 7)
-     ((#f 0 1 1 1) (#f 0 0 0 1))
+     ((#f 0 1 1 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
      ((#f 0 2 2 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
      ((#f 0 2 2 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1)))))))

@@ -39,10 +39,6 @@
         (cons return-type (cons callee-tt arg-tts))
         )
       ]
-     [(cons (? is-#%builtin-function? t) name-stx)
-      (define name (syntax-e name-stx))
-      (cons (get-builtin-function-type current-scope name-stx name) #f)
-      ]
     ;; warning: *absolute dumpster fire ahead*
     [(list (? is-#%construct? t) type-stx args-stx ...)
      (match (syntax->datum type-stx)
@@ -156,13 +152,6 @@
         (raise-syntax-error #f
                             (format "argument ~a type mismatch: expecting ~a, got ~a" index p arg)
                             stx)))))
-
-(define (get-builtin-function-type scope stx function-name)
-  (define res (scope-lookup-object-type scope 0 function-name))
-  ;; in case of an error, quote the failing type literally, because syntax tracking for types is very poor ATM
-  (unless res (raise-syntax-error #f (format "invalid builtin function ~a (unspecified type)" function-name) stx))
-  res
-)
 
 (define (get-variable-type scope stx level var-name)
   (define res (scope-lookup-object-type scope level var-name))
