@@ -5,12 +5,6 @@
 ;;  - get-element
 ;;  - loops/iteration
 
-(define-transformer make-array-with-type
-                    (lambda args
-                      (match-define (list type-stx elem-stx ...) args)
-                      `(#%construct (#%array-type ,type-stx ,(length elem-stx))
-                                    ,@elem-stx)))
-
 (define-transformer *load-palette
                     (lambda (filename)
                       (define the-palette (list 1 2 3 4)) ; TODO: load from file

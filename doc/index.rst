@@ -7,6 +7,7 @@ Propel docs
    :caption: Contents:
 
    core-forms
+   internal-api
    passes
    scoping
    syntax

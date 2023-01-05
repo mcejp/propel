@@ -1,14 +1,20 @@
 #lang racket
 
-(provide expand-forms)
+(provide expand-forms
+         make-expander-state)
 
 (define-namespace-anchor ns)
+
+(struct expander-state (transformers))
+
+(define (make-expander-state)
+  (expander-state (make-hash)))
 
 (define (is-define-transformer? stx)
   (equal? (syntax-e stx) 'define-transformer))
 
-(define (expand-forms stx)
-  (expand-forms* (make-hash) stx))
+(define (expand-forms state stx)
+  (expand-forms* (expander-state-transformers state) stx))
 
 ;; TODO: macro scoping
 (define (expand-forms* transformers stx)

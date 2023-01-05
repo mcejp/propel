@@ -1,16 +1,12 @@
 ((#%begin
   (#%construct (#%builtin-type V))
-  (#%construct (#%builtin-type V))
   (#%define
    (#%scoped-var 1 my-palette)
    (#%construct (#%array-type (#%builtin-type I) 4) 1 2 3 4)))
  #f
  ((#<path:#INT#/propel-syntax.rkt> 48 95 1794 2)
   (#f 0 0 0 2)
-  ((#<path:tests/vga-palette.rkt> -41 -95 -1544 274)
-   (#f 0 0 0 274)
-   ((#f 0 0 0 274) (#f 0 0 0 274) (#f 0 0 0 274)))
-  ((#f 6 0 276 220)
+  ((#<path:tests/vga-palette.rkt> -41 -95 -1544 220)
    (#f 0 0 0 220)
    ((#f 0 0 0 220) (#f 0 0 0 220) (#f 0 0 0 220)))
   ((#f 6 0 222 46)

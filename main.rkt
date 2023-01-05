@@ -20,8 +20,15 @@
 
   (define stx (parse-module path))
 
-  ;; expand macros
-  (set! stx (expand-forms stx))
+  ;; initialize expander
+  (define expander-state (make-expander-state))
+
+  ;; load built-in definitions
+  (define builtins-stx (parse-module "propel-builtins.rkt"))
+  (expand-forms expander-state builtins-stx)
+
+  ;; expand macros in real module
+  (set! stx (expand-forms expander-state stx))
 
   ; convert module syntax into legacy module structure
   ; why this is necessary:
