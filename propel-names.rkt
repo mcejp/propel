@@ -25,7 +25,7 @@
 ; - program-defined function
 
 (define (resolve-names/module! mod)
-  (set-module-body! mod (resolve-names/form #f (module-scope mod) (module-body mod)))
+  (set-module-body! mod (resolve-names/form (module-scope mod) (module-body mod)))
   ;(update-module-types! mod (curry resolve-names/type (module-scope mod)))
   ; (update-module-functions mod resolve-names/function)
 )
@@ -68,11 +68,11 @@
   (for ([name inject-symbols])
     (scope-insert-variable! nested-scope name stx))
 
-  (resolve-names/form #f nested-scope stx)
+  (resolve-names/form nested-scope stx)
   )
 
-(define (resolve-names/form f current-scope stx)
-  (define rec (curry resolve-names/form f current-scope))     ; recurse
+(define (resolve-names/form current-scope stx)
+  (define rec (curry resolve-names/form current-scope))     ; recurse
 
   ; (printf "resolve-names/form ~a\n" stx)
   ;stx
@@ -134,7 +134,7 @@
      [(list (? is-#%len? t) expr) (list t (rec expr))]
      [(list (? is-#%set-var? t) target expr) (list t (rec target) (rec expr))]
      [(list expr ...) (map rec expr)]
-     [(? symbol? sym) (resolve-names/symbol f stx sym current-scope)]
+     [(? symbol? sym) (resolve-names/symbol stx sym current-scope)]
      [(? literal? lit) stx]
      )
    stx)
@@ -143,15 +143,11 @@
 ; resolve symbol
 ; start by looking in the closest scope and proceed outward
 ; return a _bound identifier_ structure
-(define (resolve-names/symbol f stx sym current-scope)
-  ;(define arg (if f (lookup-function-argument f sym stx) #f))
+(define (resolve-names/symbol stx sym current-scope)
   (define from-scope (scope-try-resolve-symbol current-scope sym))
-  (cond
-    [from-scope from-scope]
-    ;[arg arg]
-    [else (raise-syntax-error #f "unresolved symbol" stx)]
-    )
-  )
+  (if from-scope
+    from-scope
+    (raise-syntax-error #f "unresolved symbol" stx)))
 
 (define (resolve-type-names scope stx type-names) (map (curry resolve-type-name scope stx) type-names))
 

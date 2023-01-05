@@ -79,7 +79,7 @@
   (dump "30-names.rkt" propel-module)
 
   (define tt
-    (resolve-types #f (module-scope propel-module) (module-body propel-module)))
+    (resolve-types (module-scope propel-module) (module-body propel-module)))
   (set-module-body-type-tree! propel-module tt)
 
   ; (update-module-functions propel-module resolve-types/function)

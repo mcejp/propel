@@ -12,8 +12,8 @@
 ; in:   AST
 ; out:  (type . subtree)
 ;; Note that we only return trees of types which have no useful interpretation without having the original expression
-(define (resolve-types f current-scope stx)
-  (define rec (curry resolve-types f current-scope))     ; recurse
+(define (resolve-types current-scope stx)
+  (define rec (curry resolve-types current-scope))     ; recurse
   ; (printf "resolve-types ~a\n" stx)
   ;stx
 
@@ -92,7 +92,7 @@
       (scope-discover-variable-type! current-scope name
         (function-type arg-types ret-type))
 
-      (define body-tt (resolve-types f func-scope body-stx))
+      (define body-tt (resolve-types func-scope body-stx))
       ;(list t name-stx args-stx ret-stx body-stx)
       (cons type-V body-tt)
       ]
