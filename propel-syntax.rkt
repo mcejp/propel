@@ -2,6 +2,7 @@
 
 (provide is-#%app?
          is-#%begin?
+         is-#%construct?
          is-#%define?
          is-#%deftype?
          is-#%defun?

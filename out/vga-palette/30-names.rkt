@@ -4,9 +4,9 @@
    (#%scoped-var 1 my-palette)
    (#%construct (#%array-type (#%builtin-type I) 4) 1 2 3 4)))
  #f
- ((#<path:#INT#/propel-syntax.rkt> 48 95 1794 2)
+ ((#<path:#INT#/propel-syntax.rkt> 49 95 1819 2)
   (#f 0 0 0 2)
-  ((#<path:tests/vga-palette.rkt> -41 -95 -1544 220)
+  ((#<path:tests/vga-palette.rkt> -42 -95 -1569 220)
    (#f 0 0 0 220)
    ((#f 0 0 0 220) (#f 0 0 0 220) (#f 0 0 0 220)))
   ((#f 6 0 222 46)
