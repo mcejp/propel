@@ -251,6 +251,17 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
     [(list (? is-#%external-function? t) name-stx args-stx ret-stx)
      (define name (sanitize-name (syntax-e name-stx)))
      (values (list (format-function-type-as-prototype name form-type)) name)]
+    [(list (? is-#%len?) _)
+     (define expr-tt sub-tts)
+     (define expr-t (car expr-tt))
+
+     (match expr-t
+       [`(#%array-type ,_ ,length) (values '() (~v length))]
+       [_
+        (raise-syntax-error
+         #f
+         (format "len: argument must be an array; got ~a" expr-t)
+         form)])]
     [(list (? is-#%scoped-var? t) level-stx name-stx)
      (values '()
              (make-scoped-name

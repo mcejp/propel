@@ -12,3 +12,5 @@
                       `(make-array-with-type int ,@the-palette)))
 
 (def my-palette (*load-palette "example.pal"))
+
+(def my-length (len my-palette))

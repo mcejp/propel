@@ -121,6 +121,22 @@
           (list then-t expr-tt then-tt else-tt)
         ))
       ]
+    [(list (? is-#%len? t) expr-stx)
+     (define expr-tt (rec expr-stx))
+     (define expr-t (car expr-tt))
+
+     (match expr-t
+       ;; we are needlessly discarding information about the actual length here :(
+       ;; not clear how to solve this --
+       ;;   allow type resolver to modify expressions?
+       ;;   add a substitution pass after type resolution?
+       ;;   provide some API that the back-end can call to do _most_ of the work?
+       [`(#%array-type ,_ ,_) (cons type-I expr-tt)]
+       [_
+        (raise-syntax-error
+         #f
+         (format "len: argument must be an array; got ~a" expr-t)
+         stx)])]
      [(list (? is-#%scoped-var? t) level-stx name-stx)
       (define level (syntax-e level-stx))   ; silly that we have to do this...
       (define name (syntax-e name-stx))

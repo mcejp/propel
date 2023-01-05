@@ -8,6 +8,7 @@
          is-#%defun?
          is-#%dot?
          is-#%if?
+         is-#%len?
          is-#%set-var?
          is-begin?
          is-decl-external-fun?
@@ -32,6 +33,7 @@
 (define (is-#%defun? stx) (equal? (syntax-e stx) '#%defun))
 (define (is-#%dot? stx) (equal? (syntax-e stx) '#%dot))
 (define (is-#%if? stx) (equal? (syntax-e stx) '#%if))
+(define (is-#%len? stx) (equal? (syntax-e stx) '#%len))
 (define (is-#%set-var? stx) (equal? (syntax-e stx) '#%set-var))
 (define (is-begin? stx) (equal? (syntax-e stx) 'begin))
 (define (is-decl-external-fun? stx) (equal? (syntax-e stx) 'decl-external-fun))
@@ -39,6 +41,7 @@
 (define (is-deftype? stx) (equal? (syntax-e stx) 'deftype))
 (define (is-defun? stx) (equal? (syntax-e stx) 'defun))
 (define (is-if? stx) (equal? (syntax-e stx) 'if))
+(define (is-len? stx) (equal? (syntax-e stx) 'len))
 (define (is-set!? stx) (equal? (syntax-e stx) 'set!))
 (define (literal? lit) (or (boolean? lit) (number? lit)))
 
@@ -67,6 +70,7 @@
       (list '#%defun name args ret (rec (datum->syntax stx (cons #'begin body-stx) stx)))]
      [(list (? is-deftype? t) name definition) (list '#%deftype name definition)]
      [(list (? is-if? _) expr then else) (list '#%if (rec expr) (rec then) (rec else))]
+     [(list (? is-len? _) expr) (list '#%len (rec expr))]
      [(list (? is-set!? _) target expr) (list '#%set-var (rec target) (rec expr))]
      [(? list? exprs) (cons '#%app (map rec exprs))]
      ; process symbols: replace `camera.set-pos` with `(#%. camera set-pos)`

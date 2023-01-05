@@ -131,6 +131,7 @@
         (resolve-names/types-in-arg-list current-scope args-stx)
         (resolve-names/type-stx current-scope ret-stx))]
      [(list (? is-#%if? t) expr then else) (list t (rec expr) (rec then) (rec else))]
+     [(list (? is-#%len? t) expr) (list t (rec expr))]
      [(list (? is-#%set-var? t) target expr) (list t (rec target) (rec expr))]
      [(list expr ...) (map rec expr)]
      [(? symbol? sym) (resolve-names/symbol f stx sym current-scope)]
