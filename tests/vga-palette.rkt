@@ -5,12 +5,16 @@
 ;;  - get-element
 ;;  - loops/iteration
 
-(define-transformer *load-palette
-                    (lambda (filename)
-                      (define the-palette (list 1 2 3 4)) ; TODO: load from file
+(define-transformer *load-palette (lambda (filename)
+  (define the-palette (list 1 2 3 4)) ; TODO: load from file
 
-                      `(make-array-with-type int ,@the-palette)))
+  `(make-array-with-type int ,@the-palette)))
 
 (def my-palette (*load-palette "example.pal"))
 
 (def my-length (len my-palette))
+
+(defun show-palette () Void
+  ;; loop & print
+  (for/range i (len my-palette)
+    (def j i)))

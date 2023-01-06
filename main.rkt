@@ -1,22 +1,22 @@
 #lang racket
 
-(require racket/serialize
-         racket/struct
-         "backend-c++.rkt"
+(require "backend-c++.rkt"
+         "form-db.rkt"
+         "forms/_all.rkt"
          "module.rkt"
          "propel-expand.rkt"
          "propel-models.rkt"
          "propel-names.rkt"
          "propel-serialize.rkt"
          "propel-syntax.rkt"
-         "propel-types.rkt"
-         "scope.rkt")
-
-(require racket/fasl)
+         "propel-types.rkt")
 
 (define (compile-propel-module path [intermediate-output-dir #f])
   (when intermediate-output-dir
     (make-directory* intermediate-output-dir))
+
+  (define form-db (make-hash))
+  (register-builtin-forms form-db)
 
   (define stx (parse-module path))
 
@@ -39,7 +39,7 @@
   ;    can be nested
   ;  - now we still keep a 'scope' object, but it's pointless as well, all scoping can be derived from
   ;    the syntax tree itself
-  (define propel-module (syntax->module (resolve-forms stx)))
+  (define propel-module (syntax->module (resolve-forms form-db stx)))
 
   #;(call-with-output-file
      "parsed.rkt"
@@ -75,11 +75,13 @@
   ; (resolve-forms/module! propel-module)
   (dump "20-core-forms.rkt" propel-module)
 
-  (resolve-names/module! propel-module)
+  (resolve-names/module! form-db propel-module)
   (dump "30-names.rkt" propel-module)
 
   (define tt
-    (resolve-types (module-scope propel-module) (module-body propel-module)))
+    (resolve-types form-db
+                   (module-scope propel-module)
+                   (module-body propel-module)))
   (set-module-body-type-tree! propel-module tt)
 
   ; (update-module-functions propel-module resolve-types/function)

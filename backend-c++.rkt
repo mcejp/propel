@@ -8,6 +8,9 @@
          "module.rkt"
          "scope.rkt")
 
+(define (is-#%while? stx)
+  (equal? (syntax-e stx) '#%while))
+
 (define (compile-module-to-c++ mod)
   ;; TODO: generate C++ prototypes
 
@@ -278,6 +281,23 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
        (raise-syntax-error #f "unsupported assignment" form))
      (values (flatten (list expr-tokens))
              (format "~a = ~a;" target-expr expr-expr))]
+    [(list (? is-#%while? t) cond body)
+     (match-define (list cond-tt body-tt) sub-tts)
+
+     (define-values (cond-tokens cond-expr) (format-form cond cond-tt))
+     (define-values (body-tokens body-expr) (format-form body body-tt))
+
+     (unless (= 0 (length (flatten cond-tokens)))
+       (raise-syntax-error #f "unsupported expression for while" form))
+
+     (define self-tokens
+       (flatten (list (format "while (~a)" cond-expr)
+                      "{"
+                      body-tokens
+                      (format "~a;" body-expr)
+                      "}")))
+
+     (values self-tokens "")]
     [(? number? lit) (values '() (number->string lit))]))
 
 (define (print-tokens tokens indent)

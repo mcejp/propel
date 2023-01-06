@@ -20,7 +20,8 @@
         ;  resolve-forms/module!
          )
 
-(require "propel-models.rkt"
+(require "form-db.rkt"
+         "propel-models.rkt"
          "module.rkt"
          "scope.rkt"
 )
@@ -52,12 +53,21 @@
     (with-input-from-file	path (lambda () (begin
       (datum->syntax #'() (cons #'begin (sequence->list (in-port (curry read-syntax path)))) #'()))))))
 
-(define (resolve-forms stx)
-  (define rec resolve-forms)     ; recurse
+(define (resolve-forms form-db stx)
+  (define rec (curry resolve-forms form-db)) ; recurse
   ; (printf "resolve-forms ~a\n" (syntax-e stx))
+
+  ;; first try to look up a definition in the form database, and use that
+  (define form-def (get-form-def-for-stx form-db stx))
 
   (datum->syntax
    stx
+   (if form-def
+       (let ([handler (hash-ref (form-def-phases form-def) 'sugar #f)])
+         (if handler
+             (apply-handler form-db form-def handler stx)
+             (apply-default-handler form-db form-def stx)))
+
    (match (syntax-e stx)
      [(list (? is-begin? _) stmts ...) (cons '#%begin (map rec stmts))]
      ;; for the moment, allow #%construct form on input, since we don't have type recognition implemented for #%app
@@ -76,7 +86,7 @@
      ; process symbols: replace `camera.set-pos` with `(#%. camera set-pos)`
      [(? symbol? sym) (map-dot-expression stx (string-split (symbol->string sym) "."))]
      [_ stx]
-     )
+     ))
    stx)
   )
 
@@ -93,3 +103,15 @@
                    )
                  stx)
   )
+
+(define (process-arguments form-db form-def stx)
+  (for/list ([formal-param (form-def-params form-def)]
+             [actual-param (cdr (syntax-e stx))])
+    (match formal-param
+      [`(stx ,_) (resolve-forms form-db actual-param)])))
+
+(define (apply-handler form-db form-def handler stx)
+  (apply handler (process-arguments form-db form-def stx)))
+
+(define (apply-default-handler form-db form-def stx)
+  (list* (car (syntax-e stx)) (process-arguments form-db form-def stx)))

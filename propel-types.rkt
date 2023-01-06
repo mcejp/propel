@@ -1,6 +1,6 @@
 #lang racket
 
-(require "module.rkt"
+(require "form-db.rkt"
          "propel-models.rkt"
          "propel-names.rkt"
          "propel-syntax.rkt"
@@ -12,10 +12,17 @@
 ; in:   AST
 ; out:  (type . subtree)
 ;; Note that we only return trees of types which have no useful interpretation without having the original expression
-(define (resolve-types current-scope stx)
-  (define rec (curry resolve-types current-scope))     ; recurse
+(define (resolve-types form-db current-scope stx)
+  (define rec (curry resolve-types form-db current-scope))     ; recurse
   ; (printf "resolve-types ~a\n" stx)
   ;stx
+
+  ;; first try to look up a definition in the form database, and use that
+  (define form-def (get-form-def-for-stx form-db stx))
+
+  (if form-def
+      (let ([handler (hash-ref (form-def-phases form-def) 'types)])
+        (apply-handler form-db form-def handler current-scope stx))
 
    (match (syntax-e stx)
      [(list (? is-#%begin? t) stmts ..1)
@@ -92,7 +99,7 @@
       (scope-discover-variable-type! current-scope name
         (function-type arg-types ret-type))
 
-      (define body-tt (resolve-types func-scope body-stx))
+      (define body-tt (resolve-types form-db func-scope body-stx))
       ;(list t name-stx args-stx ret-stx body-stx)
       (cons type-V body-tt)
       ]
@@ -154,7 +161,7 @@
         ))
       ]
      [(? number? lit) (cons type-I #f)]
-     ))
+     )))
 
 
 (define (check-function-args stx param-types t-args)
@@ -175,3 +182,15 @@
   (unless res (raise-syntax-error #f (format "couldn't resolve type of variable ~a" var-name) stx))
   res
 )
+
+(define (process-arguments form-db form-def current-scope stx)
+  (for/list ([formal-param (form-def-params form-def)]
+             [actual-param (cdr (syntax-e stx))])
+    (match formal-param
+      [`(stx ,_) (resolve-types form-db current-scope actual-param)])))
+
+(define (apply-handler form-db form-def handler current-scope stx)
+  (define arg-tts (process-arguments form-db form-def current-scope stx))
+
+  ; (for ([arg-tt arg-tts]) (printf "arg-tt ~a\n" arg-tt))
+  (cons (apply handler (map car arg-tts)) arg-tts))

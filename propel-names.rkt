@@ -1,6 +1,7 @@
 #lang racket
 
-(require "propel-models.rkt"
+(require "form-db.rkt"
+         "propel-models.rkt"
          "propel-syntax.rkt"
          "module.rkt"
          "scope.rkt"
@@ -24,8 +25,8 @@
 ; - built-in function
 ; - program-defined function
 
-(define (resolve-names/module! mod)
-  (set-module-body! mod (resolve-names/form (module-scope mod) (module-body mod)))
+(define (resolve-names/module! form-db mod)
+  (set-module-body! mod (resolve-names/form form-db (module-scope mod) (module-body mod)))
   ;(update-module-types! mod (curry resolve-names/type (module-scope mod)))
   ; (update-module-functions mod resolve-names/function)
 )
@@ -57,7 +58,7 @@
     [(? symbol? sym) (resolve-type-name scope stx sym)]
     ))
 
-(define (resolve-names/form-with-new-scope current-scope stx #:inject-symbols [inject-symbols '()])
+(define (resolve-names/form-with-new-scope form-db current-scope stx #:inject-symbols [inject-symbols '()])
   (define nested-scope
     (scope current-scope
            (add1 (scope-level current-scope))
@@ -68,16 +69,25 @@
   (for ([name inject-symbols])
     (scope-insert-variable! nested-scope name stx))
 
-  (resolve-names/form nested-scope stx)
+  (resolve-names/form form-db nested-scope stx)
   )
 
-(define (resolve-names/form current-scope stx)
-  (define rec (curry resolve-names/form current-scope))     ; recurse
+(define (resolve-names/form form-db current-scope stx)
+  (define rec (curry resolve-names/form form-db current-scope))     ; recurse
+
+  ;; first try to look up a definition in the form database, and use that
+  (define form-def (get-form-def-for-stx form-db stx))
 
   ; (printf "resolve-names/form ~a\n" stx)
   ;stx
   (datum->syntax
    stx
+
+   (if form-def
+       (let ([handler (hash-ref (form-def-phases form-def) 'names #f)])
+         (if handler
+             (apply-handler form-db form-def handler current-scope stx)
+             (apply-default-handler form-db form-def current-scope stx)))
    (match (syntax-e stx)
      ;; TODO: generalize to any type constructor
      ;;       how to decide, though? doable if a named type but what if anonymous?
@@ -123,7 +133,7 @@
             name-stx
             resolved-args
             resolved-ret
-            (resolve-names/form-with-new-scope current-scope body-stx #:inject-symbols arg-names))
+            (resolve-names/form-with-new-scope form-db current-scope body-stx #:inject-symbols arg-names))
       ]
      [(list (? is-#%dot? t) obj field) (list t (rec obj) field)]
      [(list (? is-#%external-function? t) name-stx args-stx ret-stx)
@@ -136,7 +146,7 @@
      [(list expr ...) (map rec expr)]
      [(? symbol? sym) (resolve-names/symbol stx sym current-scope)]
      [(? literal? lit) stx]
-     )
+     ))
    stx)
   )
 
@@ -157,3 +167,16 @@
   (unless res (raise-syntax-error #f (format "unkown type name ~a" type-name) stx))
   res
 )
+
+(define (process-arguments form-db form-def current-scope stx)
+  (for/list ([formal-param (form-def-params form-def)]
+             [actual-param (cdr (syntax-e stx))])
+    (match formal-param
+      [`(stx ,_) (resolve-names/form form-db current-scope actual-param)])))
+
+(define (apply-handler form-db form-def handler current-scope stx)
+  (apply handler (process-arguments form-db form-def current-scope stx)))
+
+(define (apply-default-handler form-db form-def current-scope stx)
+  (list* (car (syntax-e stx))
+         (process-arguments form-db form-def current-scope stx)))
