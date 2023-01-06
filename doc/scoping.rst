@@ -1,6 +1,9 @@
 Scoping
 =======
 
+The scoping model should be very similar to that of C/C++, so for example an ``if``-form should introduce a new scope
+(unlike in Scheme/Racket).
+
 Scopes are nested and ultimately inherit from a built-in unmodifiable *base scope*.
 
 A new scope is introduced by:

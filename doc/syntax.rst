@@ -1,7 +1,7 @@
 Syntax elements
 ===============
 
-Arrays (not implemented yet)::
+Arrays (partially implemented)::
 
   (deftype Board-2D (array I 4 4))
 
@@ -10,6 +10,23 @@ Arrays (not implemented yet)::
 
   ;; implicitly sized
   (def my-array (make-array-with-type B 0x10 0x20 0x30))
+
+  (def my-length (len my-array))
+
+
+Iteration::
+
+  ;; not possible yet
+  (for ([i (range 0 10)])
+    body
+    ...
+    )
+
+  (for/range i 10
+    body
+    ...
+    )
+
 
 Structs::
 
