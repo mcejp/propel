@@ -13,3 +13,5 @@ int my_palette[] =
     1, 2, 3, 4
 }
 ;
+;
+int my_length = 4;

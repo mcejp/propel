@@ -121,9 +121,9 @@
     (#%app update-row 2 dir)
     (#%app update-row 3 dir))))
  #f
- ((#<path:#INT#/propel-syntax.rkt> 49 95 1819 2)
+ ((#<path:#INT#/propel-syntax.rkt> 52 95 1946 2)
   (#f 0 0 0 2)
-  ((#<path:tests/2048.rkt> -37 -95 -1586 43)
+  ((#<path:tests/2048.rkt> -40 -95 -1713 43)
    (#f 0 0 0 43)
    (#f 0 19 19 16)
    ((#f 0 -19 -19 43)

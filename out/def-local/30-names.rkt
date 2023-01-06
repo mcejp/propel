@@ -14,9 +14,9 @@
       (#%scoped-var 2 right)))
     (#%scoped-var 2 sum))))
  #f
- ((#<path:#INT#/propel-syntax.rkt> 49 95 1819 2)
+ ((#<path:#INT#/propel-syntax.rkt> 52 95 1946 2)
   (#f 0 0 0 2)
-  ((#<path:tests/def-local.rkt> -49 -95 -1819 97)
+  ((#<path:tests/def-local.rkt> -52 -95 -1946 97)
    (#f 0 0 0 97)
    (#f 0 7 7 3)
    ((#f 0 -7 -7 97)
