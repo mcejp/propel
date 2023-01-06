@@ -2,9 +2,9 @@
   (#%deftype my-int int)
   (#%defun add ((a my-int) (b my-int)) my-int (#%begin (#%app + a b))))
  #f
- ((#<path:#INT#/propel-syntax.rkt> 52 95 1946 2)
+ ((#<path:#INT#/propel-syntax.rkt> 53 95 1969 2)
   (#f 0 0 0 2)
-  ((#<path:tests/deftype.rkt> -52 -95 -1946 20)
+  ((#<path:tests/deftype.rkt> -53 -95 -1969 20)
    (#f 0 0 0 20)
    (#f 0 9 9 6)
    (#f 0 7 7 3))
