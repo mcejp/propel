@@ -83,6 +83,8 @@
                'builtin-mul-ii
                '<
                'builtin-lessthan-ii
+               '<=
+               'builtin-lesseq-ii
                '>
                'builtin-greaterthan-ii
                'and
@@ -98,6 +100,8 @@
                'builtin-mul-ii
                II-to-I
                'builtin-lessthan-ii
+               II-to-I
+               'builtin-lesseq-ii
                II-to-I
                'builtin-greaterthan-ii
                II-to-I
