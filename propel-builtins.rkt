@@ -31,3 +31,22 @@
                       (match-define (list type-stx elem-stx ...) args)
                       `(#%construct (#%array-type ,type-stx ,(length elem-stx))
                                     ,@elem-stx)))
+
+(define-transformer unless (lambda args
+  (local-require syntax/parse)
+
+  (syntax-parse args
+    [(cond:expr body:expr ...)
+     #'(when (not expr) body ...)]
+    )))
+
+(define-transformer when (lambda args
+  (local-require syntax/parse)
+
+  (syntax-parse args
+    [(cond:expr body:expr ...)
+     #'(begin
+         (if cond
+           (begin body ...)
+           (Void)))]
+    )))

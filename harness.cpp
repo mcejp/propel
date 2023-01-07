@@ -77,8 +77,6 @@ void mark_merged(int pos, int value) {
     merged[pos] = value;
 }
 
-void dummy_void() {}
-
 void display_board() {
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {

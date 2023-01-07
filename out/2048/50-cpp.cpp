@@ -17,7 +17,6 @@ int brd_get_with_rotation(int, int, int);
 void brd_set_with_rotation(int, int, int, int);
 int is_marked_merged(int);
 void mark_merged(int, int);
-void dummy_void();
 int DIR_LEFT = 0;
 void brd_set(int scope2_x, int scope2_y, int scope2_value)
 {
@@ -73,7 +72,7 @@ void update_row(int scope2_y, int scope2_dir)
         }
         else
         {
-            dummy_void();
+            ;
         }
         scope2_columnn = builtin_add_ii(scope2_columnn, 1);;
     }

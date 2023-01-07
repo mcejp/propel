@@ -24,8 +24,6 @@
 (decl-external-fun is-marked-merged ((pos int)) int)
 (decl-external-fun mark-merged ((pos int) (value int)) Void)
 
-(decl-external-fun dummy-void () Void)
-
 (def DIR-LEFT 0)
 
 (defun brd-set ((x int) (y int) (value int)) Void
@@ -71,7 +69,8 @@
     (set! output-pos (update-column column y dir output-pos)))
 
   (for/range columnn 4
-    (if (<= output-pos columnn) (brd-set-with-rotation columnn y dir 0) (dummy-void)))
+    (when (<= output-pos columnn)
+      (brd-set-with-rotation columnn y dir 0)))
 )
 
 (defun generate-new-stone () Void
