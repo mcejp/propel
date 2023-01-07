@@ -22,9 +22,9 @@
         (#%scoped-var 2 i)
         (#%app (#%scoped-var 0 builtin-add-ii) (#%scoped-var 2 i) 1))))))))
  #f
- ((#<path:#INT#/propel-syntax.rkt> 53 95 1969 2)
-  (#f 0 0 0 2)
-  ((#<path:tests/vga-palette.rkt> -46 -95 -1719 160)
+ ((#<path:tests/vga-palette.rkt> 0 0 0 588)
+  (#f 0 0 0 588)
+  ((#f 7 0 250 160)
    (#f 0 0 0 160)
    ((#f 0 0 0 160) (#f 0 0 0 160) (#f 0 0 0 160)))
   ((#f 5 0 162 46)

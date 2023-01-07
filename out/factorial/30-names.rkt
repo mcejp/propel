@@ -14,9 +14,9 @@
        (#%scoped-var 1 factorial)
        (#%app (#%scoped-var 0 builtin-sub-ii) (#%scoped-var 2 n) 1)))))))
  #f
- ((#<path:#INT#/propel-syntax.rkt> 53 95 1969 2)
-  (#f 0 0 0 2)
-  ((#<path:tests/factorial.rkt> -53 -95 -1969 86)
+ ((#<path:tests/factorial.rkt> 0 0 0 87)
+  (#f 0 0 0 87)
+  ((#f 0 0 0 86)
    (#f 0 0 0 86)
    (#f 0 7 7 9)
    ((#f 0 -7 -7 86)

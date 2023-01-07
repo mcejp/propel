@@ -51,7 +51,12 @@
   (set! path (string->path path))
   (parameterize ([port-count-lines-enabled #t])
     (with-input-from-file	path (lambda () (begin
-      (datum->syntax #'() (cons #'begin (sequence->list (in-port (curry read-syntax path)))) #'()))))))
+      (define forms (sequence->list (in-port (curry read-syntax path))))
+      (define last* (last forms))
+      (define module-span (+ (syntax-position last*) (syntax-span last*)))
+      ;; FIXME: this will crash upon an empty module
+      (define wrapper-srcloc (srcloc path 1 0 1 module-span))
+      (datum->syntax #'() (cons #'begin forms) wrapper-srcloc))))))
 
 (define (resolve-forms form-db stx)
   (define rec (curry resolve-forms form-db)) ; recurse

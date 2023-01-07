@@ -11,9 +11,9 @@
      (#%scoped-var 2 a)
      (#%scoped-var 2 b)))))
  #f
- ((#<path:#INT#/propel-syntax.rkt> 53 95 1969 2)
-  (#f 0 0 0 2)
-  ((#<path:tests/deftype.rkt> -53 -95 -1969 20)
+ ((#<path:tests/deftype.rkt> 0 0 0 75)
+  (#f 0 0 0 75)
+  ((#f 0 0 0 20)
    (#f 0 0 0 20)
    (#f 0 9 9 6)
    ((#f 0 -9 -9 20) (#f 0 0 0 20) (#f 0 0 0 20)))
