@@ -2,7 +2,9 @@
 
 (provide register-builtin-forms)
 
-(require "while.rkt")
+(require "get.rkt"
+         "while.rkt")
 
 (define (register-builtin-forms ctx)
+  (register-form/get ctx)
   (register-form/while ctx))

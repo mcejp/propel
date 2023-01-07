@@ -19,4 +19,4 @@
    '((stx cond) (stx body))
    (hash 'types
          ;; compute resultant type; sub-tts will be attached automatically
-         (lambda (cond-t body-t) type-V))))
+         (lambda (stx cond-t body-t) type-V))))

@@ -67,16 +67,11 @@
 
   (def output-pos 0)
 
-  ;; Until we have loops, unroll by hand    
-  (set! output-pos (update-column 0 y dir output-pos))
-  (set! output-pos (update-column 1 y dir output-pos))
-  (set! output-pos (update-column 2 y dir output-pos))
-  (set! output-pos (update-column 3 y dir output-pos))
+  (for/range column 4
+    (set! output-pos (update-column column y dir output-pos)))
 
-  (if (< output-pos 1) (brd-set-with-rotation 0 y dir 0) (dummy-void))
-  (if (< output-pos 2) (brd-set-with-rotation 1 y dir 0) (dummy-void))
-  (if (< output-pos 3) (brd-set-with-rotation 2 y dir 0) (dummy-void))
-  (if (< output-pos 4) (brd-set-with-rotation 3 y dir 0) (dummy-void))
+  (for/range columnn 4
+    (if (<= output-pos columnn) (brd-set-with-rotation columnn y dir 0) (dummy-void)))
 )
 
 (defun generate-new-stone () Void
@@ -125,11 +120,9 @@
   ;     )
   ;     (update-board-with new-list-of-stones)
   ; )
-  ;; until we have loops, unroll by hand
-  (update-row 0 dir)
-  (update-row 1 dir)
-  (update-row 2 dir)
-  (update-row 3 dir)
+
+  (for/range row 4
+    (update-row row dir))
 
   ;; TODO: can check if any movement made, if not, jump back to (get-player-input)
 )

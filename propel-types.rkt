@@ -196,4 +196,5 @@
   (define arg-tts (process-arguments form-db form-def current-scope stx))
 
   ; (for ([arg-tt arg-tts]) (printf "arg-tt ~a\n" arg-tt))
-  (cons (apply handler (map car arg-tts)) arg-tts))
+  ;; call (handler stx arg1-t arg2-t ...)
+  (cons (apply handler (cons stx (map car arg-tts))) arg-tts))

@@ -7,6 +7,7 @@ Core forms
 - ``(#%begin <stmt> ...+)``
 - ``(#%construct <type> <args>...*)``
 - ``(#%dot <expr> <name>)``
+- ``(#%get <array> <index>)``
 - ``(#%if <expr> <then> <else>)``
 - ``(#%len <expr>)`` (would be nice if this could be librarized. evaluated at type resolution time.)
 - ``(#%scoped-var <depth-stx> <name-stx>)`` (no reason for depth to be represented as a syntax object, it's a limitation of the current architecture)

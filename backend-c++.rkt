@@ -7,6 +7,9 @@
          "propel-syntax.rkt"
          "scope.rkt")
 
+(define (is-#%get? stx)
+  (equal? (syntax-e stx) '#%get))
+
 (define (is-#%while? stx)
   (equal? (syntax-e stx) '#%while))
 
@@ -270,6 +273,17 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
     [(list (? is-#%external-function? t) name-stx args-stx ret-stx)
      (define name (sanitize-name (syntax-e name-stx)))
      (values (list (format-function-type-as-prototype name form-type)) name)]
+    ;; TODO: should be implemented with some simple pattern
+    [(list (? is-#%get?) array-stx index-stx)
+     (match-define (list array-tt index-tt) sub-tts)
+
+     (define-values (array-tokens array-expr) (format-form array-stx array-tt))
+     (define-values (index-tokens index-expr) (format-form index-stx index-tt))
+
+     (define my-tokens (flatten (list array-tokens index-tokens)))
+     (define my-expr (format "~a[~a]" array-expr index-expr))
+
+     (values my-tokens my-expr)]
     [(list (? is-#%len?) _)
      (define expr-tt sub-tts)
      (define expr-t (car expr-tt))
