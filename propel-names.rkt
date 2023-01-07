@@ -1,15 +1,12 @@
 #lang racket
 
 (require "form-db.rkt"
-         "propel-models.rkt"
          "propel-syntax.rkt"
-         "module.rkt"
-         "scope.rkt"
-         )
+         "scope.rkt")
 
 (provide is-#%external-function?
          is-#%scoped-var?
-         resolve-names/module!)
+         resolve-names)
 
 (define (is-#%external-function? stx) (equal? (syntax-e stx) '#%external-function))
 (define (is-#%scoped-var? stx) (equal? (syntax-e stx) '#%scoped-var))
@@ -25,8 +22,8 @@
 ; - built-in function
 ; - program-defined function
 
-(define (resolve-names/module! form-db mod)
-  (set-module-body! mod (resolve-names/form form-db (module-scope mod) (module-body mod)))
+(define (resolve-names form-db stx)
+  (resolve-names/form form-db (make-module-scope) stx)
   ;(update-module-types! mod (curry resolve-names/type (module-scope mod)))
   ; (update-module-functions mod resolve-names/function)
 )

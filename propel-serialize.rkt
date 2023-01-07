@@ -4,38 +4,13 @@
          serialize-expr
          serialize-module)
 
-(require "module.rkt"
-         "propel-models.rkt"
-         "propel-names.rkt"
+(require "propel-models.rkt"
          "propel-syntax.rkt"
-         "scope.rkt"
-         racket/serialize
          racket/syntax-srcloc)
 
-(define (serialize-module mod)
-  (match-let ([(module scope body
-                 body-type-tree) mod])
-    ;; This is totally weird... we should not be pulling stuff out of the scope.
-    ;; Should just serialize the whole thing if that's what's right.
-    (define body-ser (serialize-expr body))
-    (append (hash-map (scope-types scope) (λ (name f) (serialize-type name f)))
-            ;(hash-map functions (λ (name f) (serialize-function f)))
-            (list (car body-ser)
-                  body-type-tree
-                  (compress-srcloc-tree (cdr body-ser))))))
-
-(define (serialize-function f)
-  (match-let ([(function name args ret body body-type-tree module scope) f])
-    (begin
-      ;; (printf "serialize-func: body ~a\n" body)
-      (define body-ser (serialize-expr body))
-      (list name
-            args
-            ret
-            (car body-ser)
-            body-type-tree
-            ;; TODO scope
-            (compress-srcloc-tree (cdr body-ser))))))
+(define (serialize-module body body-type-tree)
+  (define body-ser (serialize-expr body))
+  (list (car body-ser) body-type-tree (compress-srcloc-tree (cdr body-ser))))
 
 ; return (cons expr-tree srcloc-tree)
 (define (serialize-expr stx)
@@ -124,6 +99,3 @@
       (if (equal? (car path-segments) (car prefix-segments))
           (remove-prefix (cdr path-segments) (cdr prefix-segments))
           #f)))
-
-(define (serialize-type name t)
-  (list name t))

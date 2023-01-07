@@ -4,6 +4,7 @@
 ;;; thus, ok to have the same requirement for types
 
 (provide base-scope
+         make-module-scope
          (struct-out scope)
          scope-discover-variable-type!
          scope-insert-variable!
@@ -109,3 +110,6 @@
                II-to-I
                'builtin-not-i
                I-to-I)))
+
+(define (make-module-scope)
+  (scope base-scope 1 (make-hash) (make-hash) (make-hash)))

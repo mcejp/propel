@@ -1,7 +1,6 @@
 #lang racket/base
 
 (require rackunit
-         "module.rkt"
          "propel-serialize.rkt"
          "propel-syntax.rkt"
          "scope.rkt")
@@ -9,8 +8,8 @@
 (test-case
  "dot.rkt"
  (define stx (parse-module "tests/dot.rkt"))
- (define mod (syntax->module (resolve-forms (hash) stx)))
- (define ser (serialize-module mod))
+ (define mod-core-forms (resolve-forms (hash) stx))
+ (define ser (serialize-module mod-core-forms #f))
  (check-equal?
   ser
   `((#%begin (#%defun get-name ((foo Bar)) str (#%begin (#%dot foo name))))
@@ -29,8 +28,8 @@
 (test-case
  "hello.rkt"
  (define stx (parse-module "tests/hello.rkt"))
- (define mod (syntax->module (resolve-forms (hash) stx)))
- (define ser (serialize-module mod))
+ (define mod-core-forms (resolve-forms (hash) stx))
+ (define ser (serialize-module mod-core-forms #f))
  (check-equal?
   ser
   `((#%begin (#%defun increment ((n int)) int (#%begin (#%app + n 1))))

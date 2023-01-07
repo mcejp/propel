@@ -16,15 +16,9 @@
          is-defun?
          literal?
          parse-module
-         resolve-forms
-        ;  resolve-forms/module!
-         )
+         resolve-forms)
 
-(require "form-db.rkt"
-         "propel-models.rkt"
-         "module.rkt"
-         "scope.rkt"
-)
+(require "form-db.rkt")
 
 (define (is-#%app? stx) (equal? (syntax-e stx) '#%app))
 (define (is-#%begin? stx) (equal? (syntax-e stx) '#%begin))
@@ -56,7 +50,7 @@
       (define module-span (+ (syntax-position last*) (syntax-span last*)))
       ;; FIXME: this will crash upon an empty module
       (define wrapper-srcloc (srcloc path 1 0 1 module-span))
-      (datum->syntax #'() (cons #'begin forms) wrapper-srcloc))))))
+      (datum->syntax #'() (cons 'begin forms) wrapper-srcloc))))))
 
 (define (resolve-forms form-db stx)
   (define rec (curry resolve-forms form-db)) ; recurse

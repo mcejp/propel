@@ -1,10 +1,10 @@
-((#%begin (#%define my-array (#%construct (#%array-type int 4) 1 2 3 4)))
+((begin (def my-array (#%construct (#%array-type int 4) 1 2 3 4)))
  #f
  ((#<path:tests/def-array.rkt> 0 0 0 83)
   (#f 0 0 0 83)
   ((#f 1 0 25 57)
-   (#f 0 0 0 57)
-   (#f 0 5 5 8)
+   (#f 0 1 1 3)
+   (#f 0 4 4 8)
    ((#f 0 9 9 42)
     (#f 0 1 1 11)
     ((#f 0 12 12 20) (#f 0 1 1 12) (#f 0 13 13 3) (#f 0 4 4 1))

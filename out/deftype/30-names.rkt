@@ -1,5 +1,4 @@
-((my-int (#%builtin-type I))
- (#%begin
+((#%begin
   (#%deftype my-int (#%builtin-type I))
   (#%defun
    add

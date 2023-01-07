@@ -9,11 +9,14 @@
 
 (provide resolve-types)
 
+(define (resolve-types form-db stx)
+  (resolve-types/form form-db (make-module-scope) stx))
+
 ; in:   AST
 ; out:  (type . subtree)
 ;; Note that we only return trees of types which have no useful interpretation without having the original expression
-(define (resolve-types form-db current-scope stx)
-  (define rec (curry resolve-types form-db current-scope))     ; recurse
+(define (resolve-types/form form-db current-scope stx)
+  (define rec (curry resolve-types/form form-db current-scope))     ; recurse
   ; (printf "resolve-types ~a\n" stx)
   ;stx
 
@@ -99,7 +102,7 @@
       (scope-discover-variable-type! current-scope name
         (function-type arg-types ret-type))
 
-      (define body-tt (resolve-types form-db func-scope body-stx))
+      (define body-tt (resolve-types/form form-db func-scope body-stx))
       ;(list t name-stx args-stx ret-stx body-stx)
       (cons type-V body-tt)
       ]
@@ -187,7 +190,7 @@
   (for/list ([formal-param (form-def-params form-def)]
              [actual-param (cdr (syntax-e stx))])
     (match formal-param
-      [`(stx ,_) (resolve-types form-db current-scope actual-param)])))
+      [`(stx ,_) (resolve-types/form form-db current-scope actual-param)])))
 
 (define (apply-handler form-db form-def handler current-scope stx)
   (define arg-tts (process-arguments form-db form-def current-scope stx))

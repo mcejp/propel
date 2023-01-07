@@ -5,13 +5,12 @@
 (require "propel-models.rkt"
          "propel-names.rkt"
          "propel-syntax.rkt"
-         "module.rkt"
          "scope.rkt")
 
 (define (is-#%while? stx)
   (equal? (syntax-e stx) '#%while))
 
-(define (compile-module-to-c++ mod)
+(define (compile-module-to-c++ mod-stx mod-tt)
   ;; TODO: generate C++ prototypes
 
   (displayln
@@ -27,8 +26,7 @@ inline int builtin_and_ii(int a, int b) { return a && b; }
 inline int builtin_not_i(int a) { return a ? 0 : 1; }
 ")
 
-  (define-values (tokens final-expr)
-    (format-form (module-body mod) (module-body-type-tree mod)))
+  (define-values (tokens final-expr) (format-form mod-stx mod-tt))
   (print-tokens tokens 0))
 
 (define (format-function-prototype c-name args ret)
