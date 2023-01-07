@@ -58,41 +58,24 @@ int update_column(int scope2_x, int scope2_y, int scope2_dir, int scope2_output_
 void update_row(int scope2_y, int scope2_dir)
 {
     int scope2_output_pos = 0;
-    scope2_output_pos = update_column(0, scope2_y, scope2_dir, scope2_output_pos);;
-    scope2_output_pos = update_column(1, scope2_y, scope2_dir, scope2_output_pos);;
-    scope2_output_pos = update_column(2, scope2_y, scope2_dir, scope2_output_pos);;
-    scope2_output_pos = update_column(3, scope2_y, scope2_dir, scope2_output_pos);;
-    if (builtin_lessthan_ii(scope2_output_pos, 1))
+    int scope2_column = 0;
+    while (builtin_lessthan_ii(scope2_column, 4))
     {
-        brd_set_with_rotation(0, scope2_y, scope2_dir, 0);
+        scope2_output_pos = update_column(scope2_column, scope2_y, scope2_dir, scope2_output_pos);;
+        scope2_column = builtin_add_ii(scope2_column, 1);;
     }
-    else
+    int scope2_columnn = 0;
+    while (builtin_lessthan_ii(scope2_columnn, 4))
     {
-        dummy_void();
-    }
-    if (builtin_lessthan_ii(scope2_output_pos, 2))
-    {
-        brd_set_with_rotation(1, scope2_y, scope2_dir, 0);
-    }
-    else
-    {
-        dummy_void();
-    }
-    if (builtin_lessthan_ii(scope2_output_pos, 3))
-    {
-        brd_set_with_rotation(2, scope2_y, scope2_dir, 0);
-    }
-    else
-    {
-        dummy_void();
-    }
-    if (builtin_lessthan_ii(scope2_output_pos, 4))
-    {
-        brd_set_with_rotation(3, scope2_y, scope2_dir, 0);
-    }
-    else
-    {
-        dummy_void();
+        if (builtin_lesseq_ii(scope2_output_pos, scope2_columnn))
+        {
+            brd_set_with_rotation(scope2_columnn, scope2_y, scope2_dir, 0);
+        }
+        else
+        {
+            dummy_void();
+        }
+        scope2_columnn = builtin_add_ii(scope2_columnn, 1);;
     }
 }
 void generate_new_stone()
@@ -115,8 +98,10 @@ void generate_new_stone()
 }
 void make_turn(int scope2_dir)
 {
-    update_row(0, scope2_dir);
-    update_row(1, scope2_dir);
-    update_row(2, scope2_dir);
-    update_row(3, scope2_dir);
+    int scope2_row = 0;
+    while (builtin_lessthan_ii(scope2_row, 4))
+    {
+        update_row(scope2_row, scope2_dir);
+        scope2_row = builtin_add_ii(scope2_row, 1);;
+    }
 }
