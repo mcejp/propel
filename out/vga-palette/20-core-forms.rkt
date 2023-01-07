@@ -10,7 +10,7 @@
     (#%begin
      (#%define i 0)
      (#%while
-      (#%app <= i (#%len my-palette))
+      (#%app < i (#%len my-palette))
       (#%begin (#%define j i) (#%set-var i (#%app + i 1))))))))
  #f
  ((#<path:tests/vga-palette.rkt> 0 0 0 588)

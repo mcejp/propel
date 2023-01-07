@@ -5,7 +5,7 @@
   (match-define (list ident-stx max-stx body-stx ...) args)
   `(begin
       (def ,ident-stx 0)
-      (while (<= ,ident-stx ,max-stx)
+      (while (< ,ident-stx ,max-stx)
             (begin
               ,@body-stx
               (set! ,ident-stx (+ ,ident-stx 1)))))))

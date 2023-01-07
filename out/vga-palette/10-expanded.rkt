@@ -8,7 +8,7 @@
     Void
     (begin
       (def i 0)
-      (while (<= i (len my-palette)) (begin (def j i) (set! i (+ i 1)))))))
+      (while (< i (len my-palette)) (begin (def j i) (set! i (+ i 1)))))))
  #f
  ((#<path:tests/vga-palette.rkt> 0 0 0 588)
   (#f 0 0 0 588)

@@ -13,7 +13,7 @@
      (#%define (#%scoped-var 2 i) 0)
      (#%while
       (#%app
-       (#%scoped-var 0 builtin-lesseq-ii)
+       (#%scoped-var 0 builtin-lessthan-ii)
        (#%scoped-var 2 i)
        (#%len (#%scoped-var 1 my-palette)))
       (#%begin
