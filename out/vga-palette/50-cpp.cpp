@@ -13,12 +13,14 @@ int my_palette[] =
     1, 2, 3, 4
 };
 int my_length = 4;
+void palette_put(int, int);
 void show_palette()
 {
-    int scope2_i = 0;
-    while (builtin_lessthan_ii(scope2_i, 4))
+    int scope2__i = 0;
+    while (builtin_lessthan_ii(scope2__i, 4))
     {
-        int scope2_j = scope2_i;
-        scope2_i = builtin_add_ii(scope2_i, 1);;
+        int scope2_color = my_palette[scope2__i];
+        palette_put(scope2__i, scope2_color);
+        scope2__i = builtin_add_ii(scope2__i, 1);;
     }
 }

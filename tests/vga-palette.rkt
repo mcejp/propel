@@ -14,7 +14,9 @@
 
 (def my-length (len my-palette))
 
+(decl-external-fun palette-put ((index int) (value int)) Void)
+
 (defun show-palette () Void
   ;; loop & print
-  (for/range i (len my-palette)
-    (def j i)))
+  (for ([color my-palette])
+    (palette-put _i color)))
