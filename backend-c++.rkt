@@ -81,23 +81,36 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
   (match-define (cons form-type sub-tts)
     type-tree) ; separate resultant type from type sub-trees
   (match (syntax-e form)
-    [(list (? is-#%begin? t) stmts ..1)
-     (define my-tokens '())
-     (define final-expr
-       (for/last ([stmt stmts]
-                  [sub-tt sub-tts]
-                  [index (range 0 (length stmts))])
-         ;; emit tokens for each and also its evaluation becaise we don't know if it has side effects.
-         (define-values (tokens expr) (format-form stmt sub-tt))
-         ;; this is awful, use fold or something
-         (if (= index (sub1 (length stmts)))
-             (set! my-tokens (append my-tokens tokens))
-             (set! my-tokens
-                   ;; TODO: should skip over empty strings
-                   (append my-tokens tokens (list (string-append expr ";")))))
+    [(list (? is-#%begin?) stmts ..1)
+     ;; Recall that the begin form evaluates all forms inside for their side effects
+     ;; and returns the result of the last one
+     ;; Here, for each of the nested form we first emit its tokens and then its expression
+     ;; (although we don't care about the result of the expression, we do care about its side effects)
+     ;; The exception is the last one, whose expression is passed on as the ultimate result of the `begin` form
 
-         expr))
-     (values my-tokens final-expr)]
+     ;; First collect each nested form's tokens + expression in a *backwards* list
+     (define-values (sub-tokenss sub-exprs)
+       (for/fold ([sub-tokenss* '()] [sub-exprs* '()])
+                 ([stmt stmts] [sub-tt sub-tts])
+         (define-values (tokens expr) (format-form stmt sub-tt))
+         (values (cons tokens sub-tokenss*) (cons expr sub-exprs*))))
+
+     ;; Extract the last form's expression and substitute it with an empty string
+     (define result-expr (first sub-exprs))
+     (set! sub-exprs (cons "" (rest sub-exprs)))
+
+     ;; Now collect the tokens in a list-of-lists
+     ;; We left-fold the backwards lists, so the result is forward
+     (define my-tokens
+       (for/fold ([out-tokens '()]) ([tokens sub-tokenss] [expr sub-exprs])
+
+         ;; if expression non-empty, terminate with a semicolon
+         (cons (if (non-empty-string? expr)
+                   (list tokens (string-append expr ";"))
+                   tokens)
+               out-tokens)))
+     ;; Now all that remains is to flatten the collected tokens
+     (values (flatten my-tokens) result-expr)]
     [(list (? is-#%begin? t)) (values '() "")]
     [(list (? is-#%construct?) type-stx args-stx ...)
      (begin
@@ -151,8 +164,7 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
         ;; build tokens as concatenation of all
         (define values-expr (string-join arg-exprs ", "))
 
-        (values (flatten (list arg-tokens the-decl "{" values-expr "}" ";"))
-                "")]
+        (values (flatten (list arg-tokens the-decl "{" values-expr "};")) "")]
        [is-#%define-external-function?
         (unless (is-module-scope-var? var-stx)
           (raise-syntax-error #f "deftype allowed only in module scope" form))
@@ -180,14 +192,19 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
         1
         (syntax->datum name-stx))) ; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
+     (define optional-return-statement
+       (if (non-empty-string? final-expr)
+           (if (equal? (syntax->datum ret-stx) type-V)
+               (format "~a;" final-expr)
+               (format "return ~a;" final-expr))
+           '()))
+
      (values (flatten (list (format-function-prototype c-name
                                                        (syntax->datum args-stx)
                                                        (syntax->datum ret-stx))
                             "{"
                             tokens
-                            (if (equal? (syntax->datum ret-stx) type-V)
-                                (format "~a;" final-expr)
-                                (format "return ~a;" final-expr))
+                            optional-return-statement
                             "}"))
              "")]
     [(list (? is-#%if? t) expr then else)
@@ -309,6 +326,11 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
      (begin
        (print-indent (sub1 indent))
        (displayln "}")
+       (print-tokens rest (sub1 indent)))]
+    [(list "};" rest ...)
+     (begin
+       (print-indent (sub1 indent))
+       (displayln "};")
        (print-tokens rest (sub1 indent)))]
     [(list str rest ...)
      (begin

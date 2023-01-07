@@ -11,10 +11,7 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
 int add(int scope2_a, int scope2_b)
 {
     int scope2_left = scope2_a;
-    ;
     int scope2_right = scope2_b;
-    ;
     int scope2_sum = builtin_add_ii(scope2_left, scope2_right);
-    ;
     return scope2_sum;
 }

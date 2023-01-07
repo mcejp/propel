@@ -6,6 +6,10 @@ Run tests: `PLT_CS_DEBUG=1 raco test test*.rkt`
 
 `PLT_CS_DEBUG=1 racket main.rkt && g++ -o 2048 out/2048/50-cpp.cpp harness.cpp && ./2048`
 
+Cloc:
+
+`cloc *.rkt forms/*.rkt tests/*.rkt`
+
 ### Primitive types
 
 - `void` / `nil`

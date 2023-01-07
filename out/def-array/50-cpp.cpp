@@ -11,5 +11,4 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
 int my_array[] =
 {
     1, 2, 3, 4
-}
-;
+};
