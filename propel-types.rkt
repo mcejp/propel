@@ -104,6 +104,11 @@
 
       (define body-tt (resolve-types/form form-db func-scope body-stx))
       ;(list t name-stx args-stx ret-stx body-stx)
+
+      (define body-t (car body-tt))
+      (unless (equal? body-t ret-type)
+              (raise-syntax-error #f (format "defun: ~a: body expression type (~a) does not match declared return type (~a)" name body-t ret-type) stx))
+
       (cons type-V body-tt)
       ]
      #;[(list (? is-#%dot? t) obj field)
