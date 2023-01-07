@@ -66,17 +66,6 @@ void brd_set_with_rotation(int x, int y, int rot, int value) {
     board[y][x] = value;
 }
 
-// instead of this array it should be sufficient to track whether *last output* was merged or not
-int merged[4];
-
-int is_marked_merged(int pos) {
-    return merged[pos];
-}
-
-void mark_merged(int pos, int value) {
-    merged[pos] = value;
-}
-
 void display_board() {
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {

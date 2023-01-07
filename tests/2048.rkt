@@ -21,9 +21,6 @@
 (decl-external-fun brd-get-with-rotation ((x int) (y int) (dir int)) int)
 (decl-external-fun brd-set-with-rotation ((x int) (y int) (dir int) (stone int)) Void)
 
-(decl-external-fun is-marked-merged ((pos int)) int)
-(decl-external-fun mark-merged ((pos int) (value int)) Void)
-
 (def DIR-LEFT 0)
 
 (defun brd-set ((x int) (y int) (value int)) Void
@@ -33,40 +30,34 @@
 (defun and3 ((a int) (b int) (c int)) int
   (and (and a b) c))
 
-;; return new output-pos
-(defun update-column ((x int) (y int) (dir int) (output-pos int)) int
-  ;; check if any stone in source position
-  (def stone (brd-get-with-rotation x y dir))
-  (if stone (begin
-    ;; check if should be merged -- output is non-empty, last stone is identical and is not the result of a merge
-    (def should-merge (and3 (> output-pos 0)
-                            (= (brd-get-with-rotation (- output-pos 1) y dir) stone)
-                            (not (is-marked-merged (- output-pos 1)))))
-    ;; put into output array
-    (if should-merge
-      (begin
-        (brd-set-with-rotation (- output-pos 1) y dir (* 2 stone))
-        (mark-merged (- output-pos 1) 1)
-        output-pos
-      )
-      (begin
-        (brd-set-with-rotation output-pos y dir stone)
-        (mark-merged output-pos 0)
-        (+ output-pos 1)
-      )
-    ))
-    output-pos
-  )
-)
-
 ;; assume move direction is LEFT, fix up at the last moment
 (defun update-row ((y int) (dir int)) Void
   ;; iterate row from the left, merging un-merged cells
 
   (def output-pos 0)
+  (def was-merged 0)
 
-  (for/range column 4
-    (set! output-pos (update-column column y dir output-pos)))
+  (for/range x 4
+    ;; check if any stone in source position
+    (def stone (brd-get-with-rotation x y dir))
+    (when stone
+      ;; check if should be merged -- output is non-empty, last stone is identical and is not the result of a merge
+      (def should-merge (and3 (> output-pos 0)
+                              (= (brd-get-with-rotation (- output-pos 1) y dir) stone)
+                              (not was-merged)))
+      ;; put into output array
+      (if should-merge
+        (begin
+          (brd-set-with-rotation (- output-pos 1) y dir (* 2 stone))
+          (set! was-merged 1)
+        )
+        (begin
+          (brd-set-with-rotation output-pos y dir stone)
+          (set! was-merged 0)
+          (set! output-pos (+ output-pos 1))
+        )
+        )
+      ))
 
   (for/range columnn 4
     (when (<= output-pos columnn)

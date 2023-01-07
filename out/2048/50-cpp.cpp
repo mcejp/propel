@@ -15,8 +15,6 @@ int brd_get_nth_empty_slot_x(int);
 int brd_get_nth_empty_slot_y(int);
 int brd_get_with_rotation(int, int, int);
 void brd_set_with_rotation(int, int, int, int);
-int is_marked_merged(int);
-void mark_merged(int, int);
 int DIR_LEFT = 0;
 void brd_set(int scope2_x, int scope2_y, int scope2_value)
 {
@@ -26,42 +24,35 @@ int and3(int scope2_a, int scope2_b, int scope2_c)
 {
     return builtin_and_ii(builtin_and_ii(scope2_a, scope2_b), scope2_c);
 }
-int update_column(int scope2_x, int scope2_y, int scope2_dir, int scope2_output_pos)
-{
-    int scope2_stone = brd_get_with_rotation(scope2_x, scope2_y, scope2_dir);
-    int tmp1;
-    if (scope2_stone)
-    {
-        int scope2_should_merge = and3(builtin_greaterthan_ii(scope2_output_pos, 0), builtin_eq_ii(brd_get_with_rotation(builtin_sub_ii(scope2_output_pos, 1), scope2_y, scope2_dir), scope2_stone), builtin_not_i(is_marked_merged(builtin_sub_ii(scope2_output_pos, 1))));
-        int tmp0;
-        if (scope2_should_merge)
-        {
-            brd_set_with_rotation(builtin_sub_ii(scope2_output_pos, 1), scope2_y, scope2_dir, builtin_mul_ii(2, scope2_stone));
-            mark_merged(builtin_sub_ii(scope2_output_pos, 1), 1);
-            tmp0 = scope2_output_pos;
-        }
-        else
-        {
-            brd_set_with_rotation(scope2_output_pos, scope2_y, scope2_dir, scope2_stone);
-            mark_merged(scope2_output_pos, 0);
-            tmp0 = builtin_add_ii(scope2_output_pos, 1);
-        }
-        tmp1 = tmp0;
-    }
-    else
-    {
-        tmp1 = scope2_output_pos;
-    }
-    return tmp1;
-}
 void update_row(int scope2_y, int scope2_dir)
 {
     int scope2_output_pos = 0;
-    int scope2_column = 0;
-    while (builtin_lessthan_ii(scope2_column, 4))
+    int scope2_was_merged = 0;
+    int scope2_x = 0;
+    while (builtin_lessthan_ii(scope2_x, 4))
     {
-        scope2_output_pos = update_column(scope2_column, scope2_y, scope2_dir, scope2_output_pos);;
-        scope2_column = builtin_add_ii(scope2_column, 1);;
+        int scope2_stone = brd_get_with_rotation(scope2_x, scope2_y, scope2_dir);
+        if (scope2_stone)
+        {
+            int scope2_should_merge = and3(builtin_greaterthan_ii(scope2_output_pos, 0), builtin_eq_ii(brd_get_with_rotation(builtin_sub_ii(scope2_output_pos, 1), scope2_y, scope2_dir), scope2_stone), builtin_not_i(scope2_was_merged));
+            if (scope2_should_merge)
+            {
+                brd_set_with_rotation(builtin_sub_ii(scope2_output_pos, 1), scope2_y, scope2_dir, builtin_mul_ii(2, scope2_stone));
+                scope2_was_merged = 1;;
+            }
+            else
+            {
+                brd_set_with_rotation(scope2_output_pos, scope2_y, scope2_dir, scope2_stone);
+                scope2_was_merged = 0;;
+                scope2_output_pos = builtin_add_ii(scope2_output_pos, 1);;
+            }
+            ;
+        }
+        else
+        {
+            ;
+        }
+        scope2_x = builtin_add_ii(scope2_x, 1);;
     }
     int scope2_columnn = 0;
     while (builtin_lessthan_ii(scope2_columnn, 4))
@@ -79,16 +70,16 @@ void update_row(int scope2_y, int scope2_dir)
 }
 void generate_new_stone()
 {
-    int tmp2;
+    int tmp0;
     if (builtin_lessthan_ii(random_int(0, 100), 90))
     {
-        tmp2 = 2;
+        tmp0 = 2;
     }
     else
     {
-        tmp2 = 4;
+        tmp0 = 4;
     }
-    int scope2_new_stone_value = tmp2;
+    int scope2_new_stone_value = tmp0;
     int scope2_num_empty_spots = brd_count_empty_spots();
     int scope2_nth_spot = random_int(0, scope2_num_empty_spots);
     int scope2_x = brd_get_nth_empty_slot_x(scope2_nth_spot);
