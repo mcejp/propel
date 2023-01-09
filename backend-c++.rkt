@@ -13,7 +13,11 @@
 (define (is-#%while? stx)
   (equal? (syntax-e stx) '#%while))
 
+(define placeholder-counter 0)
+
 (define (compile-module-to-c++ mod-stx mod-tt)
+  (set! placeholder-counter 0)
+
   ;; TODO: generate C++ prototypes
 
   (displayln
@@ -61,8 +65,6 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
   (if (> (length lst1) 0)
       (let () (apply values (apply map list (map wrap lst1 lst2))))
       (values '() '())))
-
-(define placeholder-counter 0)
 
 (define (make-placeholder-variable type)
   (define name (format "tmp~a" placeholder-counter))

@@ -10,14 +10,14 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
 
 int factorial(int scope2_n)
 {
-    int tmp1;
+    int tmp0;
     if (builtin_eq_ii(scope2_n, 0))
     {
-        tmp1 = 1;
+        tmp0 = 1;
     }
     else
     {
-        tmp1 = builtin_mul_ii(scope2_n, factorial(builtin_sub_ii(scope2_n, 1)));
+        tmp0 = builtin_mul_ii(scope2_n, factorial(builtin_sub_ii(scope2_n, 1)));
     }
-    return tmp1;
+    return tmp0;
 }
