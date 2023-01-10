@@ -10,8 +10,8 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
 
 int add(int a_1, int b_1)
 {
-    int left_1 = a_1;
-    int right_1 = b_1;
-    int sum_1 = builtin_add_ii(left_1, right_1);
+    const int left_1 = a_1;
+    const int right_1 = b_1;
+    const int sum_1 = builtin_add_ii(left_1, right_1);
     return sum_1;
 }

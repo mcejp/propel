@@ -17,7 +17,7 @@
    (#%builtin-type V)
    (#%begin
     (#%begin
-     (#%define (#%scoped-var 2 _i) 0)
+     (#%define-var (#%scoped-var 2 _i) 0)
      (#%while
       (#%app
        (#%scoped-var #f builtin-lessthan-ii)

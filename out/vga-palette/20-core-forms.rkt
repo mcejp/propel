@@ -11,7 +11,7 @@
    Void
    (#%begin
     (#%begin
-     (#%define _i 0)
+     (#%define-var _i 0)
      (#%while
       (#%app < _i (#%len my-palette))
       (#%begin

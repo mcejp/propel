@@ -20,10 +20,10 @@
     update-row
     ((y int) (dir int))
     Void
-    (def output-pos 0)
-    (def was-merged 0)
+    (var output-pos 0)
+    (var was-merged 0)
     (begin
-      (def x 0)
+      (var x 0)
       (while
        (< x 4)
        (begin
@@ -48,7 +48,7 @@
              (Void)))
          (set! x (+ x 1)))))
     (begin
-      (def columnn 0)
+      (var columnn 0)
       (while
        (< columnn 4)
        (begin
@@ -72,7 +72,7 @@
     ((dir int))
     Void
     (begin
-      (def row 0)
+      (var row 0)
       (while (< row 4) (begin (update-row row dir) (set! row (+ row 1)))))))
  #f
  ((#<path:tests/2048.rkt> 0 0 0 4075)

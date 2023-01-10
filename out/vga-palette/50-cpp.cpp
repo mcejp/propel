@@ -8,18 +8,18 @@ inline int builtin_greaterthan_ii(int a, int b) { return (a > b) ? 1 : 0; }
 inline int builtin_and_ii(int a, int b) { return a && b; }
 inline int builtin_not_i(int a) { return a ? 0 : 1; }
 
-int my_palette[] =
+const int my_palette[] =
 {
     1, 2, 3, 4
 };
-int my_length = 4;
+const int my_length = 4;
 void palette_put(int, int);
 void show_palette()
 {
     int _i_2 = 0;
     while (builtin_lessthan_ii(_i_2, 4))
     {
-        int color_2 = my_palette[_i_2];
+        const int color_2 = my_palette[_i_2];
         palette_put(_i_2, color_2);
         _i_2 = builtin_add_ii(_i_2, 1);;
     }

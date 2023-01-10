@@ -75,10 +75,10 @@
     ((#%scoped-var 10 dir) (#%builtin-type I)))
    (#%builtin-type V)
    (#%begin
-    (#%define (#%scoped-var 10 output-pos) 0)
-    (#%define (#%scoped-var 10 was-merged) 0)
+    (#%define-var (#%scoped-var 10 output-pos) 0)
+    (#%define-var (#%scoped-var 10 was-merged) 0)
     (#%begin
-     (#%define (#%scoped-var 10 x) 0)
+     (#%define-var (#%scoped-var 10 x) 0)
      (#%while
       (#%app (#%scoped-var #f builtin-lessthan-ii) (#%scoped-var 10 x) 4)
       (#%begin
@@ -150,7 +150,7 @@
         (#%scoped-var 10 x)
         (#%app (#%scoped-var #f builtin-add-ii) (#%scoped-var 10 x) 1)))))
     (#%begin
-     (#%define (#%scoped-var 10 columnn) 0)
+     (#%define-var (#%scoped-var 10 columnn) 0)
      (#%while
       (#%app (#%scoped-var #f builtin-lessthan-ii) (#%scoped-var 10 columnn) 4)
       (#%begin
@@ -215,7 +215,7 @@
    (#%builtin-type V)
    (#%begin
     (#%begin
-     (#%define (#%scoped-var 12 row) 0)
+     (#%define-var (#%scoped-var 12 row) 0)
      (#%while
       (#%app (#%scoped-var #f builtin-lessthan-ii) (#%scoped-var 12 row) 4)
       (#%begin

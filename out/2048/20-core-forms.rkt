@@ -37,10 +37,10 @@
    ((y int) (dir int))
    Void
    (#%begin
-    (#%define output-pos 0)
-    (#%define was-merged 0)
+    (#%define-var output-pos 0)
+    (#%define-var was-merged 0)
     (#%begin
-     (#%define x 0)
+     (#%define-var x 0)
      (#%while
       (#%app < x 4)
       (#%begin
@@ -76,7 +76,7 @@
          (#%app Void)))
        (#%set-var x (#%app + x 1)))))
     (#%begin
-     (#%define columnn 0)
+     (#%define-var columnn 0)
      (#%while
       (#%app < columnn 4)
       (#%begin
@@ -103,7 +103,7 @@
    Void
    (#%begin
     (#%begin
-     (#%define row 0)
+     (#%define-var row 0)
      (#%while
       (#%app < row 4)
       (#%begin (#%app update-row row dir) (#%set-var row (#%app + row 1))))))))

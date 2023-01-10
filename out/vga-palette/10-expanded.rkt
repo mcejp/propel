@@ -8,7 +8,7 @@
     ()
     Void
     (begin
-      (def _i 0)
+      (var _i 0)
       (while
        (< _i (len my-palette))
        (begin

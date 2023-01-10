@@ -8,7 +8,7 @@ inline int builtin_greaterthan_ii(int a, int b) { return (a > b) ? 1 : 0; }
 inline int builtin_and_ii(int a, int b) { return a && b; }
 inline int builtin_not_i(int a) { return a ? 0 : 1; }
 
-int my_array[] =
+const int my_array[] =
 {
     1, 2, 3, 4
 };

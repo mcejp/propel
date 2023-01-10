@@ -15,7 +15,7 @@ int brd_get_nth_empty_slot_x(int);
 int brd_get_nth_empty_slot_y(int);
 int brd_get_with_rotation(int, int, int);
 void brd_set_with_rotation(int, int, int, int);
-int DIR_LEFT = 0;
+const int DIR_LEFT = 0;
 void brd_set(int x_8, int y_8, int value_8)
 {
     brd_set_with_rotation(x_8, y_8, DIR_LEFT, value_8);
@@ -31,10 +31,10 @@ void update_row(int y_10, int dir_10)
     int x_10 = 0;
     while (builtin_lessthan_ii(x_10, 4))
     {
-        int stone_10 = brd_get_with_rotation(x_10, y_10, dir_10);
+        const int stone_10 = brd_get_with_rotation(x_10, y_10, dir_10);
         if (stone_10)
         {
-            int should_merge_10 = and3(builtin_greaterthan_ii(output_pos_10, 0), builtin_eq_ii(brd_get_with_rotation(builtin_sub_ii(output_pos_10, 1), y_10, dir_10), stone_10), builtin_not_i(was_merged_10));
+            const int should_merge_10 = and3(builtin_greaterthan_ii(output_pos_10, 0), builtin_eq_ii(brd_get_with_rotation(builtin_sub_ii(output_pos_10, 1), y_10, dir_10), stone_10), builtin_not_i(was_merged_10));
             if (should_merge_10)
             {
                 brd_set_with_rotation(builtin_sub_ii(output_pos_10, 1), y_10, dir_10, builtin_mul_ii(2, stone_10));
@@ -79,11 +79,11 @@ void generate_new_stone()
     {
         tmp0 = 4;
     }
-    int new_stone_value_11 = tmp0;
-    int num_empty_spots_11 = brd_count_empty_spots();
-    int nth_spot_11 = random_int(0, num_empty_spots_11);
-    int x_11 = brd_get_nth_empty_slot_x(nth_spot_11);
-    int y_11 = brd_get_nth_empty_slot_y(nth_spot_11);
+    const int new_stone_value_11 = tmp0;
+    const int num_empty_spots_11 = brd_count_empty_spots();
+    const int nth_spot_11 = random_int(0, num_empty_spots_11);
+    const int x_11 = brd_get_nth_empty_slot_x(nth_spot_11);
+    const int y_11 = brd_get_nth_empty_slot_y(nth_spot_11);
     brd_set(x_11, y_11, new_stone_value_11);
 }
 void make_turn(int dir_12)
