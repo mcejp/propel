@@ -1,14 +1,15 @@
 ((#%begin
   (#%deftype my-int (#%builtin-type I))
   (#%defun
-   add
-   ((a (#%builtin-type I)) (b (#%builtin-type I)))
+   (#%scoped-var 0 add)
+   (((#%scoped-var 1 a) (#%builtin-type I))
+    ((#%scoped-var 1 b) (#%builtin-type I)))
    (#%builtin-type I)
    (#%begin
     (#%app
-     (#%scoped-var 0 builtin-add-ii)
-     (#%scoped-var 2 a)
-     (#%scoped-var 2 b)))))
+     (#%scoped-var #f builtin-add-ii)
+     (#%scoped-var 1 a)
+     (#%scoped-var 1 b)))))
  #f
  ((#<path:tests/deftype.rkt> 0 0 0 75)
   (#f 0 0 0 75)
@@ -18,14 +19,14 @@
    ((#f 0 -9 -9 20) (#f 0 0 0 20) (#f 0 0 0 20)))
   ((#f 2 0 22 52)
    (#f 0 0 0 52)
-   (#f 0 7 7 3)
-   ((#f 0 -7 -7 52)
+   ((#f 0 0 0 52) (#f 0 0 0 52) (#f 0 0 0 52) (#f 0 0 0 52))
+   ((#f 0 0 0 52)
     ((#f 0 0 0 52)
-     (#f 0 13 13 1)
-     ((#f 0 -13 -13 52) (#f 0 0 0 52) (#f 0 0 0 52)))
+     ((#f 0 0 0 52) (#f 0 0 0 52) (#f 0 0 0 52) (#f 0 0 0 52))
+     ((#f 0 0 0 52) (#f 0 0 0 52) (#f 0 0 0 52)))
     ((#f 0 0 0 52)
-     (#f 0 24 24 1)
-     ((#f 0 -24 -24 52) (#f 0 0 0 52) (#f 0 0 0 52))))
+     ((#f 0 0 0 52) (#f 0 0 0 52) (#f 0 0 0 52) (#f 0 0 0 52))
+     ((#f 0 0 0 52) (#f 0 0 0 52) (#f 0 0 0 52))))
    ((#f 0 0 0 52) (#f 0 0 0 52) (#f 0 0 0 52))
    ((#f 0 0 0 52)
     (#f 0 0 0 52)

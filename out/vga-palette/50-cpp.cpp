@@ -16,11 +16,11 @@ int my_length = 4;
 void palette_put(int, int);
 void show_palette()
 {
-    int scope2__i = 0;
-    while (builtin_lessthan_ii(scope2__i, 4))
+    int _i_2 = 0;
+    while (builtin_lessthan_ii(_i_2, 4))
     {
-        int scope2_color = my_palette[scope2__i];
-        palette_put(scope2__i, scope2_color);
-        scope2__i = builtin_add_ii(scope2__i, 1);;
+        int color_2 = my_palette[_i_2];
+        palette_put(_i_2, color_2);
+        _i_2 = builtin_add_ii(_i_2, 1);;
     }
 }

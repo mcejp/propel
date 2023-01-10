@@ -1,6 +1,6 @@
 ((#%begin
   (#%define
-   (#%scoped-var 1 my-array)
+   (#%scoped-var 0 my-array)
    (#%construct (#%array-type (#%builtin-type I) 4) 1 2 3 4)))
  #f
  ((#<path:tests/def-array.rkt> 0 0 0 83)

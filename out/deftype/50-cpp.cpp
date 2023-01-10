@@ -8,7 +8,7 @@ inline int builtin_greaterthan_ii(int a, int b) { return (a > b) ? 1 : 0; }
 inline int builtin_and_ii(int a, int b) { return a && b; }
 inline int builtin_not_i(int a) { return a ? 0 : 1; }
 
-int add(int scope2_a, int scope2_b)
+int add(int a_1, int b_1)
 {
-    return builtin_add_ii(scope2_a, scope2_b);
+    return builtin_add_ii(a_1, b_1);
 }

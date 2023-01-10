@@ -8,10 +8,10 @@ inline int builtin_greaterthan_ii(int a, int b) { return (a > b) ? 1 : 0; }
 inline int builtin_and_ii(int a, int b) { return a && b; }
 inline int builtin_not_i(int a) { return a ? 0 : 1; }
 
-int add(int scope2_a, int scope2_b)
+int add(int a_1, int b_1)
 {
-    int scope2_left = scope2_a;
-    int scope2_right = scope2_b;
-    int scope2_sum = builtin_add_ii(scope2_left, scope2_right);
-    return scope2_sum;
+    int left_1 = a_1;
+    int right_1 = b_1;
+    int sum_1 = builtin_add_ii(left_1, right_1);
+    return sum_1;
 }

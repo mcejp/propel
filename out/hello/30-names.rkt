@@ -1,19 +1,19 @@
 ((#%begin
   (#%defun
-   increment
-   ((n (#%builtin-type I)))
+   (#%scoped-var 0 increment)
+   (((#%scoped-var 1 n) (#%builtin-type I)))
    (#%builtin-type I)
-   (#%begin (#%app (#%scoped-var 0 builtin-add-ii) (#%scoped-var 2 n) 1))))
+   (#%begin (#%app (#%scoped-var #f builtin-add-ii) (#%scoped-var 1 n) 1))))
  #f
  ((#<path:tests/hello.rkt> 0 0 0 45)
   (#f 0 0 0 45)
   ((#f 0 0 0 44)
    (#f 0 0 0 44)
-   (#f 0 7 7 9)
-   ((#f 0 -7 -7 44)
+   ((#f 0 0 0 44) (#f 0 0 0 44) (#f 0 0 0 44) (#f 0 0 0 44))
+   ((#f 0 0 0 44)
     ((#f 0 0 0 44)
-     (#f 0 19 19 1)
-     ((#f 0 -19 -19 44) (#f 0 0 0 44) (#f 0 0 0 44))))
+     ((#f 0 0 0 44) (#f 0 0 0 44) (#f 0 0 0 44) (#f 0 0 0 44))
+     ((#f 0 0 0 44) (#f 0 0 0 44) (#f 0 0 0 44))))
    ((#f 0 0 0 44) (#f 0 0 0 44) (#f 0 0 0 44))
    ((#f 0 0 0 44)
     (#f 0 0 0 44)

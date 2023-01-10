@@ -1,18 +1,18 @@
 ((#%begin
   (#%defun
-   factorial
-   ((n (#%builtin-type I)))
+   (#%scoped-var 0 factorial)
+   (((#%scoped-var 1 n) (#%builtin-type I)))
    (#%builtin-type I)
    (#%begin
     (#%if
-     (#%app (#%scoped-var 0 builtin-eq-ii) (#%scoped-var 2 n) 0)
+     (#%app (#%scoped-var #f builtin-eq-ii) (#%scoped-var 1 n) 0)
      1
      (#%app
-      (#%scoped-var 0 builtin-mul-ii)
-      (#%scoped-var 2 n)
+      (#%scoped-var #f builtin-mul-ii)
+      (#%scoped-var 1 n)
       (#%app
-       (#%scoped-var 1 factorial)
-       (#%app (#%scoped-var 0 builtin-sub-ii) (#%scoped-var 2 n) 1)))))))
+       (#%scoped-var 0 factorial)
+       (#%app (#%scoped-var #f builtin-sub-ii) (#%scoped-var 1 n) 1)))))))
  ((#%builtin-type V)
   ((#%builtin-type V)
    (#%builtin-type I)
@@ -47,11 +47,11 @@
   (#f 0 0 0 87)
   ((#f 0 0 0 86)
    (#f 0 0 0 86)
-   (#f 0 7 7 9)
-   ((#f 0 -7 -7 86)
+   ((#f 0 0 0 86) (#f 0 0 0 86) (#f 0 0 0 86) (#f 0 0 0 86))
+   ((#f 0 0 0 86)
     ((#f 0 0 0 86)
-     (#f 0 19 19 1)
-     ((#f 0 -19 -19 86) (#f 0 0 0 86) (#f 0 0 0 86))))
+     ((#f 0 0 0 86) (#f 0 0 0 86) (#f 0 0 0 86) (#f 0 0 0 86))
+     ((#f 0 0 0 86) (#f 0 0 0 86) (#f 0 0 0 86))))
    ((#f 0 0 0 86) (#f 0 0 0 86) (#f 0 0 0 86))
    ((#f 0 0 0 86)
     (#f 0 0 0 86)

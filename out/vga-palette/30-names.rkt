@@ -1,17 +1,18 @@
 ((#%begin
   (#%construct (#%builtin-type V))
   (#%define
-   (#%scoped-var 1 my-palette)
+   (#%scoped-var 0 my-palette)
    (#%construct (#%array-type (#%builtin-type I) 4) 1 2 3 4))
-  (#%define (#%scoped-var 1 my-length) (#%len (#%scoped-var 1 my-palette)))
+  (#%define (#%scoped-var 0 my-length) (#%len (#%scoped-var 0 my-palette)))
   (#%define
-   (#%scoped-var 1 palette-put)
+   (#%scoped-var 0 palette-put)
    (#%external-function
     palette-put
-    ((index (#%builtin-type I)) (value (#%builtin-type I)))
+    (((#%scoped-var 1 index) (#%builtin-type I))
+     ((#%scoped-var 1 value) (#%builtin-type I)))
     (#%builtin-type V)))
   (#%defun
-   show-palette
+   (#%scoped-var 0 show-palette)
    ()
    (#%builtin-type V)
    (#%begin
@@ -19,20 +20,20 @@
      (#%define (#%scoped-var 2 _i) 0)
      (#%while
       (#%app
-       (#%scoped-var 0 builtin-lessthan-ii)
+       (#%scoped-var #f builtin-lessthan-ii)
        (#%scoped-var 2 _i)
-       (#%len (#%scoped-var 1 my-palette)))
+       (#%len (#%scoped-var 0 my-palette)))
       (#%begin
        (#%define
         (#%scoped-var 2 color)
-        (#%get (#%scoped-var 1 my-palette) (#%scoped-var 2 _i)))
+        (#%get (#%scoped-var 0 my-palette) (#%scoped-var 2 _i)))
        (#%app
-        (#%scoped-var 1 palette-put)
+        (#%scoped-var 0 palette-put)
         (#%scoped-var 2 _i)
         (#%scoped-var 2 color))
        (#%set-var
         (#%scoped-var 2 _i)
-        (#%app (#%scoped-var 0 builtin-add-ii) (#%scoped-var 2 _i) 1))))))))
+        (#%app (#%scoped-var #f builtin-add-ii) (#%scoped-var 2 _i) 1))))))))
  #f
  ((#<path:tests/vga-palette.rkt> 0 0 0 661)
   (#f 0 0 0 661)
@@ -66,16 +67,16 @@
     (#f 0 19 19 11)
     ((#f 0 -19 -19 62)
      ((#f 0 0 0 62)
-      (#f 0 33 33 5)
-      ((#f 0 -33 -33 62) (#f 0 0 0 62) (#f 0 0 0 62)))
+      ((#f 0 0 0 62) (#f 0 0 0 62) (#f 0 0 0 62) (#f 0 0 0 62))
+      ((#f 0 0 0 62) (#f 0 0 0 62) (#f 0 0 0 62)))
      ((#f 0 0 0 62)
-      (#f 0 45 45 5)
-      ((#f 0 -45 -45 62) (#f 0 0 0 62) (#f 0 0 0 62))))
+      ((#f 0 0 0 62) (#f 0 0 0 62) (#f 0 0 0 62) (#f 0 0 0 62))
+      ((#f 0 0 0 62) (#f 0 0 0 62) (#f 0 0 0 62))))
     ((#f 0 0 0 62) (#f 0 0 0 62) (#f 0 0 0 62))))
   ((#f 2 0 64 102)
    (#f 0 0 0 102)
-   (#f 0 7 7 12)
-   ((#f 0 -7 -7 102))
+   ((#f 0 0 0 102) (#f 0 0 0 102) (#f 0 0 0 102) (#f 0 0 0 102))
+   ((#f 0 0 0 102))
    ((#f 0 0 0 102) (#f 0 0 0 102) (#f 0 0 0 102))
    ((#f 0 0 0 102)
     (#f 0 0 0 102)
