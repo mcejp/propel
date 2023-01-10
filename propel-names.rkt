@@ -16,23 +16,23 @@
 (define (is-#%array-type? stx)
   (equal? (syntax-e stx) '#%array-type))
 
-;; NAME RESOLUTION
-; for the moment, any symbol that we encounter can refer either to:
-; - function argument
-; - built-in function
-; - program-defined function
+(define next-scope-id #f)
 
 (define (resolve-names form-db stx)
-  (resolve-names/form form-db (make-module-scope) stx)
-  ;(update-module-types! mod (curry resolve-names/type (module-scope mod)))
-  ; (update-module-functions mod resolve-names/function)
-)
+  (set! next-scope-id 0)
 
-(define (resolve-names/types-in-arg-list scope args-stx)
+  (resolve-names/form form-db (make-module-scope (make-scope-id)) stx))
+
+(define (insert-parameter-to-function-scope scope name-stx)
+  (define name (syntax-e name-stx))
+  (scope-insert-variable! scope name name-stx)
+  (resolve-names/symbol name-stx name scope))
+
+(define (resolve-names/parameter-list scope args-stx)
   ; (printf "resolve-names/types-in-arg-list ~a\n" args-stx)
   (map
     (lambda (arg) (match (syntax-e arg)
-     [(list name-stx type-stx) (list name-stx (resolve-names/type-stx scope type-stx))]))
+     [(list name-stx type-stx) (list (insert-parameter-to-function-scope scope name-stx) (resolve-names/type-stx scope type-stx))]))
     (syntax-e args-stx)))
 
 (define (resolve-names/type scope type)
@@ -55,19 +55,10 @@
     [(? symbol? sym) (resolve-type-name scope stx sym)]
     ))
 
-(define (resolve-names/form-with-new-scope form-db current-scope stx #:inject-symbols [inject-symbols '()])
-  (define nested-scope
-    (scope current-scope
-           (add1 (scope-level current-scope))
-           (make-hash)
-           (make-hash)
-           (make-hash)))
-
-  (for ([name inject-symbols])
-    (scope-insert-variable! nested-scope name stx))
-
-  (resolve-names/form form-db nested-scope stx)
-  )
+(define (make-scope-id)
+  (let ([scope-id next-scope-id])
+    (set! next-scope-id (add1 next-scope-id))
+    scope-id))
 
 (define (resolve-names/form form-db current-scope stx)
   (define rec (curry resolve-names/form form-db current-scope))     ; recurse
@@ -112,30 +103,30 @@
       (list t name-stx resolved-definition)
       ]
      [(list (? is-#%defun? t) name-stx args-stx ret-stx body-stx)
-     (define name (syntax-e name-stx))
-      ;; first insert function name into outer scope
+      (define name (syntax-e name-stx))
+      ;; first insert function name into outer scope to allow self-recursion
       (scope-insert-variable! current-scope name stx)
 
-      (define resolved-args (resolve-names/types-in-arg-list current-scope args-stx))
+      ;; construct a new scope to install the parameters
+      (define nested-scope (make-nested-scope current-scope))
+
+      (define resolved-args (resolve-names/parameter-list nested-scope args-stx))
       (define resolved-ret (resolve-type-name current-scope ret-stx (syntax->datum ret-stx))) ; ???
 
-      ;; extract argument names for injection into function body scope
-      (define arg-names
-        (for/list ([arg-stx (syntax-e args-stx)])
-          (match-define (list name-stx type-stx) (syntax-e arg-stx))
-          (syntax-e name-stx)
-        ))
-
       (list t
-            name-stx
+            (resolve-names/symbol name-stx name current-scope)
             resolved-args
             resolved-ret
-            (resolve-names/form-with-new-scope form-db current-scope body-stx #:inject-symbols arg-names))
+            (resolve-names/form form-db nested-scope body-stx ;#:inject-symbols arg-names
+            ))
       ]
      [(list (? is-#%dot? t) obj field) (list t (rec obj) field)]
      [(list (? is-#%external-function? t) name-stx args-stx ret-stx)
+      ;; construct a new scope to install the parameters
+      (define nested-scope (make-nested-scope current-scope))
+
       (list t name-stx
-        (resolve-names/types-in-arg-list current-scope args-stx)
+        (resolve-names/parameter-list nested-scope args-stx)
         (resolve-names/type-stx current-scope ret-stx))]
      [(list (? is-#%if? t) expr then else) (list t (rec expr) (rec then) (rec else))]
      [(list (? is-#%len? t) expr) (list t (rec expr))]
@@ -149,14 +140,11 @@
 
 ; resolve symbol
 ; start by looking in the closest scope and proceed outward
-; return a _bound identifier_ structure
+; return a #%scoped-var form
 (define (resolve-names/symbol stx sym current-scope)
-  (define from-scope (scope-try-resolve-symbol current-scope sym))
-  (if from-scope
-    from-scope
-    (raise-syntax-error #f "unresolved symbol" stx)))
-
-(define (resolve-type-names scope stx type-names) (map (curry resolve-type-name scope stx) type-names))
+  (match (scope-try-resolve-symbol current-scope sym)
+    [(cons scope-id resolved-name) `(#%scoped-var ,scope-id ,resolved-name)]
+    [#f (raise-syntax-error #f "unresolved symbol" stx)]))
 
 (define (resolve-type-name scope stx type-name)
   (define res (scope-try-resolve-type scope type-name))
@@ -177,3 +165,10 @@
 (define (apply-default-handler form-db form-def current-scope stx)
   (list* (car (syntax-e stx))
          (process-arguments form-db form-def current-scope stx)))
+
+(define (make-nested-scope parent-scope)
+  (scope (make-scope-id) parent-scope
+         (add1 (scope-level parent-scope))
+         (make-hash)
+         (make-hash)
+         (make-hash)))

@@ -30,31 +30,41 @@
 ;;
 ;; object-types is a hash map of name -> type definition
 
-(struct scope (parent level types objects object-types))
+(struct scope
+        (id parent
+            level
+            types
+            objects
+            object-types)) ; TODO: is `level` still relevant after unique IDs?
 
 (define (scope-insert-variable! s name stx)
   (when (hash-has-key? (scope-objects s) name)
     (raise-syntax-error #f (format "redefinition of ~a" name) stx))
   (hash-set! (scope-objects s) name name))
 
-(define (scope-discover-variable-type! s name type)
+(define (scope-discover-variable-type! s scope-id* name type)
   ;(unless (hash-has-key? (scope-objects s) name)
   ;  (error "scope-discover-variable-type! called for invalid symbol"))
 
-  (hash-set! (scope-object-types s) name type))
+  (when (hash-has-key? (scope-object-types s) name)
+    (raise-syntax-error #f (format "re-typing of ~a" name) #f))
 
-(define (scope-lookup-object-type s level sym)
-  (if (= (scope-level s) level)
-      (hash-ref (scope-object-types s) sym #f)
-      (scope-lookup-object-type (scope-parent s) level sym)))
+  (hash-set! (scope-object-types s) (cons scope-id* name) type))
+
+(define (scope-lookup-object-type s scope-id* sym)
+  (define type (hash-ref (scope-object-types s) (cons scope-id* sym) #f))
+  (if type
+      type
+      (let ([parent (scope-parent s)])
+        (if parent (scope-lookup-object-type parent scope-id* sym) #f))))
 
 (define (scope-try-resolve-symbol s sym)
   (define alias (hash-ref (scope-objects s) sym #f))
   (define parent (scope-parent s))
   (cond
-    [alias (list '#%scoped-var (scope-level s) alias)]
+    [alias (cons (scope-id s) alias)]
     [parent (scope-try-resolve-symbol parent sym)]
-    [#t #f]))
+    [else #f]))
 
 ;;; result is like:
 ;;; (#%deftype int)
@@ -72,6 +82,7 @@
 
 (define base-scope
   (scope #f
+         #f
          0
          (hash 'int type-I 'Void type-V)
          (hash '=
@@ -92,24 +103,24 @@
                'builtin-and-ii
                'not
                'builtin-not-i)
-         (hash 'builtin-eq-ii
+         (hash (cons #f 'builtin-eq-ii)
                II-to-I
-               'builtin-add-ii
+               (cons #f 'builtin-add-ii)
                II-to-I
-               'builtin-sub-ii
+               (cons #f 'builtin-sub-ii)
                II-to-I
-               'builtin-mul-ii
+               (cons #f 'builtin-mul-ii)
                II-to-I
-               'builtin-lessthan-ii
+               (cons #f 'builtin-lessthan-ii)
                II-to-I
-               'builtin-lesseq-ii
+               (cons #f 'builtin-lesseq-ii)
                II-to-I
-               'builtin-greaterthan-ii
+               (cons #f 'builtin-greaterthan-ii)
                II-to-I
-               'builtin-and-ii
+               (cons #f 'builtin-and-ii)
                II-to-I
-               'builtin-not-i
+               (cons #f 'builtin-not-i)
                I-to-I)))
 
-(define (make-module-scope)
-  (scope base-scope 1 (make-hash) (make-hash) (make-hash)))
+(define (make-module-scope id)
+  (scope id base-scope 1 (make-hash) (make-hash) (make-hash)))

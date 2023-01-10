@@ -10,7 +10,7 @@
 (provide resolve-types)
 
 (define (resolve-types form-db stx)
-  (resolve-types/form form-db (make-module-scope) stx))
+  (resolve-types/form form-db (make-module-scope -100) stx))
 
 ; in:   AST
 ; out:  (type . subtree)
@@ -71,25 +71,23 @@
       (define value-tt (rec value))
       (define value-type (car value-tt))
 
-      (match-define (list '#%scoped-var level name) (syntax->datum var-stx))
+      (match-define (list '#%scoped-var scope-id name) (syntax->datum var-stx))
 
-      (scope-discover-variable-type! current-scope name value-type)
+      ;; TODO: should assert that scope-id matches that of the current scope, no?
+      (scope-discover-variable-type! current-scope scope-id name value-type)
       (cons type-V value-tt)
       ]
-     [(list (? is-#%defun? t) name-stx args-stx ret-stx body-stx)
-      (define name (syntax-e name-stx))
-
+     [(list (? is-#%defun? t) var-stx args-stx ret-stx body-stx)
       (define func-scope
-        (scope current-scope
+        (scope -1 current-scope
                (add1 (scope-level current-scope))
                (make-hash)
                (make-hash)
                (make-hash)))
       ;; insert arguments
       (for ([arg-stx (syntax-e args-stx)])
-        (match-define (list name-stx type-stx) (syntax-e arg-stx))
-        (define name (syntax-e name-stx))
-        (scope-discover-variable-type! func-scope name (syntax->datum type-stx))
+        (match-define `((#%scoped-var ,scope-id ,name) ,type) (syntax->datum arg-stx))
+        (scope-discover-variable-type! func-scope scope-id name type)
         )
 
       (define arg-types (map (lambda (arg-stx) (begin
@@ -99,7 +97,8 @@
 
       (define ret-type (syntax->datum ret-stx))
 
-      (scope-discover-variable-type! current-scope name
+      (match-define `(#%scoped-var ,scope-id ,name) (syntax->datum var-stx))
+      (scope-discover-variable-type! current-scope scope-id name
         (function-type arg-types ret-type))
 
       (define body-tt (resolve-types/form form-db func-scope body-stx))
@@ -152,10 +151,10 @@
          #f
          (format "len: argument must be an array; got ~a" expr-t)
          stx)])]
-     [(list (? is-#%scoped-var? t) level-stx name-stx)
-      (define level (syntax-e level-stx))   ; silly that we have to do this...
+     [(list (? is-#%scoped-var?) scope-id-stx name-stx)
+      (define scope-id (syntax-e scope-id-stx))   ; silly that we have to do this...
       (define name (syntax-e name-stx))
-      (cons (get-variable-type current-scope name-stx level name) #f)
+      (cons (get-variable-type current-scope stx scope-id name) #f)
       ]
      [(list (? is-#%set-var? t) target-stx expr-stx)
       (let ([target-tt (rec target-stx)]
@@ -184,8 +183,8 @@
                             (format "argument ~a type mismatch: expecting ~a, got ~a" index p arg)
                             stx)))))
 
-(define (get-variable-type scope stx level var-name)
-  (define res (scope-lookup-object-type scope level var-name))
+(define (get-variable-type scope stx scope-id var-name)
+  (define res (scope-lookup-object-type scope scope-id var-name))
   ;; in case of an error, quote the failing type literally, because syntax tracking for types is very poor ATM
   (unless res (raise-syntax-error #f (format "couldn't resolve type of variable ~a" var-name) stx))
   res

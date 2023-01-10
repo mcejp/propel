@@ -39,7 +39,7 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
 (define (format-function-prototype c-name args ret)
   (define param-list-str
     (string-join (map format-parameter-prototype args) ", "))
-  (format "~a ~a(~a)" (format-type ret) c-name param-list-str))
+  (format "~a ~a(~a)" (format-type ret) (sanitize-name c-name) param-list-str))
 
 (define (format-function-type-as-prototype name type)
   (match-define (function-type args ret) type)
@@ -47,9 +47,8 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
   (format "~a ~a(~a);" (format-type ret) name param-list-str))
 
 (define (format-parameter-prototype prm)
-  ;; FIXME: NO NO NO NO NO
-  (match-let ([(list name type) prm])
-    (format "~a scope2_~a" (format-type type) (sanitize-name name))))
+  (match-let ([`((#%scoped-var ,scope-id ,name) ,type) prm])
+    (format "~a ~a" (format-type type) (make-scoped-name scope-id name))))
 
 (define (format-type type)
   (cond
@@ -70,12 +69,6 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
   (define name (format "tmp~a" placeholder-counter))
   (set! placeholder-counter (add1 placeholder-counter))
   (values (format "~a ~a;" (format-type type) name) name))
-
-(define (is-module-scope-var? stx)
-  (match (syntax-e stx)
-    [(list (? is-#%scoped-var? t) level-stx name-stx)
-     (= (syntax-e level-stx) 1)]
-    [else #f]))
 
 ;; Return a pair of
 ;; 1. a list of _tokens_, each being one of "{", "}" or other string representing one line of source code
@@ -171,8 +164,6 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
 
         (values (flatten (list arg-tokens the-decl "{" values-expr "};")) "")]
        [is-#%define-external-function?
-        (unless (is-module-scope-var? var-stx)
-          (raise-syntax-error #f "deftype allowed only in module scope" form))
         ;; FIXME: if we want to go this way, we must assert the name of the variable being defined
         ;;        equals the name of the external function
         ;; TODO: add an example of what we emit
@@ -188,14 +179,13 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
                                          value-expr)))
                   ""))])]
     [(list (? is-#%deftype? _) name-stx definition-stx) (values '() "")]
-    [(list (? is-#%defun? _) name-stx args-stx ret-stx body-stx)
+    [(list (? is-#%defun? _) var-stx args-stx ret-stx body-stx)
      (define body-tt sub-tts)
      (define-values (tokens final-expr) (format-form body-stx body-tt))
 
-     (define c-name
-       (make-scoped-name
-        1
-        (syntax->datum name-stx))) ; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+     (match-define `(#%scoped-var ,scope-id ,name) (syntax->datum var-stx))
+
+     (define c-name (string->symbol (make-scoped-name scope-id name)))
 
      (define optional-return-statement
        (if (non-empty-string? final-expr)
@@ -297,11 +287,9 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
          #f
          (format "len: argument must be an array; got ~a" expr-t)
          form)])]
-    [(list (? is-#%scoped-var? t) level-stx name-stx)
+    [(list (? is-#%scoped-var?) scope-id-stx name-stx)
      (values '()
-             (make-scoped-name
-              (syntax-e level-stx)
-              (syntax-e name-stx)))] ; FIXME: resolve absolute name
+             (make-scoped-name (syntax-e scope-id-stx) (syntax-e name-stx)))]
     [(list (? is-#%set-var? t) target-stx expr-stx)
      ;; TODO: this will a rewrite to match specific target forms (variable, array element...)
      (match-define (list target-tt expr-tt) sub-tts)
@@ -359,10 +347,10 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
   (display (string-append* (make-list indent "    "))))
 
 (define (sanitize-name name)
-  (string-replace (symbol->string name) "-" "_"))
+  (string-replace (symbol->string name) #px"[^\\w]" "_"))
 
-(define (make-scoped-name level name)
-  ;; for the moment, top-level and built-in symbols are unprefixed, while the rest is prefixed with the level
-  (if (<= level 1)
+(define (make-scoped-name scope-id name)
+  ;; for the moment, module-level and built-in symbols are unprefixed, while the rest is prefixed with the level
+  (if (or (equal? scope-id #f) (equal? scope-id 0))
       (sanitize-name name)
-      (format "scope~a_~a" level (sanitize-name name))))
+      (format "~a_~a" (sanitize-name name) scope-id)))
