@@ -157,10 +157,18 @@
   (for/list ([formal-param (form-def-params form-def)]
              [actual-param (cdr (syntax-e stx))])
     (match formal-param
-      [`(stx ,_) (resolve-names/form form-db current-scope actual-param)])))
+      [`(stx ,_) (resolve-names/form form-db current-scope actual-param)]
+      [`(stx-raw ,_) actual-param])))
 
 (define (apply-handler form-db form-def handler current-scope stx)
-  (apply handler (process-arguments form-db form-def current-scope stx)))
+  (define (recurse stx) (resolve-names/form form-db current-scope stx))
+
+  (apply
+    handler
+    (process-arguments form-db form-def current-scope stx)
+    #:current-scope current-scope
+    #:recurse recurse
+    #:stx stx))
 
 (define (apply-default-handler form-db form-def current-scope stx)
   (list* (car (syntax-e stx))

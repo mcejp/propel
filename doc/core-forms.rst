@@ -1,18 +1,18 @@
 Core forms
 ==========
 
-(work in progress)
-
 - ``(#%app <func> <args>...*)``
 - ``(#%begin <stmt> ...+)``
 - ``(#%construct <type> <args>...*)``
+- ``(#%define <name> <value>)``
 - ``(#%dot <expr> <name>)``
 - ``(#%get <array> <index>)``
 - ``(#%if <expr> <then> <else>)``
 - ``(#%len <expr>)`` (would be nice if this could be librarized. evaluated at type resolution time.)
-- ``(#%scoped-var <depth-stx> <name-stx>)`` (no reason for depth to be represented as a syntax object, it's a limitation of the current architecture)
+- ``(#%scoped-var <scope-id-stx> <name-stx>)``
+- ``(#%define-var <name> <value>)``
 
-Note: All of these must be represented as `#<syntax>` objects, this is quite annoying.
+Note: All of these must be represented as syntax objects, this is quite annoying.
       Might be better to preserve original syntax objects explicitly as another field in the representation.
 
 Core forms for type expressions

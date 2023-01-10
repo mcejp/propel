@@ -7,7 +7,7 @@
   (syntax-parse args
     [(([el:id array:id]) body:expr ...)
      #'(begin
-         (def _i 0)
+         (var _i 0)
          (while (< _i (len array))
            (begin
              (def el (#%get array _i))
@@ -19,7 +19,7 @@
 (define-transformer for/range (lambda args
   (match-define (list ident-stx max-stx body-stx ...) args)
   `(begin
-      (def ,ident-stx 0)
+      (var ,ident-stx 0)
       (while (< ,ident-stx ,max-stx)
             (begin
               ,@body-stx

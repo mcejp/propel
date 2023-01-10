@@ -121,7 +121,7 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
                              "expected 0 arguments when constructing Void"
                              form))
        (values '() ""))]
-    [(list (? is-#%define? _) var-stx value)
+    [(list (? is-#%define-or-#%define-var? t) var-stx value)
      (define value-tt sub-tts)
      (define-values (var-tokens var-expr) (format-form var-stx (cons #f #f)))
 
@@ -142,6 +142,8 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
        (and (list? (syntax-e value))
             (is-#%external-function? (car (syntax-e value)))))
 
+     (define optional-const-prefix (if (is-#%define? t) "const " ""))
+
      ;; first check for special cases and then fall back to default
      ;; ugly code ahead :( might be better solved with some kind of transformation pre-pass that
      ;; transforms the special cases into another form
@@ -150,7 +152,11 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
         ;; build a definition like int variable[] = {1, 2, 3};
         (define element-type-str (format-type (list-ref value-type 1)))
 
-        (define the-decl (format "~a ~a[] =" element-type-str var-expr))
+        (define the-decl
+          (format "~a~a ~a[] ="
+                  optional-const-prefix
+                  element-type-str
+                  var-expr))
 
         (define args (cddr (syntax-e value)))
         (define arg-tts (cdr value-tt))
@@ -173,7 +179,8 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
         (let ()
           (define-values (value-tokens value-expr) (format-form value value-tt))
           (values (flatten (list value-tokens
-                                 (format "~a ~a = ~a;"
+                                 (format "~a~a ~a = ~a;"
+                                         optional-const-prefix
                                          (format-type value-type)
                                          var-expr
                                          value-expr)))

@@ -22,10 +22,10 @@
 
   ;; first try to look up a definition in the form database, and use that
   (define form-def (get-form-def-for-stx form-db stx))
+  (define form-handler (if form-def (hash-ref (form-def-phases form-def) 'types #f) #f))
 
-  (if form-def
-      (let ([handler (hash-ref (form-def-phases form-def) 'types)])
-        (apply-handler form-db form-def handler current-scope stx))
+  (if form-handler
+    (apply-handler form-db form-def form-handler current-scope stx)
 
    (match (syntax-e stx)
      [(list (? is-#%begin? t) stmts ..1)
@@ -66,7 +66,7 @@
         (raise-syntax-error #f
                             "only Void type can be currently constructed"
                             stx)])]
-     [(list (? is-#%define? t) var-stx value)
+     [(list (? is-#%define-or-#%define-var? _) var-stx value)
       ;; recurse to value & insert type information
       (define value-tt (rec value))
       (define value-type (car value-tt))

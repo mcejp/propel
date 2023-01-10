@@ -73,7 +73,8 @@
    "50-cpp.cpp"
    (λ () (compile-module-to-c++ mod-names tt))))
 
-(for ([testcase '("2048" "def-array"
+(for ([testcase '("2048" "2048-board"
+                         "def-array"
                          "def-local"
                          "deftype"
                          "factorial"

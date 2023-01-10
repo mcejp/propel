@@ -4,6 +4,7 @@
          is-#%begin?
          is-#%construct?
          is-#%define?
+         is-#%define-or-#%define-var?
          is-#%deftype?
          is-#%defun?
          is-#%dot?
@@ -24,6 +25,8 @@
 (define (is-#%begin? stx) (equal? (syntax-e stx) '#%begin))
 (define (is-#%construct? stx) (equal? (syntax-e stx) '#%construct))
 (define (is-#%define? stx) (equal? (syntax-e stx) '#%define))
+(define (is-#%define-var? stx) (equal? (syntax-e stx) '#%define-var))
+(define (is-#%define-or-#%define-var? stx) (or (is-#%define? stx) (is-#%define-var? stx)))
 (define (is-#%deftype? stx) (equal? (syntax-e stx) '#%deftype))
 (define (is-#%defun? stx) (equal? (syntax-e stx) '#%defun))
 (define (is-#%dot? stx) (equal? (syntax-e stx) '#%dot))
@@ -107,7 +110,8 @@
   (for/list ([formal-param (form-def-params form-def)]
              [actual-param (cdr (syntax-e stx))])
     (match formal-param
-      [`(stx ,_) (resolve-forms form-db actual-param)])))
+      [`(stx ,_) (resolve-forms form-db actual-param)]
+      [`(symbol ,_) actual-param])))
 
 (define (apply-handler form-db form-def handler stx)
   (apply handler (process-arguments form-db form-def stx)))

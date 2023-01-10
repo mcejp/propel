@@ -34,8 +34,8 @@
 (defun update-row ((y int) (dir int)) Void
   ;; iterate row from the left, merging un-merged cells
 
-  (def output-pos 0)
-  (def was-merged 0)
+  (var output-pos 0)
+  (var was-merged 0)
 
   (for/range x 4
     ;; check if any stone in source position
