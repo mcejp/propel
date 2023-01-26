@@ -8,6 +8,7 @@
          is-#%deftype?
          is-#%defun?
          is-#%dot?
+         is-#%external-function?
          is-#%if?
          is-#%len?
          is-#%set-var?
@@ -30,6 +31,7 @@
 (define (is-#%deftype? stx) (equal? (syntax-e stx) '#%deftype))
 (define (is-#%defun? stx) (equal? (syntax-e stx) '#%defun))
 (define (is-#%dot? stx) (equal? (syntax-e stx) '#%dot))
+(define (is-#%external-function? stx) (equal? (syntax-e stx) '#%external-function))
 (define (is-#%if? stx) (equal? (syntax-e stx) '#%if))
 (define (is-#%len? stx) (equal? (syntax-e stx) '#%len))
 (define (is-#%set-var? stx) (equal? (syntax-e stx) '#%set-var))
@@ -75,8 +77,7 @@
      ;; for the moment, allow #%construct form on input, since we don't have type recognition implemented for #%app
      ;; (and it may never work for anonymous types)
      [(list (? is-#%construct? t) type-stx args-stx ...) stx]
-     [(list (? is-decl-external-fun? t) name-stx args-stx ret-stx)
-      (list '#%define name-stx (list '#%external-function name-stx args-stx ret-stx))]
+     [(list (? is-#%external-function? t) name-stx args-stx ret-stx) stx]
      [(list (? is-define? _) name value) (list '#%define name (rec value))]
      [(list (? is-defun? t) name args ret body-stx ...)
       (list '#%defun name args ret (rec (datum->syntax stx (cons #'begin body-stx) stx)))]

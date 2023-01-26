@@ -1,6 +1,14 @@
 ;; ONLY PUT MACROS HERE; these will be injected into every module being expanded.
 ;; Any other syntax is discarded.
 
+(define-transformer decl-external-fun (lambda args
+  (local-require syntax/parse)
+
+  (syntax-parse args
+    [(name:id args:expr ret:expr)
+     #'(def name (#%external-function name args ret))]
+    )))
+
 (define-transformer for (lambda args
   (local-require syntax/parse)
 

@@ -4,11 +4,9 @@
          "propel-syntax.rkt"
          "scope.rkt")
 
-(provide is-#%external-function?
-         is-#%scoped-var?
+(provide is-#%scoped-var?
          resolve-names)
 
-(define (is-#%external-function? stx) (equal? (syntax-e stx) '#%external-function))
 (define (is-#%scoped-var? stx) (equal? (syntax-e stx) '#%scoped-var))
 (define (is-Void? stx) (equal? (syntax-e stx) 'Void))
 
