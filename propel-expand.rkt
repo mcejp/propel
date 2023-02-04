@@ -3,7 +3,10 @@
 (provide expand-forms
          make-expander-state)
 
-(define-namespace-anchor ns)
+; Create a new namespace equivalent to #lang racket
+(define ns (make-empty-namespace))
+(namespace-attach-module (current-namespace) 'racket ns)
+(namespace-require 'racket ns)
 
 (struct expander-state (transformers))
 
@@ -12,6 +15,9 @@
 
 (define (is-define-transformer? stx)
   (equal? (syntax-e stx) 'define-transformer))
+
+(define (is-for-syntax? stx)
+  (equal? (syntax-e stx) 'for-syntax))
 
 (define (expand-forms state stx)
   (expand-forms* (expander-state-transformers state) stx))
@@ -27,9 +33,15 @@
      ;; handle (define-transformer ...) form
      [(list (? is-define-transformer?) name-stx func-stx)
       (begin
-        (hash-set! transformers
-                   (syntax->datum name-stx)
-                   (eval func-stx (namespace-anchor->namespace ns)))
+        (hash-set!
+         transformers
+         (syntax->datum name-stx)
+         (eval func-stx ns))
+        '(Void))]
+
+     [(list (? is-for-syntax?) form-stx)
+      (begin
+        (eval form-stx ns)
         '(Void))]
 
      ;; if macro, expand

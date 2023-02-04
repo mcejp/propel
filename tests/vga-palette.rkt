@@ -1,6 +1,6 @@
-(define-transformer *load-palette (lambda (filename-stx)
-  (local-require "jascpal.rkt")
+(for-syntax (require "jascpal.rkt"))
 
+(define-transformer *load-palette (lambda (filename-stx)
   (define the-palette
     (with-input-from-file (syntax-e filename-stx) (lambda ()
       (load-JASC-palette))))

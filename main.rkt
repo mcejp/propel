@@ -54,7 +54,10 @@
   (expand-forms expander-state builtins-stx)
 
   ;; expand macros
-  (define mod-expanded (expand-forms expander-state stx))
+  (define mod-expanded
+    ;; patch up directory for imports from transformers
+    (parameterize ([current-load-relative-directory (path->complete-path "tests")])
+      (expand-forms expander-state stx)))
   (dump "10-expanded.rkt" mod-expanded)
 
   ;; resolve non-core forms
