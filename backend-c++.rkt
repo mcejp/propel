@@ -1,11 +1,14 @@
 #lang racket
 
-(provide compile-module-to-c++)
+(provide compile-module-to-c++
+         use-c-linkage)
 
 (require "propel-models.rkt"
          "propel-names.rkt"
          "propel-syntax.rkt"
          "scope.rkt")
+
+(define use-c-linkage (make-parameter #f))
 
 (define (is-#%get? stx)
   (equal? (syntax-e stx) '#%get))
@@ -37,9 +40,14 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
   (print-tokens tokens 0))
 
 (define (format-function-prototype c-name args ret)
+  (define function-pre-attrs-str (if (use-c-linkage) "extern \"C\" " ""))
   (define param-list-str
     (string-join (map format-parameter-prototype args) ", "))
-  (format "~a ~a(~a)" (format-type ret) (sanitize-name c-name) param-list-str))
+  (format "~a~a ~a(~a)"
+          function-pre-attrs-str
+          (format-type ret)
+          (sanitize-name c-name)
+          param-list-str))
 
 (define (format-function-type-as-prototype name type)
   (match-define (function-type args ret) type)

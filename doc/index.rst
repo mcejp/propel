@@ -7,7 +7,9 @@ Propel docs
    :caption: Contents:
 
    core-forms
+   cxx-backend
    internal-api
+   macros
    passes
    scoping
    syntax

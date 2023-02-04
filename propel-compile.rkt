@@ -9,16 +9,15 @@
          "propel-syntax.rkt"
          "propel-types.rkt")
 
-; (define verbose-mode (make-parameter #f))
-; (define profiling-on (make-parameter #f))
+(define c-linkage (make-parameter #f))
 (define output (make-parameter null))
-; (define link-flags (make-parameter null))
 
 (define file-to-compile
   ;; More examples at https://docs.racket-lang.org/reference/Command-Line_Parsing.html#%28form._%28%28lib._racket%2Fcmdline..rkt%29._command-line%29%29
   (command-line
    #:program "propel-compile"
    #:once-each ["-o" filename "Output file name" (output filename)]
+   #:once-each ["--extern-c" "Use C function linkage" (c-linkage #t)]
    #:args (filename)
    filename))
 
@@ -56,4 +55,5 @@
                        (λ () (compile-module-to-c++ mod-names tt))
                        #:exists 'replace))
 
-(compile-propel-module file-to-compile (output))
+(parameterize ([use-c-linkage (c-linkage)])
+  (compile-propel-module file-to-compile (output)))
