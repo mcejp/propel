@@ -6,7 +6,9 @@
 
   (syntax-parse args
     [(name:id args:expr ret:expr)
-     #'(def name (#%external-function name args ret))]
+     #'(def name (#%external-function name args ret #f))]
+    [(name:id args:expr ret:expr #:header header)
+     #'(def name (#%external-function name args ret header))]
     )))
 
 (define-transformer for (lambda args

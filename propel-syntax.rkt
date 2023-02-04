@@ -47,7 +47,9 @@
 
 ;; Parse a module and return it wrapped with a #'(begin ...) syntax form
 (define (parse-module path)
-  (set! path (string->path path))
+  ;; force path to path type if it is a string
+  (set! path (build-path path))
+
   (parameterize ([port-count-lines-enabled #t])
     (with-input-from-file	path (lambda () (begin
       (define forms (sequence->list (in-port (curry read-syntax path))))
@@ -77,7 +79,7 @@
      ;; for the moment, allow #%construct form on input, since we don't have type recognition implemented for #%app
      ;; (and it may never work for anonymous types)
      [(list (? is-#%construct? t) type-stx args-stx ...) stx]
-     [(list (? is-#%external-function? t) name-stx args-stx ret-stx) stx]
+     [(list (? is-#%external-function? t) name-stx args-stx ret-stx header-stx) stx]
      [(list (? is-define? _) name value) (list '#%define name (rec value))]
      [(list (? is-defun? t) name args ret body-stx ...)
       (list '#%defun name args ret (rec (datum->syntax stx (cons #'begin body-stx) stx)))]

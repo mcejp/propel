@@ -115,7 +115,7 @@
         ; 2. resolve field
         ]
      [(list (? is-#%deftype? t) name-stx definition-stx) (cons type-V #f)]
-     [(list (? is-#%external-function? t) name-stx args-stx ret-stx)
+     [(list (? is-#%external-function? t) name-stx args-stx ret-stx header-stx)
       (define name (syntax-e name-stx))
       (define args (syntax->datum args-stx))
       (define ret (syntax->datum ret-stx))

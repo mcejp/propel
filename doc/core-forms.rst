@@ -6,6 +6,7 @@ Core forms
 - ``(#%construct <type> <args>...*)``
 - ``(#%define <name> <value>)``
 - ``(#%dot <expr> <name>)``
+- ``(#%external-function <name> <args> <ret> <header-or-#f>)``
 - ``(#%get <array> <index>)``
 - ``(#%if <expr> <then> <else>)``
 - ``(#%len <expr>)`` (would be nice if this could be librarized. evaluated at type resolution time.)

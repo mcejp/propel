@@ -269,9 +269,13 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
        (string-append callee-expr "(" (string-join arg-exprs ", ") ")"))
 
      (values (list* callee-tokens arg-tokens) call-expr)]
-    [(list (? is-#%external-function? t) name-stx args-stx ret-stx)
+    [(list (? is-#%external-function? t) name-stx args-stx ret-stx header-stx)
      (define name (sanitize-name (syntax-e name-stx)))
-     (values (list (format-function-type-as-prototype name form-type)) name)]
+     (define proto (format-function-type-as-prototype name form-type))
+     (define header (syntax-e header-stx))
+     ;; TODO: collect all #includes in a module and emit them in a block
+     (define my-tokens (list (if header (format "#include ~a" header) proto)))
+     (values my-tokens name)]
     ;; TODO: should be implemented with some simple pattern
     [(list (? is-#%get?) array-stx index-stx)
      (match-define (list array-tt index-tt) sub-tts)

@@ -32,6 +32,7 @@
        (cons (cons expr-a expr-b) (list srcloc-a srcloc-b)))]
     [(? function-type? t) (cons (struct->vector t) (syntax-srcloc stx))]
     [(? literal? lit) (cons lit (syntax-srcloc stx))]
+    [(? string? str) (cons str (syntax-srcloc stx))]
     [(? symbol? sym) (cons sym (syntax-srcloc stx))]))
 
 (define (compress-srcloc-tree tree)
