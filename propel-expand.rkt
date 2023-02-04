@@ -33,10 +33,7 @@
      ;; handle (define-transformer ...) form
      [(list (? is-define-transformer?) name-stx func-stx)
       (begin
-        (hash-set!
-         transformers
-         (syntax->datum name-stx)
-         (eval func-stx ns))
+        (hash-set! transformers (syntax->datum name-stx) (eval func-stx ns))
         '(Void))]
 
      [(list (? is-for-syntax?) form-stx)
