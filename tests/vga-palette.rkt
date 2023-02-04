@@ -1,20 +1,17 @@
-;; idea:    at compile time, parse palette file, then generate code to set the vga palette
-;; reality: for now it is just a silly example because we don't even have arrays
+(define-transformer *load-palette (lambda (filename-stx)
+  (local-require "jascpal.rkt")
 
-;; language features still missing:
-;;  - get-element
-;;  - loops/iteration
+  (define the-palette
+    (with-input-from-file (syntax-e filename-stx) (lambda ()
+      (load-JASC-palette))))
 
-(define-transformer *load-palette (lambda (filename)
-  (define the-palette (list 1 2 3 4)) ; TODO: load from file
+  `(make-array-with-type int ,@(flatten the-palette))))
 
-  `(make-array-with-type int ,@the-palette)))
-
-(def my-palette (*load-palette "example.pal"))
+(def my-palette (*load-palette "tests/endesga-32.pal"))
 
 (def my-length (len my-palette))
 
-(decl-external-fun palette-put ((index int) (value int)) Void)
+(decl-external-fun palette-put ((index int) (value int)) Void #:header "<conio.h>")
 
 (defun show-palette () Void
   ;; loop & print
