@@ -58,19 +58,6 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
     [(equal? type T-ast-builtin-void) "void"]
     [else (error (format "unhandled type ~a" type))]))
 
-;; https://stackoverflow.com/a/39986599
-(define (map-values proc lst)
-  (define (wrap e)
-    (call-with-values (lambda () (proc e)) list))
-  (if (> (length lst) 0)
-      (let () (apply values (apply map list (map wrap lst))))
-      (values '() '())))
-
-(define (make-placeholder-variable type)
-  (define name (format "tmp~a" placeholder-counter))
-  (set! placeholder-counter (add1 placeholder-counter))
-  (values (format "~a ~a;" (format-type type) name) name))
-
 ;; Return a pair of
 ;; 1. a list of _tokens_, each being one of "{", "}" or other string representing one line of source code
 ;; 2. a string representing the result of the form, or #f if void probably...
@@ -152,13 +139,13 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
 
         (define args (t-ast-construct-args value))
 
-        ;; collect tokens + exprs for all arguments
-        (define-values (arg-tokens arg-exprs) (map-values format-form args))
+        ;; collect exprs for all arguments
+        (define arg-exprs (map format-expression args))
 
         ;; build tokens as concatenation of all
         (define values-expr (string-join arg-exprs ", "))
 
-        (values (flatten (list arg-tokens the-decl "{" values-expr "};")) "")]
+        (values (flatten (list the-decl "{" values-expr "};")) "")]
        ;; special treatment for function defines
        [(t-ast-external-function? value)
         ;; FIXME: if we want to go this way, we must assert the name of the variable being defined
@@ -167,15 +154,12 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
         (define-values (value-tokens value-expr) (format-form value))
         (values value-tokens "")]
        [else
-        (let ()
-          (define-values (value-tokens value-expr) (format-form value))
-          (values (flatten (list value-tokens
-                                 (format "~a~a ~a = ~a;"
-                                         optional-const-prefix
-                                         (format-type value-type)
-                                         var-expr
-                                         value-expr)))
-                  ""))])]
+        (values (list (format "~a~a ~a = ~a;"
+                              optional-const-prefix
+                              (format-type value-type)
+                              var-expr
+                              (format-expression value)))
+                "")])]
     [(t-ast-deftype srcloc name definition) (values '() "")]
     [(t-ast-defun srcloc var args ret body)
      (define-values (tokens final-expr) (format-form body))
@@ -197,60 +181,24 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
                             optional-return-statement
                             "}"))
              "")]
-    [(t-ast-if srcloc type expr then else)
-     (define-values (test-tokens test-expr) (format-form expr))
+    [(t-ast-if srcloc type cond then else)
+     (define cond-expr (format-expression cond))
      (define-values (then-tokens then-expr) (format-form then))
      (define-values (else-tokens else-expr) (format-form else))
 
-     (if (equal? type T-ast-builtin-void)
-         ;; no temporary needed if void
-         (let ()
-           (begin
-             (define self-tokens
-               (flatten (list test-tokens
-                              (format "if (~a)" test-expr)
-                              "{"
-                              then-tokens
-                              (format "~a;" then-expr)
-                              "}"
-                              "else"
-                              "{"
-                              else-tokens
-                              (format "~a;" else-expr)
-                              "}")))
-
-             (values self-tokens "")))
-         (let ()
-           (begin
-             (define-values (result-placeholder-tokens result-placeholder-name)
-               (make-placeholder-variable type))
-             (define self-tokens
-               (flatten
-                (list result-placeholder-tokens
-                      test-tokens
-                      (format "if (~a)" test-expr)
+     (define self-tokens
+       (flatten (list (format "if (~a)" cond-expr)
                       "{"
                       then-tokens
-                      (format "~a = ~a;" result-placeholder-name then-expr)
+                      (format "~a;" then-expr)
                       "}"
                       "else"
                       "{"
                       else-tokens
-                      (format "~a = ~a;" result-placeholder-name else-expr)
+                      (format "~a;" else-expr)
                       "}")))
 
-             (values self-tokens result-placeholder-name))))]
-    [(t-ast-app srcloc type callee args)
-     (define-values (callee-tokens callee-expr) (format-form callee))
-
-     ;; collect tokens + exprs for all arguments
-     (define-values (arg-tokens arg-exprs) (map-values format-form args))
-
-     ;; build tokens as concatenation of all (incl. callee), finally append the call expr
-     (define call-expr
-       (string-append callee-expr "(" (string-join arg-exprs ", ") ")"))
-
-     (values (list* callee-tokens arg-tokens) call-expr)]
+     (values self-tokens "")]
     [(t-ast-external-function srcloc type name args ret header)
      (set! name (sanitize-name name))
      (define proto (format-function-type-as-prototype name type))
@@ -258,37 +206,14 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
      ;; TODO: collect all #includes in a module and emit them in a block
      (define my-tokens (list (if header (format "#include ~a" header) proto)))
      (values my-tokens name)]
-    ;; TODO: should be implemented with some simple pattern
-    [(t-ast-get srcloc type array index)
-     (define-values (array-tokens array-expr) (format-form array))
-     (define-values (index-tokens index-expr) (format-form index))
-
-     (define my-tokens (flatten (list array-tokens index-tokens)))
-     (define my-expr (format "~a[~a]" array-expr index-expr))
-
-     (values my-tokens my-expr)]
-    [(t-ast-len srcloc type array)
-     (define expr-t (t-ast-expr-type array))
-
-     (match expr-t
-       [(T-ast-array-type _ _ length) (values '() (~v length))]
-       [_
-        (raise-syntax-error
-         #f
-         (format "len: argument must be an array; got ~a" expr-t)
-         form)])]
-    [(t-ast-literal srcloc type lit) (values '() (number->string lit))]
-    [(t-ast-scoped-var srcloc type scope-id name)
-     (values '() (make-scoped-name scope-id name))]
     [(t-ast-set-var srcloc target value)
      ;; TODO: this will a rewrite to match specific target forms (variable, array element...)
 
      (define-values (target-tokens target-expr) (format-form target))
-     (define-values (expr-tokens expr-expr) (format-form value))
+     (define value-expr (format-expression value))
      (unless (eq? target-tokens '())
        (raise-syntax-error #f "unsupported assignment" form))
-     (values (flatten (list expr-tokens))
-             (format "~a = ~a;" target-expr expr-expr))]
+     (values (list (format "~a = ~a;" target-expr value-expr)) "")]
     [(t-ast-while srcloc cond body)
      (define-values (cond-tokens cond-expr) (format-form cond))
      (define-values (body-tokens body-expr) (format-form body))
@@ -303,7 +228,53 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
                       (format "~a;" body-expr)
                       "}")))
 
-     (values self-tokens "")]))
+     (values self-tokens "")]
+    [_ (values '() (format-expression form))]))
+
+(define (format-expression form)
+  ;; (printf "format-form ~a\n" form)
+
+  (match form
+    [(t-ast-if srcloc type expr then else)
+     (format "(~a) ? (~a) : (~a)"
+             (format-expression expr)
+             (format-expression then)
+             (format-expression else))]
+    [(t-ast-app srcloc type callee args)
+     (define callee-expr (format-expression callee))
+
+     ;; collect tokens + exprs for all arguments
+     (define arg-exprs (map format-expression args))
+
+     ;; build tokens as concatenation of all (incl. callee), finally append the call expr
+     (string-append callee-expr "(" (string-join arg-exprs ", ") ")")]
+    ;; TODO: should be implemented with some simple pattern
+    [(t-ast-get srcloc type array index)
+     (define array-expr (format-expression array))
+     (define index-expr (format-expression index))
+
+     (format "~a[~a]" array-expr index-expr)]
+    [(t-ast-len srcloc type array)
+     (define expr-t (t-ast-expr-type array))
+
+     (match expr-t
+       [(T-ast-array-type _ _ length) (number->string length)]
+       [_
+        (raise-syntax-error
+         #f
+         (format "len: argument must be an array; got ~a" expr-t)
+         form)])]
+    [(t-ast-literal srcloc type lit) (number->string lit)]
+    [(t-ast-scoped-var srcloc type scope-id name)
+     (make-scoped-name scope-id name)]
+    [_
+     (begin
+       (define fake (datum->syntax #f '() (t-ast-node-srcloc form)))
+       (raise-syntax-error
+        #f
+        (format "only an expression form can appear in this position, not ~a"
+                (ast-node-class-name form))
+        fake))]))
 
 (define (print-tokens tokens indent)
   (match tokens
