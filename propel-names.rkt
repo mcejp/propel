@@ -4,7 +4,8 @@
          "propel-syntax.rkt"
          "scope.rkt")
 
-(provide is-#%scoped-var?
+(provide is-#%array-type?
+         is-#%scoped-var?
          resolve-names)
 
 (define (is-#%scoped-var? stx) (equal? (syntax-e stx) '#%scoped-var))

@@ -4,13 +4,19 @@
          serialize-expr
          serialize-module)
 
-(require "propel-models.rkt"
+(require "model/t-ast.rkt"
+         "propel-models.rkt"
          "propel-syntax.rkt"
          racket/syntax-srcloc)
 
 (define (serialize-module body body-type-tree)
-  (define body-ser (serialize-expr body))
-  (list (car body-ser) body-type-tree (compress-srcloc-tree (cdr body-ser))))
+  (if (syntax? body)
+      (let ()
+        (define body-ser (serialize-expr body))
+        (list (car body-ser)
+              body-type-tree
+              (compress-srcloc-tree (cdr body-ser))))
+      (ast-to-s-expr body)))
 
 ; return (cons expr-tree srcloc-tree)
 (define (serialize-expr stx)

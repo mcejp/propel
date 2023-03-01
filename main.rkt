@@ -70,12 +70,11 @@
   (dump "30-names.rkt" mod-names)
 
   ;; resolve types
-  (define tt (resolve-types form-db mod-names))
-  (dump "40-types.rkt" mod-names tt)
+  (define mod-typed (resolve-types form-db mod-names))
+  (dump "40-types.rkt" mod-typed)
 
-  (with-intermediate-output-to-file
-   "50-cpp.cpp"
-   (λ () (compile-module-to-c++ mod-names tt))))
+  (with-intermediate-output-to-file "50-cpp.cpp"
+                                    (λ () (compile-module-to-c++ mod-typed))))
 
 (for ([testcase '("2048" "2048-board"
                          "def-array"
@@ -83,6 +82,7 @@
                          "deftype"
                          "factorial"
                          "hello"
+                         "order"
                          "vga-palette"
                          "void")])
   (compile-propel-module (~a "tests/" testcase ".rkt") (~a "out/" testcase)))

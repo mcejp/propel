@@ -4,21 +4,13 @@
          use-c-linkage)
 
 (require "propel-models.rkt"
-         "propel-names.rkt"
-         "propel-syntax.rkt"
-         "scope.rkt")
+         "model/t-ast.rkt")
 
 (define use-c-linkage (make-parameter #f))
 
-(define (is-#%get? stx)
-  (equal? (syntax-e stx) '#%get))
-
-(define (is-#%while? stx)
-  (equal? (syntax-e stx) '#%while))
-
 (define placeholder-counter 0)
 
-(define (compile-module-to-c++ mod-stx mod-tt)
+(define (compile-module-to-c++ mod-t-ast)
   (set! placeholder-counter 0)
 
   ;; TODO: generate C++ prototypes
@@ -36,7 +28,7 @@ inline int builtin_and_ii(int a, int b) { return a && b; }
 inline int builtin_not_i(int a) { return a ? 0 : 1; }
 ")
 
-  (define-values (tokens final-expr) (format-form mod-stx mod-tt))
+  (define-values (tokens final-expr) (format-form mod-t-ast))
   (print-tokens tokens 0))
 
 (define (format-function-prototype c-name args ret)
@@ -55,22 +47,23 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
   (format "~a ~a(~a);" (format-type ret) name param-list-str))
 
 (define (format-parameter-prototype prm)
-  (match-let ([`((#%scoped-var ,scope-id ,name) ,type) prm])
+  (match-let ([(t-ast-parameter _ (t-ast-scoped-var _ _ scope-id name) type)
+               prm])
     (format "~a ~a" (format-type type) (make-scoped-name scope-id name))))
 
 (define (format-type type)
   (cond
     [(function-type? type) "auto"]
-    [(equal? type type-I) "int"]
-    [(equal? type type-V) "void"]
+    [(equal? type T-ast-builtin-int) "int"]
+    [(equal? type T-ast-builtin-void) "void"]
     [else (error (format "unhandled type ~a" type))]))
 
 ;; https://stackoverflow.com/a/39986599
-(define (map-values proc lst1 lst2)
-  (define (wrap e1 e2)
-    (call-with-values (lambda () (proc e1 e2)) list))
-  (if (> (length lst1) 0)
-      (let () (apply values (apply map list (map wrap lst1 lst2))))
+(define (map-values proc lst)
+  (define (wrap e)
+    (call-with-values (lambda () (proc e)) list))
+  (if (> (length lst) 0)
+      (let () (apply values (apply map list (map wrap lst))))
       (values '() '())))
 
 (define (make-placeholder-variable type)
@@ -82,12 +75,11 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
 ;; 1. a list of _tokens_, each being one of "{", "}" or other string representing one line of source code
 ;; 2. a string representing the result of the form, or #f if void probably...
 ;; The reason for this circus is that we do not distinguish statements and expressions, but C++ does.
-(define (format-form form type-tree)
+(define (format-form form)
   ;; (printf "format-form ~a\n" form)
-  (match-define (cons form-type sub-tts)
-    type-tree) ; separate resultant type from type sub-trees
-  (match (syntax-e form)
-    [(list (? is-#%begin?) stmts ..1)
+
+  (match form
+    [(t-ast-begin srcloc type (list stmts ...))
      ;; Recall that the begin form evaluates all forms inside for their side effects
      ;; and returns the result of the last one
      ;; Here, for each of the nested form we first emit its tokens and then its expression
@@ -96,9 +88,8 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
 
      ;; First collect each nested form's tokens + expression in a *backwards* list
      (define-values (sub-tokenss sub-exprs)
-       (for/fold ([sub-tokenss* '()] [sub-exprs* '()])
-                 ([stmt stmts] [sub-tt sub-tts])
-         (define-values (tokens expr) (format-form stmt sub-tt))
+       (for/fold ([sub-tokenss* '()] [sub-exprs* '()]) ([stmt stmts])
+         (define-values (tokens expr) (format-form stmt))
          (values (cons tokens sub-tokenss*) (cons expr sub-exprs*))))
 
      ;; Extract the last form's expression and substitute it with an empty string
@@ -117,40 +108,32 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
                out-tokens)))
      ;; Now all that remains is to flatten the collected tokens
      (values (flatten my-tokens) result-expr)]
-    [(list (? is-#%begin? t)) (values '() "")]
-    [(list (? is-#%construct?) type-stx args-stx ...)
+    [(t-ast-begin srcloc type '()) (values '() "")]
+    [(t-ast-construct srcloc type args)
      (begin
-       (unless (equal? (syntax->datum type-stx) type-V)
+       (unless (equal? type T-ast-builtin-void)
          (raise-syntax-error #f
                              "only Void type can be currently constructed"
                              form))
-       (unless (empty? args-stx)
+       (unless (empty? args)
          (raise-syntax-error #f
                              "expected 0 arguments when constructing Void"
                              form))
        (values '() ""))]
-    [(list (? is-#%define-or-#%define-var? t) var-stx value)
-     (define value-tt sub-tts)
-     (define-values (var-tokens var-expr) (format-form var-stx (cons #f #f)))
+    [(t-ast-define srcloc var value is-variable)
+     (define-values (var-tokens var-expr) (format-form var))
 
      (unless (eq? var-tokens '())
        (raise-syntax-error #f "unsupported assignment" form))
-     (define value-type (car value-tt))
+     (define value-type (t-ast-expr-type value))
 
      ;; special treatment for array constructors
      (define is-array-initialization?
-       ;; check if type of value matches `(#%array-type (#%builtin-type I) ,length)
-       (and (pair? (syntax-e value))
-            (equal? (car (syntax->datum value)) '#%construct)
-            (equal? (car value-type) '#%array-type)))
+       (match value
+         [(t-ast-construct _ (T-ast-array-type _ _ _) _) #t]
+         [_ #f]))
 
-     ;; special treatment for function defines
-     ;; (not sure if this is the cleanest approach)
-     (define is-#%define-external-function?
-       (and (list? (syntax-e value))
-            (is-#%external-function? (car (syntax-e value)))))
-
-     (define optional-const-prefix (if (is-#%define? t) "const " ""))
+     (define optional-const-prefix (if (not is-variable) "const " ""))
 
      ;; first check for special cases and then fall back to default
      ;; ugly code ahead :( might be better solved with some kind of transformation pre-pass that
@@ -158,7 +141,8 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
      (cond
        [is-array-initialization?
         ;; build a definition like int variable[] = {1, 2, 3};
-        (define element-type-str (format-type (list-ref value-type 1)))
+        (define element-type-str
+          (format-type (T-ast-array-type-element-type value-type)))
 
         (define the-decl
           (format "~a~a ~a[] ="
@@ -166,26 +150,25 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
                   element-type-str
                   var-expr))
 
-        (define args (cddr (syntax-e value)))
-        (define arg-tts (cdr value-tt))
+        (define args (t-ast-construct-args value))
 
         ;; collect tokens + exprs for all arguments
-        (define-values (arg-tokens arg-exprs)
-          (map-values format-form args arg-tts))
+        (define-values (arg-tokens arg-exprs) (map-values format-form args))
 
         ;; build tokens as concatenation of all
         (define values-expr (string-join arg-exprs ", "))
 
         (values (flatten (list arg-tokens the-decl "{" values-expr "};")) "")]
-       [is-#%define-external-function?
+       ;; special treatment for function defines
+       [(t-ast-external-function? value)
         ;; FIXME: if we want to go this way, we must assert the name of the variable being defined
         ;;        equals the name of the external function
         ;; TODO: add an example of what we emit
-        (define-values (value-tokens value-expr) (format-form value value-tt))
+        (define-values (value-tokens value-expr) (format-form value))
         (values value-tokens "")]
        [else
         (let ()
-          (define-values (value-tokens value-expr) (format-form value value-tt))
+          (define-values (value-tokens value-expr) (format-form value))
           (values (flatten (list value-tokens
                                  (format "~a~a ~a = ~a;"
                                          optional-const-prefix
@@ -193,40 +176,33 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
                                          var-expr
                                          value-expr)))
                   ""))])]
-    [(list (? is-#%deftype? _) name-stx definition-stx) (values '() "")]
-    [(list (? is-#%defun? _) var-stx args-stx ret-stx body-stx)
-     (define body-tt sub-tts)
-     (define-values (tokens final-expr) (format-form body-stx body-tt))
+    [(t-ast-deftype srcloc name definition) (values '() "")]
+    [(t-ast-defun srcloc var args ret body)
+     (define-values (tokens final-expr) (format-form body))
 
-     (match-define `(#%scoped-var ,scope-id ,name) (syntax->datum var-stx))
+     (match-define (t-ast-scoped-var _ _ scope-id name) var)
 
      (define c-name (string->symbol (make-scoped-name scope-id name)))
 
      (define optional-return-statement
        (if (non-empty-string? final-expr)
-           (if (equal? (syntax->datum ret-stx) type-V)
+           (if (equal? ret T-ast-builtin-void)
                (format "~a;" final-expr)
                (format "return ~a;" final-expr))
            '()))
 
-     (values (flatten (list (format-function-prototype c-name
-                                                       (syntax->datum args-stx)
-                                                       (syntax->datum ret-stx))
+     (values (flatten (list (format-function-prototype c-name args ret)
                             "{"
                             tokens
                             optional-return-statement
                             "}"))
              "")]
-    [(list (? is-#%if? t) expr then else)
-     (match-define (list expr-tt then-tt else-tt) sub-tts)
+    [(t-ast-if srcloc type expr then else)
+     (define-values (test-tokens test-expr) (format-form expr))
+     (define-values (then-tokens then-expr) (format-form then))
+     (define-values (else-tokens else-expr) (format-form else))
 
-     (define result-type (car then-tt))
-
-     (define-values (test-tokens test-expr) (format-form expr expr-tt))
-     (define-values (then-tokens then-expr) (format-form then then-tt))
-     (define-values (else-tokens else-expr) (format-form else else-tt))
-
-     (if (equal? result-type type-V)
+     (if (equal? type T-ast-builtin-void)
          ;; no temporary needed if void
          (let ()
            (begin
@@ -247,7 +223,7 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
          (let ()
            (begin
              (define-values (result-placeholder-tokens result-placeholder-name)
-               (make-placeholder-variable result-type))
+               (make-placeholder-variable type))
              (define self-tokens
                (flatten
                 (list result-placeholder-tokens
@@ -264,66 +240,58 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
                       "}")))
 
              (values self-tokens result-placeholder-name))))]
-    [(list (? is-#%app? t) callee args ...)
-     (match-define (cons callee-tt arg-tts) sub-tts)
-     (define-values (callee-tokens callee-expr) (format-form callee callee-tt))
+    [(t-ast-app srcloc type callee args)
+     (define-values (callee-tokens callee-expr) (format-form callee))
 
      ;; collect tokens + exprs for all arguments
-     (define-values (arg-tokens arg-exprs)
-       (map-values format-form args arg-tts))
+     (define-values (arg-tokens arg-exprs) (map-values format-form args))
 
      ;; build tokens as concatenation of all (incl. callee), finally append the call expr
      (define call-expr
        (string-append callee-expr "(" (string-join arg-exprs ", ") ")"))
 
      (values (list* callee-tokens arg-tokens) call-expr)]
-    [(list (? is-#%external-function? t) name-stx args-stx ret-stx header-stx)
-     (define name (sanitize-name (syntax-e name-stx)))
-     (define proto (format-function-type-as-prototype name form-type))
-     (define header (syntax-e header-stx))
+    [(t-ast-external-function srcloc type name args ret header)
+     (set! name (sanitize-name name))
+     (define proto (format-function-type-as-prototype name type))
+
      ;; TODO: collect all #includes in a module and emit them in a block
      (define my-tokens (list (if header (format "#include ~a" header) proto)))
      (values my-tokens name)]
     ;; TODO: should be implemented with some simple pattern
-    [(list (? is-#%get?) array-stx index-stx)
-     (match-define (list array-tt index-tt) sub-tts)
-
-     (define-values (array-tokens array-expr) (format-form array-stx array-tt))
-     (define-values (index-tokens index-expr) (format-form index-stx index-tt))
+    [(t-ast-get srcloc type array index)
+     (define-values (array-tokens array-expr) (format-form array))
+     (define-values (index-tokens index-expr) (format-form index))
 
      (define my-tokens (flatten (list array-tokens index-tokens)))
      (define my-expr (format "~a[~a]" array-expr index-expr))
 
      (values my-tokens my-expr)]
-    [(list (? is-#%len?) _)
-     (define expr-tt sub-tts)
-     (define expr-t (car expr-tt))
+    [(t-ast-len srcloc type array)
+     (define expr-t (t-ast-expr-type array))
 
      (match expr-t
-       [`(#%array-type ,_ ,length) (values '() (~v length))]
+       [(T-ast-array-type _ _ length) (values '() (~v length))]
        [_
         (raise-syntax-error
          #f
          (format "len: argument must be an array; got ~a" expr-t)
          form)])]
-    [(list (? is-#%scoped-var?) scope-id-stx name-stx)
-     (values '()
-             (make-scoped-name (syntax-e scope-id-stx) (syntax-e name-stx)))]
-    [(list (? is-#%set-var? t) target-stx expr-stx)
+    [(t-ast-literal srcloc type lit) (values '() (number->string lit))]
+    [(t-ast-scoped-var srcloc type scope-id name)
+     (values '() (make-scoped-name scope-id name))]
+    [(t-ast-set-var srcloc target value)
      ;; TODO: this will a rewrite to match specific target forms (variable, array element...)
-     (match-define (list target-tt expr-tt) sub-tts)
-     (define-values (target-tokens target-expr)
-       (format-form target-stx target-tt))
-     (define-values (expr-tokens expr-expr) (format-form expr-stx expr-tt))
+
+     (define-values (target-tokens target-expr) (format-form target))
+     (define-values (expr-tokens expr-expr) (format-form value))
      (unless (eq? target-tokens '())
        (raise-syntax-error #f "unsupported assignment" form))
      (values (flatten (list expr-tokens))
              (format "~a = ~a;" target-expr expr-expr))]
-    [(list (? is-#%while? t) cond body)
-     (match-define (list cond-tt body-tt) sub-tts)
-
-     (define-values (cond-tokens cond-expr) (format-form cond cond-tt))
-     (define-values (body-tokens body-expr) (format-form body body-tt))
+    [(t-ast-while srcloc cond body)
+     (define-values (cond-tokens cond-expr) (format-form cond))
+     (define-values (body-tokens body-expr) (format-form body))
 
      (unless (= 0 (length (flatten cond-tokens)))
        (raise-syntax-error #f "unsupported expression for while" form))
@@ -335,8 +303,7 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
                       (format "~a;" body-expr)
                       "}")))
 
-     (values self-tokens "")]
-    [(? number? lit) (values '() (number->string lit))]))
+     (values self-tokens "")]))
 
 (define (print-tokens tokens indent)
   (match tokens

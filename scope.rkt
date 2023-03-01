@@ -14,7 +14,8 @@
          type-I
          type-V)
 
-(require "propel-models.rkt")
+(require "model/t-ast.rkt"
+         "propel-models.rkt")
 
 ;; for the moment, types are not properly scoped and have to be defined in module top-level
 ;; this is not "by design", more like "for simplicity" (also for generating C headers etc.)
@@ -77,8 +78,9 @@
     [parent (scope-try-resolve-type parent sym)]
     [#t #f]))
 
-(define I-to-I (function-type (list type-I) type-I))
-(define II-to-I (function-type (list type-I type-I) type-I))
+(define I-to-I (function-type (list T-ast-builtin-int) T-ast-builtin-int))
+(define II-to-I
+  (function-type (list T-ast-builtin-int T-ast-builtin-int) T-ast-builtin-int))
 
 (define base-scope
   (scope #f

@@ -49,10 +49,10 @@
   (define mod-names (resolve-names form-db mod-core-forms))
 
   ;; resolve types
-  (define tt (resolve-types form-db mod-names))
+  (define mod-typed (resolve-types form-db mod-names))
 
   (with-output-to-file output-path
-                       (λ () (compile-module-to-c++ mod-names tt))
+                       (λ () (compile-module-to-c++ mod-typed))
                        #:exists 'replace))
 
 (parameterize ([use-c-linkage (c-linkage)])

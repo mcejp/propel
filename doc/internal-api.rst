@@ -16,4 +16,7 @@ propel-types::
 
 backend-c++::
 
-  (compile-module-to-c++ mod-stx mod-tt)
+  (compile-module-to-c++ mod-t-ast)
+
+
+Wanted: operator to walk the tree in a generic manner

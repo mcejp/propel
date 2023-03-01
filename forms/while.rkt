@@ -3,7 +3,8 @@
 (provide register-form/while)
 
 (require "../form-db.rkt"
-         "../scope.rkt")
+         "../model/t-ast.rkt"
+         racket/syntax-srcloc)
 
 (define (register-form/while ctx)
   (register-form ctx
@@ -18,5 +19,5 @@
    '#%while
    '((stx cond) (stx body))
    (hash 'types
-         ;; compute resultant type; sub-tts will be attached automatically
-         (lambda (stx cond-t body-t) type-V))))
+         (lambda (stx cond* body*)
+           (t-ast-while (syntax-srcloc stx) cond* body*)))))
