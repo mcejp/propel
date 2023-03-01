@@ -6,7 +6,7 @@
          "propel-names.rkt"
          "propel-syntax.rkt"
          "scope.rkt"
-         racket/syntax-srcloc)
+         syntax/parse/define)
 
 (provide resolve-types)
 
@@ -20,19 +20,19 @@
   ;; TODO: test recursively to ensure that we haven't inserted some non-sense
   node)
 
-;; TODO: can we decouple injection of srcloc (since it is always the same)?
-;;       (this also applies to forms defined under forms/)
 (define (resolve-types/form-inner form-db current-scope stx)
   (define rec (curry resolve-types/form form-db current-scope)) ; recurse
   ; (printf "resolve-types ~a\n" stx)
   ;stx
 
+  (define-syntax-parse-rule (make class:id args:expr ...)
+    (class stx
+      args ...))
+
   ;; first try to look up a definition in the form database, and use that
   (define form-def (get-form-def-for-stx form-db stx))
   (define form-handler
     (if form-def (hash-ref (form-def-phases form-def) 'types #f) #f))
-
-  (define srcloc (syntax-srcloc stx))
 
   (if form-handler
       (apply-handler form-db form-def form-handler current-scope stx)
@@ -44,8 +44,8 @@
                 [result-t (if (t-ast-expr? last-stmt)
                               (t-ast-expr-type last-stmt)
                               T-ast-builtin-void)])
-           (t-ast-begin srcloc result-t stmts*))]
-        [(list (? is-#%begin? t)) (t-ast-begin srcloc T-ast-builtin-void '())]
+           (make t-ast-begin result-t stmts*))]
+        [(list (? is-#%begin? t)) (make t-ast-begin T-ast-builtin-void '())]
         [(list (? is-#%app? t) callee args ...)
          (begin
            (let* ([callee* (rec callee)]
@@ -58,13 +58,13 @@
              ; (how to deal with overloaded functions...?)
              (define return-t (function-type-ret-type callee-t))
 
-             (t-ast-app srcloc return-t callee* args*)))]
+             (make t-ast-app return-t callee* args*)))]
         ;; warning: *absolute dumpster fire ahead*
         [(list (? is-#%construct? t) type-stx args-stx ...)
          (match (syntax->datum type-stx)
            [`(#%array-type (#%builtin-type I) ,length)
             ;; TODO: validate length
-            (t-ast-construct srcloc (parse-type type-stx) (map rec args-stx))]
+            (make t-ast-construct (parse-type type-stx) (map rec args-stx))]
            ['(#%builtin-type V)
             (begin
               (unless (empty? args-stx)
@@ -72,7 +72,7 @@
                  #f
                  "expected 0 arguments when constructing Void"
                  stx))
-              (t-ast-construct srcloc (parse-type type-stx) '()))]
+              (make t-ast-construct (parse-type type-stx) '()))]
            [_
             (raise-syntax-error #f
                                 "only Void type can be currently constructed"
@@ -88,7 +88,7 @@
            (scope-discover-variable-type! current-scope scope-id name value-t)
 
            (define is-variable (not (is-#%define? t)))
-           (t-ast-define srcloc (rec var-stx) value* is-variable))]
+           (make t-ast-define (rec var-stx) value* is-variable))]
         [(list (? is-#%defun? _) var-stx args-stx ret-stx body-stx)
          (define func-scope
            (scope -1
@@ -126,9 +126,9 @@
          (unless (t-ast-scoped-var? var*)
            (error))
 
-         (t-ast-defun srcloc var* params ret-t body*)]
+         (make t-ast-defun var* params ret-t body*)]
         [(list (? is-#%deftype? _) name-stx definition-stx)
-         (t-ast-deftype srcloc (syntax-e name-stx) (parse-type definition-stx))]
+         (make t-ast-deftype (syntax-e name-stx) (parse-type definition-stx))]
         [(list (? is-#%external-function? _)
                name-stx
                params-stx
@@ -148,7 +148,7 @@
          (define header (syntax->datum header-stx))
 
          (let ([type (function-type (map t-ast-parameter-type params) ret)])
-           (t-ast-external-function srcloc type name params ret header))]
+           (make t-ast-external-function type name params ret header))]
         [(list (? is-#%if? _) cond-stx then-stx else-stx)
          (let* ([cond* (rec cond-stx)]
                 [then* (rec then-stx)]
@@ -164,7 +164,7 @@
                         else-t)
                 stx))
 
-             (t-ast-if srcloc then-t cond* then* else*)))]
+             (make t-ast-if then-t cond* then* else*)))]
         [(list (? is-#%len? t) expr-stx)
          (define expr* (rec expr-stx))
          (define expr-t (t-ast-expr-type expr*))
@@ -175,7 +175,7 @@
            ;;   return a modified expression?
            ;;   add a substitution pass after type resolution?
            ;;   provide some API that the back-end can call to do _most_ of the work?
-           [(T-ast-array-type _ _ _) (t-ast-len srcloc T-ast-builtin-int expr*)]
+           [(T-ast-array-type _ _ _) (make t-ast-len T-ast-builtin-int expr*)]
            [_
             (raise-syntax-error
              #f
@@ -185,7 +185,7 @@
          (define scope-id (syntax-e scope-id-stx))
          (define name (syntax-e name-stx))
          (define type (get-variable-type current-scope stx scope-id name))
-         (t-ast-scoped-var srcloc type scope-id name)]
+         (make t-ast-scoped-var type scope-id name)]
         [(list (? is-#%set-var? t) target-stx expr-stx)
          (let* ([target* (rec target-stx)]
                 [expr* (rec expr-stx)]
@@ -196,8 +196,8 @@
                (raise-syntax-error #f
                                    "set!: variable vs expression type mismatch"
                                    stx))
-             (t-ast-set-var srcloc target* expr*)))]
-        [(? number? lit) (t-ast-literal srcloc T-ast-builtin-int lit)])))
+             (make t-ast-set-var target* expr*)))]
+        [(? number? lit) (make t-ast-literal T-ast-builtin-int lit)])))
 
 (define (check-function-args stx param-types t-args)
   (unless (equal? (length param-types) (length t-args))
@@ -238,11 +238,10 @@
 
 (define (parse-type type-stx)
   (define type (syntax->datum type-stx))
-  (define srcloc (syntax-srcloc type-stx))
 
   (match (syntax-e type-stx)
     [(list (? is-#%array-type? _) element-type length)
-     (T-ast-array-type srcloc (parse-type element-type) (syntax-e length))]
+     (T-ast-array-type type-stx (parse-type element-type) (syntax-e length))]
     [_
      (cond
        [(equal? type type-I) T-ast-builtin-int]
@@ -252,17 +251,16 @@
 (define (parse-parameter-list form-db current-scope stx)
   (map
    (lambda (param-stx)
-     (let ([srcloc (syntax-srcloc param-stx)])
-       (match-define `(,ident-stx ,type-stx) (syntax-e param-stx))
-       (match-define `(#%scoped-var ,scope-id ,name) (syntax->datum ident-stx))
-       (scope-discover-variable-type! current-scope
-                                      scope-id
-                                      name
-                                      (parse-type type-stx))
+     (match-define `(,ident-stx ,type-stx) (syntax-e param-stx))
+     (match-define `(#%scoped-var ,scope-id ,name) (syntax->datum ident-stx))
+     (scope-discover-variable-type! current-scope
+                                    scope-id
+                                    name
+                                    (parse-type type-stx))
 
-       (match (syntax-e param-stx)
-         [(list name-stx type-stx)
-          (t-ast-parameter srcloc
-                           (resolve-types/form form-db current-scope name-stx)
-                           (parse-type type-stx))])))
+     (match (syntax-e param-stx)
+       [(list name-stx type-stx)
+        (t-ast-parameter param-stx
+                         (resolve-types/form form-db current-scope name-stx)
+                         (parse-type type-stx))]))
    (syntax-e stx)))

@@ -54,7 +54,7 @@
   ;; (printf "format-form ~a\n" form)
 
   (match form
-    [(t-ast-begin srcloc type (list stmts ...))
+    [(t-ast-begin _ type (list stmts ...))
      ;; Recall that the begin form evaluates all forms inside for their side effects
      ;; and returns the result of the last one
      ;; Here, for each of the nested form we first emit its tokens and then its expression
@@ -83,8 +83,8 @@
                out-tokens)))
      ;; Now all that remains is to flatten the collected tokens
      (values (flatten my-tokens) result-expr)]
-    [(t-ast-begin srcloc type '()) (values '() "")]
-    [(t-ast-construct srcloc type args)
+    [(t-ast-begin _ type '()) (values '() "")]
+    [(t-ast-construct _ type args)
      (begin
        (unless (equal? type T-ast-builtin-void)
          (raise-syntax-error #f
@@ -95,7 +95,7 @@
                              "expected 0 arguments when constructing Void"
                              form))
        (values '() ""))]
-    [(t-ast-define srcloc var value is-variable)
+    [(t-ast-define _ var value is-variable)
      (define-values (var-tokens var-expr) (format-form var))
 
      (unless (eq? var-tokens '())
@@ -148,8 +148,8 @@
                               var-expr
                               (format-expression value)))
                 "")])]
-    [(t-ast-deftype srcloc name definition) (values '() "")]
-    [(t-ast-defun srcloc var args ret body)
+    [(t-ast-deftype _ name definition) (values '() "")]
+    [(t-ast-defun _ var args ret body)
      (define-values (tokens final-expr) (format-form body))
 
      (match-define (t-ast-scoped-var _ _ scope-id name) var)
@@ -169,7 +169,7 @@
                             optional-return-statement
                             "}"))
              "")]
-    [(t-ast-if srcloc type cond then else)
+    [(t-ast-if _ type cond then else)
      (define cond-expr (format-expression cond))
      (define-values (then-tokens then-expr) (format-form then))
      (define-values (else-tokens else-expr) (format-form else))
@@ -187,14 +187,14 @@
                       "}")))
 
      (values self-tokens "")]
-    [(t-ast-external-function srcloc type name args ret header)
+    [(t-ast-external-function _ type name args ret header)
      (set! name (sanitize-name name))
      (define proto (format-function-type-as-prototype name type))
 
      ;; TODO: collect all #includes in a module and emit them in a block
      (define my-tokens (list (if header (format "#include ~a" header) proto)))
      (values my-tokens name)]
-    [(t-ast-set-var srcloc target value)
+    [(t-ast-set-var _ target value)
      ;; TODO: this will a rewrite to match specific target forms (variable, array element...)
 
      (define-values (target-tokens target-expr) (format-form target))
@@ -202,7 +202,7 @@
      (unless (eq? target-tokens '())
        (raise-syntax-error #f "unsupported assignment" form))
      (values (list (format "~a = ~a;" target-expr value-expr)) "")]
-    [(t-ast-while srcloc cond body)
+    [(t-ast-while _ cond body)
      (define-values (cond-tokens cond-expr) (format-form cond))
      (define-values (body-tokens body-expr) (format-form body))
 
@@ -223,12 +223,12 @@
   ;; (printf "format-form ~a\n" form)
 
   (match form
-    [(t-ast-if srcloc type expr then else)
+    [(t-ast-if _ type expr then else)
      (format "(~a) ? (~a) : (~a)"
              (format-expression expr)
              (format-expression then)
              (format-expression else))]
-    [(t-ast-app srcloc type callee args)
+    [(t-ast-app _ type callee args)
      (define callee-expr (format-expression callee))
 
      ;; collect tokens + exprs for all arguments
@@ -236,20 +236,20 @@
 
      ;; build tokens as concatenation of all (incl. callee), finally append the call expr
      (string-append callee-expr "(" (string-join arg-exprs ", ") ")")]
-    [(t-ast-c++-binary-operator srcloc type op left right)
+    [(t-ast-c++-binary-operator _ type op left right)
      (format "(~a ~a ~a)"
              (format-expression left)
              op
              (format-expression right))]
-    [(t-ast-c++-unary-operator srcloc type op expr)
+    [(t-ast-c++-unary-operator _ type op expr)
      (format "(~a~a)" op (format-expression expr))]
     ;; TODO: should be implemented with some simple pattern
-    [(t-ast-get srcloc type array index)
+    [(t-ast-get _ type array index)
      (define array-expr (format-expression array))
      (define index-expr (format-expression index))
 
      (format "~a[~a]" array-expr index-expr)]
-    [(t-ast-len srcloc type array)
+    [(t-ast-len _ type array)
      (define expr-t (t-ast-expr-type array))
 
      (match expr-t
@@ -259,17 +259,15 @@
          #f
          (format "len: argument must be an array; got ~a" expr-t)
          form)])]
-    [(t-ast-literal srcloc type lit) (number->string lit)]
-    [(t-ast-scoped-var srcloc type scope-id name)
-     (make-scoped-name scope-id name)]
+    [(t-ast-literal _ type lit) (number->string lit)]
+    [(t-ast-scoped-var _ type scope-id name) (make-scoped-name scope-id name)]
     [_
      (begin
-       (define fake (datum->syntax #f '() (t-ast-node-srcloc form)))
        (raise-syntax-error
         #f
         (format "only an expression form can appear in this position, not ~a"
                 (ast-node-class-name form))
-        fake))]))
+        (t-ast-node-src form)))]))
 
 (define (print-tokens tokens indent)
   (match tokens

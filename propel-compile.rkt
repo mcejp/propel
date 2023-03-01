@@ -52,7 +52,8 @@
   ;; resolve types
   (define mod-typed (resolve-types form-db mod-names))
 
-  (define additional-passes (list (cons c++-lift-operators "45-binary-operators.rkt")))
+  (define additional-passes
+    (list (cons c++-lift-operators "45-binary-operators.rkt")))
 
   (for ([pass additional-passes])
     (match-define (cons f _) pass)

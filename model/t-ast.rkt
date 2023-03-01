@@ -30,7 +30,7 @@
 (require racket/generic
          syntax/parse/define)
 
-(define-struct t-ast-node (srcloc))
+(define-struct t-ast-node (src))
 (define-struct (t-ast-expr t-ast-node) (type))
 (define-struct (t-ast-stmt t-ast-node) ())
 (define-struct (t-ast-type t-ast-node) ())
@@ -168,10 +168,9 @@
 
   (cond
     [(t-ast-expr? node)
-     (f (apply constructor
-               (list* (t-ast-node-srcloc node)
-                      (t-ast-expr-type node)
-                      mapped-fields)))]
+     (f (apply
+         constructor
+         (list* (t-ast-node-src node) (t-ast-expr-type node) mapped-fields)))]
     [(t-ast-stmt? node)
-     (f (apply constructor (list* (t-ast-node-srcloc node) mapped-fields)))]
+     (f (apply constructor (list* (t-ast-node-src node) mapped-fields)))]
     [else (error (format "unhandled ~a" node))]))
