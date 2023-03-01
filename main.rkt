@@ -1,6 +1,7 @@
 #lang racket
 
 (require "backend-c++.rkt"
+         "c++-passes.rkt"
          "forms/_all.rkt"
          "propel-expand.rkt"
          "propel-names.rkt"
@@ -73,8 +74,18 @@
   (define mod-typed (resolve-types form-db mod-names))
   (dump "40-types.rkt" mod-typed)
 
-  (with-intermediate-output-to-file "50-cpp.cpp"
-                                    (λ () (compile-module-to-c++ mod-typed))))
+  (define additional-passes (list (cons c++-lift-operators "45-binary-operators.rkt")))
+
+  (for ([pass additional-passes])
+    (match-define (cons f dump-filename) pass)
+
+    ;; this is just much more readable than for/fold
+    (set! mod-typed (f mod-typed))
+    (dump dump-filename mod-typed))
+
+  (with-intermediate-output-to-file
+   "50-cpp.cpp"
+   (λ () (compile-module-to-c++ mod-typed))))
 
 (for ([testcase '("2048" "2048-board"
                          "def-array"

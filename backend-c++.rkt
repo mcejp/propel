@@ -4,6 +4,7 @@
          use-c-linkage)
 
 (require "propel-models.rkt"
+         "model/c++-ast.rkt"
          "model/t-ast.rkt")
 
 (define use-c-linkage (make-parameter #f))
@@ -14,19 +15,6 @@
   (set! placeholder-counter 0)
 
   ;; TODO: generate C++ prototypes
-
-  (displayln
-   "\
-inline int builtin_eq_ii(int a, int b) { return a == b; }
-inline int builtin_add_ii(int a, int b) { return a + b; }
-inline int builtin_sub_ii(int a, int b) { return a - b; }
-inline int builtin_mul_ii(int a, int b) { return a * b; }
-inline int builtin_lessthan_ii(int a, int b) { return (a < b) ? 1 : 0; }
-inline int builtin_lesseq_ii(int a, int b) { return (a <= b) ? 1 : 0; }
-inline int builtin_greaterthan_ii(int a, int b) { return (a > b) ? 1 : 0; }
-inline int builtin_and_ii(int a, int b) { return a && b; }
-inline int builtin_not_i(int a) { return a ? 0 : 1; }
-")
 
   (define-values (tokens final-expr) (format-form mod-t-ast))
   (print-tokens tokens 0))
@@ -248,6 +236,13 @@ inline int builtin_not_i(int a) { return a ? 0 : 1; }
 
      ;; build tokens as concatenation of all (incl. callee), finally append the call expr
      (string-append callee-expr "(" (string-join arg-exprs ", ") ")")]
+    [(t-ast-c++-binary-operator srcloc type op left right)
+     (format "(~a ~a ~a)"
+             (format-expression left)
+             op
+             (format-expression right))]
+    [(t-ast-c++-unary-operator srcloc type op expr)
+     (format "(~a~a)" op (format-expression expr))]
     ;; TODO: should be implemented with some simple pattern
     [(t-ast-get srcloc type array index)
      (define array-expr (format-expression array))

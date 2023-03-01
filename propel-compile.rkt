@@ -3,6 +3,7 @@
 (require racket/cmdline
          racket/runtime-path
          "backend-c++.rkt"
+         "c++-passes.rkt"
          "forms/_all.rkt"
          "propel-expand.rkt"
          "propel-names.rkt"
@@ -50,6 +51,14 @@
 
   ;; resolve types
   (define mod-typed (resolve-types form-db mod-names))
+
+  (define additional-passes (list (cons c++-lift-operators "45-binary-operators.rkt")))
+
+  (for ([pass additional-passes])
+    (match-define (cons f _) pass)
+
+    ;; this is just much more readable than for/fold
+    (set! mod-typed (f mod-typed)))
 
   (with-output-to-file output-path
                        (λ () (compile-module-to-c++ mod-typed))

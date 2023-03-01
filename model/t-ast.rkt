@@ -22,6 +22,8 @@
          (struct-out T-ast-array-type)
          ast-node-class-name
          ast-to-s-expr
+         define-ast-classes
+         rewrite-ast
          T-ast-builtin-int
          T-ast-builtin-void)
 
@@ -37,7 +39,7 @@
 (define-generics t-ast-node* (gen-class-annotations t-ast-node*))
 
 ;; define helper for creating AST node classes
-(define-syntax-parse-rule (define-classes
+(define-syntax-parse-rule (define-ast-classes
                            super:id
                            (name:id ((attr-name:id attr-type:expr) ...)) ...)
   (begin
@@ -49,16 +51,16 @@
          '(attr-type ...))]) ...))
 
 ;; nodes that are not expressions nor statements
-(define-classes t-ast-node
-                [t-ast-parameter ([name t-ast-scoped-var] [type type])])
+(define-ast-classes t-ast-node
+                    [t-ast-parameter ([name t-ast-scoped-var] [type type])])
 
 ;; type nodes
-(define-classes t-ast-type
-                [T-ast-builtin-type ([type-name symbol])]
-                [T-ast-array-type ([element-type type] [length integer])])
+(define-ast-classes t-ast-type
+                    [T-ast-builtin-type ([type-name symbol])]
+                    [T-ast-array-type ([element-type type] [length integer])])
 
 ;; expression nodes
-(define-classes
+(define-ast-classes
  t-ast-expr
  [t-ast-app ([callee t-ast-expr] [args expr-list])]
  [t-ast-begin ([stmts stmt-list])]
@@ -76,7 +78,7 @@
  [t-ast-scoped-var ([scope-id integer] [name symbol])])
 
 ;; statement nodes
-(define-classes
+(define-ast-classes
  t-ast-stmt
  [t-ast-define ([name t-ast-scoped-var] [value t-ast-expr] [is-variable bool])]
  [t-ast-deftype ([name symbol] [definition type])]
@@ -121,6 +123,7 @@
                ['literal field-value]
                ['param-list (map ast-to-s-expr field-value)]
                ['stmt-list (map ast-to-s-expr field-value)]
+               ['string field-value]
                ['string-or-#f field-value]
                ['symbol field-value]
                ['t-ast-expr (ast-to-s-expr field-value)]
@@ -133,3 +136,42 @@
   (set! name (ast-node-class-name node))
 
   `(,name ,@mapped-fields))
+
+;; map nodes through callback, bottom up
+(define (rewrite-ast f node)
+  (define-values (type skipped?) (struct-info node))
+  (define-values (name inits autos acc mut imms super super-skipped?)
+    (struct-type-info type))
+  (define constructor (struct-type-make-constructor type))
+
+  (define rec (curry rewrite-ast f))
+
+  (define mapped-fields
+    (map (lambda (i class)
+           (let ([field-value (acc node i)])
+             (match class
+               ['bool field-value]
+               ['expr-list (map rec field-value)]
+               ['integer field-value]
+               ['literal field-value]
+               ['param-list field-value]
+               ['stmt-list (map rec field-value)]
+               ['string field-value]
+               ['string-or-#f field-value]
+               ['symbol field-value]
+               ['t-ast-expr (rec field-value)]
+               ['t-ast-scoped-var (rec field-value)]
+               ['t-ast-stmt (rec field-value)]
+               ['type field-value])))
+         (range 0 inits)
+         (gen-class-annotations node)))
+
+  (cond
+    [(t-ast-expr? node)
+     (f (apply constructor
+               (list* (t-ast-node-srcloc node)
+                      (t-ast-expr-type node)
+                      mapped-fields)))]
+    [(t-ast-stmt? node)
+     (f (apply constructor (list* (t-ast-node-srcloc node) mapped-fields)))]
+    [else (error (format "unhandled ~a" node))]))
