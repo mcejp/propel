@@ -17,3 +17,39 @@ C vs C++:
 - need a possibility to manage C vs C++ function linkage -- both for imported and exported functions
 
 ==> Plain C output option would be nice, but is not high priority
+
+Original backend
+----------------
+
+The main thing to watch out for is that not every Propel expression translates to a C++ expression.
+Consider the following example::
+
+  (def foo (+ (bar)
+    (if baz
+        1
+        (begin
+          (print "Warning: not baz!")
+          2))))
+
+This must transpile to something like:
+
+.. code-block:: c++
+
+  int tmp1 = bar();
+  int tmp2;
+  if (baz) {
+      tmp2 = 1;
+  }
+  else {
+      print("Warning: not baz!");
+      tmp2 = 2;
+  }
+  int foo = tmp1 + tmp2;
+
+The current backend is broken -- it can re-order expressions incorrectly.
+
+``format-form`` works by returning a pair of values:
+ - a list of strings representing lines of code to be emitted
+ - a string representing the ultimate expression
+
+

@@ -20,6 +20,7 @@
          (struct-out t-ast-while)
          (struct-out T-ast-builtin-type)
          (struct-out T-ast-array-type)
+         ast-node-class-name
          ast-to-s-expr
          T-ast-builtin-int
          T-ast-builtin-void)
@@ -94,6 +95,15 @@
 (define T-ast-builtin-int (T-ast-builtin-type #f 'I))
 (define T-ast-builtin-void (T-ast-builtin-type #f 'V))
 
+(define (ast-node-class-name node)
+  (define-values (type skipped?) (struct-info node))
+  (define-values (name inits autos acc mut imms super super-skipped?)
+    (struct-type-info type))
+  (string->symbol
+   (string-replace (string-replace (symbol->string name) "t-ast-" "#%")
+                   "T-ast-"
+                   "#%")))
+
 (define (ast-to-s-expr node)
   ; (printf "(ast-to-s-expr ~a) -> ~v\n" node (gen-class-annotations node))
 
@@ -120,10 +130,6 @@
          (range 0 inits)
          (gen-class-annotations node)))
 
-  (set! name
-        (string->symbol
-         (string-replace (string-replace (symbol->string name) "t-ast-" "#%")
-                         "T-ast-"
-                         "#%")))
+  (set! name (ast-node-class-name node))
 
   `(,name ,@mapped-fields))

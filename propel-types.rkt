@@ -242,7 +242,7 @@
 
   (match (syntax-e type-stx)
     [(list (? is-#%array-type? _) element-type length)
-     (T-ast-array-type srcloc (parse-type element-type) length)]
+     (T-ast-array-type srcloc (parse-type element-type) (syntax-e length))]
     [_
      (cond
        [(equal? type type-I) T-ast-builtin-int]
