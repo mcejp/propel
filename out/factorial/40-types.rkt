@@ -1,77 +1,19 @@
-((#%begin
-  (#%defun
+(#%begin
+ ((#%defun
    (#%scoped-var 0 factorial)
-   (((#%scoped-var 1 n) (#%builtin-type I)))
+   ((#%parameter (#%scoped-var 1 n) (#%builtin-type I)))
    (#%builtin-type I)
    (#%begin
-    (#%if
-     (#%app (#%scoped-var #f builtin-eq-ii) (#%scoped-var 1 n) 0)
-     1
-     (#%app
-      (#%scoped-var #f builtin-mul-ii)
-      (#%scoped-var 1 n)
+    ((#%if
       (#%app
-       (#%scoped-var 0 factorial)
-       (#%app (#%scoped-var #f builtin-sub-ii) (#%scoped-var 1 n) 1)))))))
- ((#%builtin-type V)
-  ((#%builtin-type V)
-   (#%builtin-type I)
-   ((#%builtin-type I)
-    ((#%builtin-type I)
-     (#(struct:function-type
-        ((#%builtin-type I) (#%builtin-type I))
-        (#%builtin-type I))
-      .
-      #f)
-     ((#%builtin-type I) . #f)
-     ((#%builtin-type I) . #f))
-    ((#%builtin-type I) . #f)
-    ((#%builtin-type I)
-     (#(struct:function-type
-        ((#%builtin-type I) (#%builtin-type I))
-        (#%builtin-type I))
-      .
-      #f)
-     ((#%builtin-type I) . #f)
-     ((#%builtin-type I)
-      (#(struct:function-type ((#%builtin-type I)) (#%builtin-type I)) . #f)
-      ((#%builtin-type I)
-       (#(struct:function-type
-          ((#%builtin-type I) (#%builtin-type I))
-          (#%builtin-type I))
-        .
-        #f)
-       ((#%builtin-type I) . #f)
-       ((#%builtin-type I) . #f)))))))
- ((#<path:tests/factorial.rkt> 0 0 0 87)
-  (#f 0 0 0 87)
-  ((#f 0 0 0 86)
-   (#f 0 0 0 86)
-   ((#f 0 0 0 86) (#f 0 0 0 86) (#f 0 0 0 86) (#f 0 0 0 86))
-   ((#f 0 0 0 86)
-    ((#f 0 0 0 86)
-     ((#f 0 0 0 86) (#f 0 0 0 86) (#f 0 0 0 86) (#f 0 0 0 86))
-     ((#f 0 0 0 86) (#f 0 0 0 86) (#f 0 0 0 86))))
-   ((#f 0 0 0 86) (#f 0 0 0 86) (#f 0 0 0 86))
-   ((#f 0 0 0 86)
-    (#f 0 0 0 86)
-    ((#f 1 2 33 52)
-     (#f 0 0 0 52)
-     ((#f 0 4 4 7)
-      (#f 0 0 0 7)
-      ((#f 0 1 1 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
-      ((#f 0 2 2 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
-      (#f 0 2 2 1))
-     (#f 1 -5 9 1)
-     ((#f 1 0 8 25)
-      (#f 0 0 0 25)
-      ((#f 0 1 1 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
-      ((#f 0 2 2 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
-      ((#f 0 2 2 19)
-       (#f 0 0 0 19)
-       ((#f 0 1 1 9) (#f 0 0 0 9) (#f 0 0 0 9) (#f 0 0 0 9))
-       ((#f 0 10 10 7)
-        (#f 0 0 0 7)
-        ((#f 0 1 1 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
-        ((#f 0 2 2 1) (#f 0 0 0 1) (#f 0 0 0 1) (#f 0 0 0 1))
-        (#f 0 2 2 1)))))))))
+       (#%scoped-var #f builtin-eq-ii)
+       ((#%scoped-var 1 n) (#%literal 0)))
+      (#%literal 1)
+      (#%app
+       (#%scoped-var #f builtin-mul-ii)
+       ((#%scoped-var 1 n)
+        (#%app
+         (#%scoped-var 0 factorial)
+         ((#%app
+           (#%scoped-var #f builtin-sub-ii)
+           ((#%scoped-var 1 n) (#%literal 1)))))))))))))

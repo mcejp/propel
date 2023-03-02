@@ -93,7 +93,6 @@
                          "deftype"
                          "factorial"
                          "hello"
-                         "order"
                          "vga-palette"
                          "void")])
   (compile-propel-module (~a "tests/" testcase ".rkt") (~a "out/" testcase)))

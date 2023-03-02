@@ -6,6 +6,4 @@
     (#%parameter (#%scoped-var 1 b) (#%builtin-type I)))
    (#%builtin-type I)
    (#%begin
-    ((#%app
-      (#%scoped-var #f builtin-add-ii)
-      ((#%scoped-var 1 a) (#%scoped-var 1 b))))))))
+    ((#%c++-binary-operator "+" (#%scoped-var 1 a) (#%scoped-var 1 b)))))))

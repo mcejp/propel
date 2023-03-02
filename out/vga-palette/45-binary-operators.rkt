@@ -119,9 +119,10 @@
     ((#%begin
       ((#%define (#%scoped-var 2 _i) (#%literal 0) #t)
        (#%while
-        (#%app
-         (#%scoped-var #f builtin-lessthan-ii)
-         ((#%scoped-var 2 _i) (#%len (#%scoped-var 0 my-palette))))
+        (#%c++-binary-operator
+         "<"
+         (#%scoped-var 2 _i)
+         (#%len (#%scoped-var 0 my-palette)))
         (#%begin
          ((#%define
            (#%scoped-var 2 color)
@@ -132,6 +133,7 @@
            ((#%scoped-var 2 _i) (#%scoped-var 2 color)))
           (#%set-var
            (#%scoped-var 2 _i)
-           (#%app
-            (#%scoped-var #f builtin-add-ii)
-            ((#%scoped-var 2 _i) (#%literal 1))))))))))))))
+           (#%c++-binary-operator
+            "+"
+            (#%scoped-var 2 _i)
+            (#%literal 1)))))))))))))

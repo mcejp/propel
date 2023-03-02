@@ -74,12 +74,10 @@
     (#%parameter (#%scoped-var 9 c) (#%builtin-type I)))
    (#%builtin-type I)
    (#%begin
-    ((#%app
-      (#%scoped-var #f builtin-and-ii)
-      ((#%app
-        (#%scoped-var #f builtin-and-ii)
-        ((#%scoped-var 9 a) (#%scoped-var 9 b)))
-       (#%scoped-var 9 c))))))
+    ((#%c++-binary-operator
+      "&&"
+      (#%c++-binary-operator "&&" (#%scoped-var 9 a) (#%scoped-var 9 b))
+      (#%scoped-var 9 c)))))
   (#%defun
    (#%scoped-var 0 update-row)
    ((#%parameter (#%scoped-var 10 y) (#%builtin-type I))
@@ -91,9 +89,7 @@
      (#%begin
       ((#%define (#%scoped-var 10 x) (#%literal 0) #t)
        (#%while
-        (#%app
-         (#%scoped-var #f builtin-lessthan-ii)
-         ((#%scoped-var 10 x) (#%literal 4)))
+        (#%c++-binary-operator "<" (#%scoped-var 10 x) (#%literal 4))
         (#%begin
          ((#%define
            (#%scoped-var 10 stone)
@@ -109,36 +105,38 @@
                 (#%scoped-var 10 should-merge)
                 (#%app
                  (#%scoped-var 0 and3)
-                 ((#%app
-                   (#%scoped-var #f builtin-greaterthan-ii)
-                   ((#%scoped-var 10 output-pos) (#%literal 0)))
-                  (#%app
-                   (#%scoped-var #f builtin-eq-ii)
-                   ((#%app
-                     (#%scoped-var 0 brd-get-with-rotation)
-                     ((#%app
-                       (#%scoped-var #f builtin-sub-ii)
-                       ((#%scoped-var 10 output-pos) (#%literal 1)))
-                      (#%scoped-var 10 y)
-                      (#%scoped-var 10 dir)))
-                    (#%scoped-var 10 stone)))
-                  (#%app
-                   (#%scoped-var #f builtin-not-i)
-                   ((#%scoped-var 10 was-merged)))))
+                 ((#%c++-binary-operator
+                   ">"
+                   (#%scoped-var 10 output-pos)
+                   (#%literal 0))
+                  (#%c++-binary-operator
+                   "=="
+                   (#%app
+                    (#%scoped-var 0 brd-get-with-rotation)
+                    ((#%c++-binary-operator
+                      "-"
+                      (#%scoped-var 10 output-pos)
+                      (#%literal 1))
+                     (#%scoped-var 10 y)
+                     (#%scoped-var 10 dir)))
+                   (#%scoped-var 10 stone))
+                  (#%c++-unary-operator "!" (#%scoped-var 10 was-merged))))
                 #f)
                (#%if
                 (#%scoped-var 10 should-merge)
                 (#%begin
                  ((#%app
                    (#%scoped-var 0 brd-set-with-rotation)
-                   ((#%app
-                     (#%scoped-var #f builtin-sub-ii)
-                     ((#%scoped-var 10 output-pos) (#%literal 1)))
+                   ((#%c++-binary-operator
+                     "-"
+                     (#%scoped-var 10 output-pos)
+                     (#%literal 1))
                     (#%scoped-var 10 y)
                     (#%scoped-var 10 dir)
-                    (#%app
-                     (#%scoped-var #f builtin-mul-ii)
-                     ((#%literal 2) (#%scoped-var 10 stone)))))
+                    (#%c++-binary-operator
+                     "*"
+                     (#%literal 2)
+                     (#%scoped-var 10 stone))))
                   (#%set-var (#%scoped-var 10 was-merged) (#%literal 1))))
                 (#%begin
                  ((#%app
@@ -150,27 +148,25 @@
                   (#%set-var (#%scoped-var 10 was-merged) (#%literal 0))
                   (#%set-var
                    (#%scoped-var 10 output-pos)
-                   (#%app
-                    (#%scoped-var #f builtin-add-ii)
-                    ((#%scoped-var 10 output-pos) (#%literal 1)))))))))
+                   (#%c++-binary-operator
+                    "+"
+                    (#%scoped-var 10 output-pos)
+                    (#%literal 1))))))))
              (#%construct ()))))
           (#%set-var
            (#%scoped-var 10 x)
-           (#%app
-            (#%scoped-var #f builtin-add-ii)
-            ((#%scoped-var 10 x) (#%literal 1)))))))))
+           (#%c++-binary-operator "+" (#%scoped-var 10 x) (#%literal 1))))))))
      (#%begin
       ((#%define (#%scoped-var 10 columnn) (#%literal 0) #t)
        (#%while
-        (#%app
-         (#%scoped-var #f builtin-lessthan-ii)
-         ((#%scoped-var 10 columnn) (#%literal 4)))
+        (#%c++-binary-operator "<" (#%scoped-var 10 columnn) (#%literal 4))
         (#%begin
          ((#%begin
            ((#%if
-             (#%app
-              (#%scoped-var #f builtin-lesseq-ii)
-              ((#%scoped-var 10 output-pos) (#%scoped-var 10 columnn)))
+             (#%c++-binary-operator
+              "<="
+              (#%scoped-var 10 output-pos)
+              (#%scoped-var 10 columnn))
              (#%begin
               ((#%app
                 (#%scoped-var 0 brd-set-with-rotation)
@@ -181,9 +177,10 @@
              (#%construct ()))))
           (#%set-var
            (#%scoped-var 10 columnn)
-           (#%app
-            (#%scoped-var #f builtin-add-ii)
-            ((#%scoped-var 10 columnn) (#%literal 1))))))))))))
+           (#%c++-binary-operator
+            "+"
+            (#%scoped-var 10 columnn)
+            (#%literal 1)))))))))))
   (#%defun
    (#%scoped-var 0 generate-new-stone)
    ()
@@ -192,10 +189,10 @@
     ((#%define
       (#%scoped-var 11 new-stone-value)
       (#%if
-       (#%app
-        (#%scoped-var #f builtin-lessthan-ii)
-        ((#%app (#%scoped-var 0 random-int) ((#%literal 0) (#%literal 100)))
-         (#%literal 90)))
+       (#%c++-binary-operator
+        "<"
+        (#%app (#%scoped-var 0 random-int) ((#%literal 0) (#%literal 100)))
+        (#%literal 90))
        (#%literal 2)
        (#%literal 4))
       #f)
@@ -234,15 +231,14 @@
     ((#%begin
       ((#%define (#%scoped-var 12 row) (#%literal 0) #t)
        (#%while
-        (#%app
-         (#%scoped-var #f builtin-lessthan-ii)
-         ((#%scoped-var 12 row) (#%literal 4)))
+        (#%c++-binary-operator "<" (#%scoped-var 12 row) (#%literal 4))
         (#%begin
          ((#%app
            (#%scoped-var 0 update-row)
            ((#%scoped-var 12 row) (#%scoped-var 12 dir)))
           (#%set-var
            (#%scoped-var 12 row)
-           (#%app
-            (#%scoped-var #f builtin-add-ii)
-            ((#%scoped-var 12 row) (#%literal 1))))))))))))))
+           (#%c++-binary-operator
+            "+"
+            (#%scoped-var 12 row)
+            (#%literal 1)))))))))))))

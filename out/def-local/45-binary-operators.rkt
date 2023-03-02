@@ -9,8 +9,6 @@
      (#%define (#%scoped-var 1 right) (#%scoped-var 1 b) #f)
      (#%define
       (#%scoped-var 1 sum)
-      (#%app
-       (#%scoped-var #f builtin-add-ii)
-       ((#%scoped-var 1 left) (#%scoped-var 1 right)))
+      (#%c++-binary-operator "+" (#%scoped-var 1 left) (#%scoped-var 1 right))
       #f)
      (#%scoped-var 1 sum))))))

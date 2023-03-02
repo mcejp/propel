@@ -29,12 +29,10 @@
    (#%begin
     ((#%get
       (#%scoped-var 0 board)
-      (#%app
-       (#%scoped-var #f builtin-add-ii)
-       ((#%app
-         (#%scoped-var #f builtin-mul-ii)
-         ((#%scoped-var 1 y) (#%scoped-var 0 W)))
-        (#%scoped-var 1 x)))))))
+      (#%c++-binary-operator
+       "+"
+       (#%c++-binary-operator "*" (#%scoped-var 1 y) (#%scoped-var 0 W))
+       (#%scoped-var 1 x))))))
   (#%defun
    (#%scoped-var 0 brd-count-empty-spots)
    ()
@@ -44,39 +42,35 @@
      (#%begin
       ((#%define (#%scoped-var 2 y) (#%literal 0) #t)
        (#%while
-        (#%app
-         (#%scoped-var #f builtin-lessthan-ii)
-         ((#%scoped-var 2 y) (#%scoped-var 0 H)))
+        (#%c++-binary-operator "<" (#%scoped-var 2 y) (#%scoped-var 0 H))
         (#%begin
          ((#%begin
            ((#%define (#%scoped-var 2 x) (#%literal 0) #t)
             (#%while
-             (#%app
-              (#%scoped-var #f builtin-lessthan-ii)
-              ((#%scoped-var 2 x) (#%scoped-var 0 W)))
+             (#%c++-binary-operator "<" (#%scoped-var 2 x) (#%scoped-var 0 W))
              (#%begin
               ((#%begin
                 ((#%if
-                  (#%app
-                   (#%scoped-var #f builtin-not-i)
-                   ((#%app
-                     (#%scoped-var 0 brd-get)
-                     ((#%scoped-var 2 x) (#%scoped-var 2 y)))))
+                  (#%c++-unary-operator
+                   "!"
+                   (#%app
+                    (#%scoped-var 0 brd-get)
+                    ((#%scoped-var 2 x) (#%scoped-var 2 y))))
                   (#%begin
                    ((#%set-var
                      (#%scoped-var 2 empty)
-                     (#%app
-                      (#%scoped-var #f builtin-add-ii)
-                      ((#%scoped-var 2 empty) (#%literal 1))))))
+                     (#%c++-binary-operator
+                      "+"
+                      (#%scoped-var 2 empty)
+                      (#%literal 1)))))
                   (#%construct ()))))
                (#%set-var
                 (#%scoped-var 2 x)
-                (#%app
-                 (#%scoped-var #f builtin-add-ii)
-                 ((#%scoped-var 2 x) (#%literal 1)))))))))
+                (#%c++-binary-operator
+                 "+"
+                 (#%scoped-var 2 x)
+                 (#%literal 1))))))))
           (#%set-var
            (#%scoped-var 2 y)
-           (#%app
-            (#%scoped-var #f builtin-add-ii)
-            ((#%scoped-var 2 y) (#%literal 1)))))))))
+           (#%c++-binary-operator "+" (#%scoped-var 2 y) (#%literal 1))))))))
      (#%scoped-var 2 empty))))))
