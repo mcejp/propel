@@ -1,12 +1,12 @@
 #lang racket
 
-(provide c++-lift-operators)
+(provide c++-lift-operators-and-array-init)
 
 (require "model/c++-ast.rkt"
          "model/t-ast.rkt"
          "scope.rkt")
 
-(define (c++-lift-operators module)
+(define (c++-lift-operators-and-array-init module)
   (rewrite-ast
    (lambda (node)
      (match node
@@ -58,5 +58,12 @@
                     (substitute (cdr ops-to-try))))))
 
         (substitute ops)]
+       ;; handle array construction
+       [(t-ast-define
+         src
+         var
+         (t-ast-construct _ (T-ast-array-type _ element-t _) values)
+         is-variable)
+        (t-ast-c-array-initialization src var element-t values is-variable)]
        [_ node]))
    module))

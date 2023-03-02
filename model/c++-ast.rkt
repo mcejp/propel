@@ -1,6 +1,7 @@
 #lang racket
 
-(provide (struct-out t-ast-c++-binary-operator)
+(provide (struct-out t-ast-c-array-initialization)
+         (struct-out t-ast-c++-binary-operator)
          (struct-out t-ast-c++-unary-operator))
 
 (require "t-ast.rkt")
@@ -9,3 +10,9 @@
  t-ast-expr
  [t-ast-c++-binary-operator ([op string] [left t-ast-expr] [right t-ast-expr])]
  [t-ast-c++-unary-operator ([op string] [expr t-ast-expr])])
+
+(define-ast-classes t-ast-stmt
+                    [t-ast-c-array-initialization
+                     ([var t-ast-scoped-var] [element-type type]
+                                             [values expr-list]
+                                             [is-variable bool])])

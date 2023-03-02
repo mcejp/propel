@@ -84,6 +84,23 @@
      ;; Now all that remains is to flatten the collected tokens
      (values (flatten my-tokens) result-expr)]
     [(t-ast-begin _ type '()) (values '() "")]
+    [(t-ast-c-array-initialization _ var element-type values-list is-variable)
+     ;; build a definition like int variable[] = {1, 2, 3};
+     (define var-expr (format-expression var))
+     (define element-type-str (format-type element-type))
+
+     (define optional-const-prefix (if (not is-variable) "const " ""))
+
+     (define the-decl
+       (format "~a~a ~a[] =" optional-const-prefix element-type-str var-expr))
+
+     ;; collect exprs for all arguments
+     (define value-exprs (map format-expression values-list))
+
+     ;; build tokens as concatenation of all
+     (define values-expr (string-join value-exprs ", "))
+
+     (values (flatten (list the-decl "{" values-expr "};")) "")]
     [(t-ast-construct _ type args)
      (begin
        (unless (equal? type T-ast-builtin-void)
@@ -96,17 +113,9 @@
                              form))
        (values '() ""))]
     [(t-ast-define _ var value is-variable)
-     (define-values (var-tokens var-expr) (format-form var))
+     (define var-expr (format-expression var))
 
-     (unless (eq? var-tokens '())
-       (raise-syntax-error #f "unsupported assignment" form))
      (define value-type (t-ast-expr-type value))
-
-     ;; special treatment for array constructors
-     (define is-array-initialization?
-       (match value
-         [(t-ast-construct _ (T-ast-array-type _ _ _) _) #t]
-         [_ #f]))
 
      (define optional-const-prefix (if (not is-variable) "const " ""))
 
@@ -114,26 +123,6 @@
      ;; ugly code ahead :( might be better solved with some kind of transformation pre-pass that
      ;; transforms the special cases into another form
      (cond
-       [is-array-initialization?
-        ;; build a definition like int variable[] = {1, 2, 3};
-        (define element-type-str
-          (format-type (T-ast-array-type-element-type value-type)))
-
-        (define the-decl
-          (format "~a~a ~a[] ="
-                  optional-const-prefix
-                  element-type-str
-                  var-expr))
-
-        (define args (t-ast-construct-args value))
-
-        ;; collect exprs for all arguments
-        (define arg-exprs (map format-expression args))
-
-        ;; build tokens as concatenation of all
-        (define values-expr (string-join arg-exprs ", "))
-
-        (values (flatten (list the-decl "{" values-expr "};")) "")]
        ;; special treatment for function defines
        [(t-ast-external-function? value)
         ;; FIXME: if we want to go this way, we must assert the name of the variable being defined
