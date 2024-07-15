@@ -6,13 +6,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - uses: Bogdanp/setup-racket@v1.9
+    - uses: Bogdanp/setup-racket@v1.11
       with:
         architecture: 'x64'  # or: 'x64', 'x86', 'arm32', 'arm64' (or 'aarch64')
         distribution: 'full' # or: 'minimal' (but you probably don't want 'minimal', see note at the bottom of this doc)
         variant: 'CS'        # or: 'BC' for Racket Before Chez
-        version: '8.6'       # or: 'stable' for the latest version, 'current' for the latest snapshot, 'pre-release' for the latest pre-release build
-    - run: raco pkg install --auto --no-docs fmt
+        version: '8.11'      # or: 'stable' for the latest version, 'current' for the latest snapshot, 'pre-release' for the latest pre-release build
+    - run: raco pkg install --auto --no-docs git@github.com:sorawee/fmt.git#114e1f70ea8752743ef449cdae10d651e37bc6bd
 
     - run: sh fmt.sh
     - run: PLT_CS_DEBUG=1 raco test test*.rkt
