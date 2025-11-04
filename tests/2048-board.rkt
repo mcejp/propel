@@ -14,8 +14,8 @@
 (defun brd-count-empty-spots () int
   (var empty 0)
 
-  (for/range y H
-    (for/range x W
+  (dotimes y H
+    (dotimes x W
       (when (not (brd-get x y))
         (set! empty (+ empty 1)))))
 

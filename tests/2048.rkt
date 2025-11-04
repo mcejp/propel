@@ -37,7 +37,7 @@
   (var output-pos 0)
   (var was-merged 0)
 
-  (for/range x 4
+  (dotimes x 4
     ;; check if any stone in source position
     (def stone (brd-get-with-rotation x y dir))
     (when stone
@@ -59,7 +59,7 @@
         )
       ))
 
-  (for/range columnn 4
+  (dotimes columnn 4
     (when (<= output-pos columnn)
       (brd-set-with-rotation columnn y dir 0)))
 )
@@ -111,7 +111,7 @@
   ;     (update-board-with new-list-of-stones)
   ; )
 
-  (for/range row 4
+  (dotimes row 4
     (update-row row dir))
 
   ;; TODO: can check if any movement made, if not, jump back to (get-player-input)

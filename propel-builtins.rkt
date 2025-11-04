@@ -26,7 +26,7 @@
     )))
 
 ;; TODO: ident should not escape scope
-(define-transformer for/range (lambda args
+(define-transformer dotimes (lambda args
   (match-define (list ident-stx max-stx body-stx ...) args)
   `(begin
       (var ,ident-stx 0)

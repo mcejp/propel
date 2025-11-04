@@ -28,7 +28,7 @@ Iteration
     ...
     )
 
-  (for/range i 10
+  (dotimes i 10
     body
     ...
     )
